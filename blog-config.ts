@@ -15,7 +15,7 @@ const config = {
     instagram: '',      // Instagram username
   },
   comment: {
-    utterances: 'blurfx/gatsby-starter-lavender', // Your GitHub repository
+    utterances: 'witch-factory/witch-blog', // Your GitHub repository
     disqusShortName: '',  // Disqus short name
   },
   icon: 'src/images/gatsby-icon.png', // path of blog icon
