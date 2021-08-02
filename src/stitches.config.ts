@@ -15,12 +15,12 @@ export const { styled, css, getCssString, theme, global } = createCss({
       black: '#000',
       yellow: '#ffd75e',
       yellowAccent: '#ffa659',
-
-      primary100: '#edeafc',
-      primary200: '#bcb2f5',
-      primary300: '#816eec',
-      primary400: '#3b1de2',
-      primary500: '#24128a',
+      //lime color
+      primary100: '#c5f6fa',
+      primary200: '#66d9e8',
+      primary300: '#22b8cf',
+      primary400: '#1098ad',
+      primary500: '#0b7285',
 
       text100: '$gray300',
       text200: '$gray400',
@@ -72,11 +72,11 @@ export const darkTheme = theme('dark-theme', {
     gray700: '#f6f1ea',
     black: '#222425',
 
-    primary100: '#edeafc',
-    primary200: '#b9acff',
-    primary300: '#816eec',
-    primary400: '#3b1de2',
-    primary500: '#221182',
+    primary100: '#c5f6fa',
+    primary200: '#66d9e8',
+    primary300: '#22b8cf',
+    primary400: '#1098ad',
+    primary500: '#0b7285',
 
     text100: '$gray300',
     text200: '$gray400',
