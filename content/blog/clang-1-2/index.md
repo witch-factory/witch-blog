@@ -1,7 +1,7 @@
 ---
 title: C-through - 1.2. 두번째 예제
 date: "2021-07-02T00:00:00Z"
-description: "부제 : C언어와 떠나는 여행 - 1.2 두번째 예제"
+description: "C언어 1.2 두번째 예제"
 tags: ["C", "language"]
 ---
 

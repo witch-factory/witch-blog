@@ -1,7 +1,7 @@
 ---
 title: C-through - 1.3. 두번째 예제의 개선
 date: "2021-07-31T00:00:00Z"
-description: "부제 : C언어와 떠나는 여행 - 1.3 두번째 예제의 개선"
+description: "C언어 1.3 두번째 예제의 개선"
 tags: ["C", "language"]
 ---
 
