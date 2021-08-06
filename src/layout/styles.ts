@@ -118,6 +118,7 @@ export const Root = styled('div', {
 export const Container = styled('div', {
   display: 'flex',
   flexDirection: 'column',
+  width: '100%',
   maxWidth: '$contentWidth',
   margin: '0 auto',
   paddingRight: '1em',
