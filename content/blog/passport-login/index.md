@@ -192,7 +192,31 @@ app.post('/login',
 
 passport는 요청에 대한 검증을 할 때, 요청에 포함되어 있는 자격들을 가져온다. 일반적인 express 라우트 핸들러에서 `req.body `의 내용을 가져오는 것과 비슷하다. 여기서는 username과 password를 가져왔다.
 
-그러면 우리는 이 값들을 가지고 이 username과 password가 정말 존재하는 사용자의 것인지 검증해야 한다. 실제로는 유저 DB를 통해 검증해야 하고 후에 암호화와 함께 DB모델링/연결도 진행할 것이다. 그러나 지금은 일단 단순한 배열(`userList.js`에 현재 존재하는 자격있는 사용자들의 username, password가 든 객체들을 담은 배열이 있다)을 사용하였다.
+그러면 우리는 이 값들을 가지고 이 username과 password가 정말 존재하는 사용자의 것인지 검증해야 한다. 지금은 일단 단순한 배열을 사용하였다. `userList.js`에 현재 존재하는 자격있는 사용자들의 username, password가 든 객체들을 담은 배열이 있다.
 
-javascript filter함수를 사용하여, post를 통해 받은 요청에 있는 username과 같은 username을 가진 자격있는 사용자가 있는지 검증한다. 그리고 만약 그런 사용자가 있을 경우 패스워드에 대해서도 검사하는 것이다. 그리고 이런 검사들이 실패하거나 성공함에 따라 적절한 `done`을 적용한다.
+```javascript
+//userList.js
+const userList=[
+    {
+        username:"test",
+        password:"testpw"
+    },
+    {
+        username:"test1",
+        password:"testpw1"
+    },
+    {
+        username:"test2",
+        password:"testpw2"
+    },
+];
+
+export default userList;
+```
+
+다시 인증 콜백으로 돌아가면, javascript filter함수를 사용하여, post를 통해 받은 요청에 있는 username과 같은 username을 가진 자격있는 사용자가 있는지 검증한다. 그리고 만약 그런 사용자가 있을 경우 패스워드에 대해서도 검사하는 것이다. 그리고 이런 검사들이 실패하거나 성공함에 따라 적절한 `done`을 적용한다.
+
+### 3.1.1 done에 대하여
+
+그럼 `done`은 무엇인가? 무슨 역할을 하는가? 만약 요청이 유효하면 인증 콜백은 `done`을 호출해서 passport에 인증한 결과를 전달한다. 이때의 유효한 요청이란 꼭 자격있음이 검증되었다는 의미가 아니라 서버 에러나 인증 콜백 실행에 에러가 없었고 자격 검증의 성공이든 실패든 결과가 정상적으로 나올 수 있었던 요청이라는 의미이다.
 
