@@ -218,5 +218,63 @@ export default userList;
 
 ### 3.1.1 done에 대하여
 
-그럼 `done`은 무엇인가? 무슨 역할을 하는가? 만약 요청이 유효하면 인증 콜백은 `done`을 호출해서 passport에 인증한 결과를 전달한다. 이때의 유효한 요청이란 꼭 자격있음이 검증되었다는 의미가 아니라 서버 에러나 인증 콜백 실행에 에러가 없었고 자격 검증의 성공이든 실패든 결과가 정상적으로 나올 수 있었던 요청이라는 의미이다.
+이 문단 참고 자료 : zerocho님 블로그 포스트 https://www.zerocho.com/category/NodeJS/post/57b7101ecfbef617003bf457
 
+그럼 `done`은 무엇인가? 무슨 역할을 하는가? 만약 요청이 유효하면 인증 콜백은 `done` 콜백을 호출해서 passport에 인증한 결과를 전달한다. 이때의 유효한 요청이란 꼭 자격있음이 검증되었다는 의미가 아니라 서버 에러나 인증 콜백 실행에 에러가 없었고 자격 검증의 성공이든 실패든 결과가 정상적으로 나올 수 있었던 요청이라는 의미이다.
+
+그리고 done이 호출되면 done을 호출한 strategy 콜백은 종료되고 다시 `authenticate` 단으로 돌아가서 `done` 콜백이 전달한 결과에 따라 다르게 동작한다.
+
+정리하면 이렇다.
+
+---
+
+`app.post`의 도메인에서 요청을 전달받음 -> `passport.authenticate`함수를 호출하고 그 인자에 따라 다른 strategy 콜백을 호출함. 위의 코드에서는 `LocalStrategy`의 콜백을 호출한다 -> `LocalStrategy`의 콜백 함수 속에서 인증이 진행되고 어떤 조건에 의해 `done` 이 호출됨 -> `done` 은 인증을 시도한 결과에 대한 정보를 리턴하고 이 정보는 `LocalStrategy` 에서 인증을 시도한 결과로서 `authenciate`의 리턴값이 됨 -> 이 리턴값에 따라 `app.post`에서는 특정 동작을 취해 주거나 다른 콜백을 호출함
+
+---
+
+그럼 `done` 이 받는 3개의 인자는 무슨 뜻일까?
+
+먼저 첫번째 인자는 위의 코드에서는 언제나 null인데, 서버 에러를 넣는 곳이다. 현재는 JS배열에 유저 정보들을 저장하고 있는데 만약 DB를 사용한다면 DB를 연결하다가 에러가 발생할 수 있다. 그런 에러들을 넣는 곳이다. 따라서 위의 경우에는 언제나 null이라고 할 수 있다.
+
+그러나 DB 연결 실패 등의 서버 에러가 만약 발생했을 시에는 done은 다음과 같이 호출된다. 
+
+```javascript
+return done(err);
+//express에서 DB에 연결할 때 쓰는 콜백에는 보통 err가 인수 중 하나로 들어간다
+```
+
+두번째 인자는 인증이 성공했을 시에 passport에 전달해줄, 인증된 값에 대한 정보이다. 인증이 성공했을 시에는 인증이 성공한 user의 정보를 담고 있는 객체를 passport에 전달한다.
+
+그런데 만약 비밀번호가 틀리거나 존재하지 않는 아이디라는 등의 이유로 인증이 실패하면 `done`의 두번째 인자는 false로 주어져야 한다. 인증이 실패했다는 것을 알리기 위해서이다.
+
+세번째 인자는 실패 이유에 대한 것을 나타낼 수 있는 에러 메시지를 전달해 주는 데에 쓰인다. 이는 인증이 실패했을 시에 플래시 메시지 등을 띄워주고자 할 시에 유용하다. 가령 `존재하지 않는 회원입니다` 와 `비밀번호가 틀렸습니다` 는 둘 다 인증 실패이지만, 다른 메시지를 사용자에게 보여주고자 할 수 있다. 그런 경우에 `done`의 세번째 인자를 통해 추가적인 정보를 전달할 수 있다.
+
+이런 방식을 통해 얻는 것이 무엇이냐면, passport는 실제 인증에 쓰이는 strategy와 무관하게 작동할 수 있다는 것이다. passport단에서는 어떻게 유저 정보가 저장되고 인증이 진행되는지 전혀 알 수 없다. 그저 들어온 요청을 passport에 연결된 어떤 strategy로 보내줄 뿐이다. 이는 반대로 말하면 passport단에서는 인증의 진행에 대해 어떤 제한을 걸 수 없고, 따라서 인증을 진행하는 단계는 매우 자유롭게 진행될 수 있다는 것이다.
+
+
+
+## 3.2 어플리케이션 미들웨어
+
+
+
+
+
+
+
+
+
+
+
+
+
+참고
+
+공식 문서 http://www.passportjs.org/docs/
+
+passport-local http://www.passportjs.org/packages/passport-local/
+
+zerocho님 블로그 포스트 https://www.zerocho.com/category/NodeJS/post/57b7101ecfbef617003bf457
+
+2G Dev 블로그 포스트 https://dev-dain.tistory.com/73?category=858558
+
+https://stackoverflow.com/questions/26164837/difference-between-done-and-next-in-node-js-callbacks
