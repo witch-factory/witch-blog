@@ -268,6 +268,7 @@ router.use(session({
     resave:false,
     saveUninitialized:false,
     secret:process.env.SESSION_SECRET
+    //.env를 이용해서 session의 비밀 키 관리(dotenv 사용)
 }));
 
 router.use(express.urlencoded({extended:false}));
@@ -287,6 +288,29 @@ app.post('/',
   }
 );
 ```
+
+
+
+## 3.3 세션
+
+보통의 웹사이트에서는 한 번 로그인을 하면 그 브라우저를 닫을 때까지 로그인이 유지된다. 어떤 사이트에 로그인해서 글을 하나 보려고 다음 페이지로 넘어가는 순간 다시 로그인을 해야 한다면 얼마나 귀찮겠는가?
+
+따라서 거의 모든 웹사이트에서는 브라우저에서 접속할 때 한 번만 자격 증명(즉, 로그인)을 요구한다. 그리고 만약 로그인이 성공하면 세션이 만들어진다. 이 세션은 브라우저의 쿠키를 통해 유지되면서 브라우저를 닫을 때까지 로그인을 지속시켜준다.
+
+인증에 이런 세션을 쓸 수 있게 하기 위해 passport에서는 `serializeUser` 와 `deserializeUser` 를 제공한다. 
+
+```javascript
+passport.serializeUser((user, done)=>{
+    done(null, user.username);
+});
+
+passport.deserializeUser((username, done)=>{
+    //id는 req.session.passport.user 에 저장된 값
+    done(null, username);
+});
+```
+
+
 
 
 
@@ -315,3 +339,5 @@ https://stackoverflow.com/questions/26164837/difference-between-done-and-next-in
 express 미들웨어 공식 문서 https://expressjs.com/ko/guide/writing-middleware.html
 
 jennyLee.log 블로그 https://velog.io/@wjddnjswjd12/node.js-express-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4%EB%9E%80
+
+serialize와 deserialize https://velog.io/@mollang/20.01.17-backend-serializeUser-%EC%99%80-deserializeUser
