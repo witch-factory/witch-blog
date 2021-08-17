@@ -15,6 +15,8 @@ export const globalStyles = global({
   },
   body: {
     minHeight: '100vh',
+
+    backgroundColor: '$backgroundColor',
   },
   '#___gatsby, #gatsby-focus-wrapper': {
     minHeight: '100vh',
@@ -82,6 +84,8 @@ export const globalStyles = global({
     borderLeft: '0.25rem solid $borderPrimary',
   },
   article: {
+    overflowWrap: 'break-word',
+
     'ul, ol': {
       marginLeft: '2rem',
 
@@ -102,6 +106,9 @@ export const globalStyles = global({
     'pre[class^="language-"]': {
       borderRadius: '0.25rem',
     }
+  },
+  'pre[class*="language-"], code[class*="language-"]': {
+    whiteSpace: 'pre-wrap',
   },
 });
 export const Root = styled('div', {
