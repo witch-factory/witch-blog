@@ -2,7 +2,7 @@
 title: 블로그 리뉴얼 - 2.페이지 동적 생성
 date: "2021-06-29T00:00:00Z"
 description: "블로그 리뉴얼 - 페이지 동적 생성"
-tags: ["blog", "coding"]
+tags: ["blog", "web"]
 ---
 
 ### 1. 블로그 글 페이지의 동적 생성 필요성

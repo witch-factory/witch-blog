@@ -2,7 +2,7 @@
 title: 블로그 리뉴얼 - 1.시작
 date: "2021-06-27T00:00:00Z"
 description: "블로그 리뉴얼 - 시작"
-tags: ["blog", "coding"]
+tags: ["blog", "web"]
 ---
 
 ### 1. 블로그의 개조
@@ -27,7 +27,7 @@ tags: ["blog", "coding"]
 `gatsby_config.js`의 경우 제목과 사이트 설명 등의 사이트 정보와 플러그인들을 관리할 뿐이다.
 
 - components
-이 폴더는 사이트를 구성하는 내용들을 어떻게 보여줄 것인지에 대한 정보를 담고 있다.
+  이 폴더는 사이트를 구성하는 내용들을 어떻게 보여줄 것인지에 대한 정보를 담고 있다.
   
 1. `layout.js`는 페이지의 레이아웃을 담당하는 <Layout> 컴포넌트를 만든다.
 ```javascript
@@ -83,7 +83,7 @@ const Layout=({pageTitle, children})=>{
 }
 
 export default Layout
-```   
+```
 
 2. `layout.module.css`는 `layout.js`의 css 디자인을 만들어 주는 css 모듈이다.
 
@@ -120,11 +120,11 @@ export default Layout
 ```
 
 - images
-페이지에 쓰일 이미지들을 담는 폴더이다.
+  페이지에 쓰일 이미지들을 담는 폴더이다.
   
 - pages
 1. `404.js`
-만약 내가 찾는 주소의 페이지가 존재하지 않을 경우에 나오는 페이지이다.
+   만약 내가 찾는 주소의 페이지가 존재하지 않을 경우에 나오는 페이지이다.
    디폴트로 만들어 주는 페이지에서 변한 것이 없다.
    
 2. `about.js`
@@ -145,10 +145,10 @@ const AboutPage = () => {
 }
 
 export default AboutPage
-```   
+```
 
 3. `blog-post.js`
-블로그 글의 레이아웃을 담는다. 현재는 모든 .mdx 파일의 이름을 graphQL로 파싱해서
+   블로그 글의 레이아웃을 담는다. 현재는 모든 .mdx 파일의 이름을 graphQL로 파싱해서
    레이아웃 내에서 보여주는 역할을 한다.
    
 ```javascript
@@ -184,9 +184,9 @@ export const query=graphql`
 
 export default BlogPageTemplate
 ```
-   
+
 4. `index.js`
-홈페이지에 처음 들어가면 나오는 페이지 파일이다. 웬만한 작업은 모두 `Layout` 컴포넌트에서
+   홈페이지에 처음 들어가면 나오는 페이지 파일이다. 웬만한 작업은 모두 `Layout` 컴포넌트에서
    처리해 주므로 간단한 메시지와 테스트용 사진 파일(튜토리얼에서는 개 사진을 사용하였다)을 보여주는 게 전부이다.
    
 ```javascript

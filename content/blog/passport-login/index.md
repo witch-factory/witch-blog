@@ -124,3 +124,75 @@ app.get('/login', (req, res, next) => {
 
 # 3. Passport를 쓰기 위한 설정하기
 
+Passport를 어떤 인증을 위해 사용하려면 3가지가 필요하다.
+
+1. 인증 strategy(Provider)
+2. 어플리케이션 미들웨어
+3. 세션(필수는 아님)
+
+하나하나 살펴보자.
+
+## 3.1 Strategy
+
+passport는 사실 그 자체만으로는 특별한 기능이 없다. 다른 무언가-인증을 제공하는 provider-로 중개해 주는 역할을 할 뿐인 미들웨어이기 때문이다. 이때 passport가 중개해서 인증을 받아오는 provider를 strategy라고 부른다. 이런 strategy는 우리가 흔히 사용하는 것과 같은 아이디와 비밀번호를 입력해 인증하는 local strategy(`passport-local`), 구글/페이스북/카카오 등을 통해 로그인하는 strategy(`passport-facebook` 등)등이 있다.
+
+정말 너무 많은 strategy가 있기 때문에 다 댈 수는 없고 관심이 있는 사람은 이곳에서 보도록 하자. (http://www.passportjs.org/packages/)
+
+따라서 우리는 passport를 통해 인증을 처리해 주기 전에, passport에서 어떤 strategy를 이용해서 인증을 처리할 것인지 지정해 줘야 한다.
+
+strategy 설정은 `passport.use()`함수를 통해 할 수 있다. 예를 들어 내가 `passport-local`, 즉 username과 password를 이용해서 인증하는 strategy를 사용하기 위해 작성한 코드는 다음과 같다. 공식 문서에 있는 코드를 약간 변경하였다.
+
+```javascript
+import passport from "passport";
+import passportLocal from "passport-local";
+import userList from "./userList.js";
+
+const LocalStrategy=passportLocal.Strategy;
+
+passport.use(
+    new LocalStrategy(
+        //verify callback
+        (username, password, done)=>{
+            const result=userList.filter((user)=>user.username===username);
+
+            if(result.length>0){
+                const user=result[0];
+                if(user.password===password){
+                    return done(null, user);
+                }
+                else{
+                    return done(null, false, {message:"틀린 비밀번호입니다"});
+                }
+            }
+            else{
+                return done(null, false, {message:"존재하지 않는 유저입니다"});
+            }
+        }
+    )
+);
+```
+
+```javascript
+app.post('/login', 
+  passport.authenticate('local', { failureRedirect: '/login' }),
+  (req, res) => {
+    //인증이 성공시에 이 콜백으로 온다
+    res.redirect('/');
+  }
+);
+```
+
+
+
+조금은 허술한 코드이다. 하지만 DB 연결 등을 하기 전에도 작동하게 만들기 위한 일이다. 대략적인 로직은 다음과 같다.
+
+먼저 `passport-local`의 strategy를 import한 후에 strategy에 인증을 위한 콜백(verify callback이라 한다)을 넣어 준다. 이 콜백의 목적은 자격을 갖춘 사용자(혹은 요청)인지 검증하는 것이다. 즉 passport에서 받아서 어플리케이션에 전달해 줘야 하는 '인증'을 주는 역할이라는 것이다. 비밀번호가 맞는지 틀린지, 적절한 요청인지, 요청을 처리할 때 에러는 없는지, 그런 것들 말이다.
+
+그럼 이 인증 콜백이 어떻게 작동하는지 보자.
+
+passport는 요청에 대한 검증을 할 때, 요청에 포함되어 있는 자격들을 가져온다. 일반적인 express 라우트 핸들러에서 `req.body `의 내용을 가져오는 것과 비슷하다. 여기서는 username과 password를 가져왔다.
+
+그러면 우리는 이 값들을 가지고 이 username과 password가 정말 존재하는 사용자의 것인지 검증해야 한다. 실제로는 유저 DB를 통해 검증해야 하고 후에 암호화와 함께 DB모델링/연결도 진행할 것이다. 그러나 지금은 일단 단순한 배열(`userList.js`에 현재 존재하는 자격있는 사용자들의 username, password가 든 객체들을 담은 배열이 있다)을 사용하였다.
+
+javascript filter함수를 사용하여, post를 통해 받은 요청에 있는 username과 같은 username을 가진 자격있는 사용자가 있는지 검증한다. 그리고 만약 그런 사용자가 있을 경우 패스워드에 대해서도 검사하는 것이다. 그리고 이런 검사들이 실패하거나 성공함에 따라 적절한 `done`을 적용한다.
+
