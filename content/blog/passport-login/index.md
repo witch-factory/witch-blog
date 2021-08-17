@@ -2,7 +2,7 @@
 title: Express - passport로 로그인 구현하기
 date: "2021-08-17T00:00:00Z"
 description: "Passport 사용하기, 그 삽질의 기록"
-tags: ["pasport", "web"]
+tags: ["passport", "web"]
 ---
 
 # 1. Passport 는
@@ -37,10 +37,13 @@ app.post("/login", (req, res)=>{
 ```javascript
 app.post('/login',
   passport.authenticate('local'),
+  //'local' 인수가 무슨 뜻인지는 글 뒤쪽에 다룬다
   function(req, res) {
     // 인증이 성공했을 시에 이 콜백이 호출된다
     // `req.user`는 인증된 유저의 정보를 포함하고 있다.
     res.redirect('/users/' + req.user.username);
   });
 ```
+
+위 코드의 주석에 써 있다시피 authenticate 가 성공하면 다음 라우트 핸들러(콜백함수)가 호출된다. 그럼 만약 실패하면? 401에러(자격 증명 없음)가 응답되고 그 다음 핸들러는 실행되지 않는다. 포스트 메서드는 401에러로 끝나버린다.
 
