@@ -255,6 +255,39 @@ return done(err);
 
 ## 3.2 어플리케이션 미들웨어
 
+express에서 passport를 사용하려고 하면 미들웨어를 사용해 줘야 한다. 일단 passport를 시작하기 위해 `passport.initialize()` 를 사용해야 하고, 로그인 유지를 위해 세션을 사용한다면 `passport.session()` 도 사용해야 한다.
+
+이때 미들웨어란 post등의 방법을 통해 도메인에 요청이 들어왔을 때 실제 `post` 혹은 `get` 등에 도달하기 전까지 거치게 되는 콜백들을 뜻한다. 물론 공식 문서를 보면 직접 미들웨어를 만들어서 사용할 수도 있다. 다만 `(req, res)` 외에도 `next` 인수를 꼭 넣어 주어서 다음 미들웨어로 넘어갈 수 있도록 하는 것에 주의해야 한다. 미들웨어에 관해서는 나중에 따로 정리할 예정이다. 지금은 어플리케이션에 도달하는 요청(`req`)이 거쳐가게 되는 콜백 함수 정도로 생각하면 된다.
+
+
+
+나는 `/login` 이라는 도메인의 라우터에서 로그인을 진행했기에 라우터에 미들웨어를 달아 줬는데, passport 를 사용하기 위해 달아준 미들웨어는 다음과 같다.
+
+```javascript
+router.use(session({
+    resave:false,
+    saveUninitialized:false,
+    secret:process.env.SESSION_SECRET
+}));
+
+router.use(express.urlencoded({extended:false}));
+router.use(passport.initialize());
+router.use(passport.session());
+```
+
+만약 인증을 원하는 사용자로부터의 요청이 온다면 위에서 `router.use()` 로 달아준 미들웨어들을 모두 거치고 난 후에 다음 코드에 도달하여 인증을 거칠 것이다.
+
+```javascript
+app.post('/', 
+  //여기 도달한 req는 모두 위의 미들웨어를 거친 후에 오는 것이다
+  passport.authenticate('local', { failureRedirect: '/login' }),
+  (req, res) => {
+    //인증이 성공시에 이 콜백으로 온다
+    res.redirect('/');
+  }
+);
+```
+
 
 
 
@@ -278,3 +311,7 @@ zerocho님 블로그 포스트 https://www.zerocho.com/category/NodeJS/post/57b7
 2G Dev 블로그 포스트 https://dev-dain.tistory.com/73?category=858558
 
 https://stackoverflow.com/questions/26164837/difference-between-done-and-next-in-node-js-callbacks
+
+express 미들웨어 공식 문서 https://expressjs.com/ko/guide/writing-middleware.html
+
+jennyLee.log 블로그 https://velog.io/@wjddnjswjd12/node.js-express-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4%EB%9E%80
