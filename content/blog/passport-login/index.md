@@ -356,11 +356,122 @@ yarn add passport-local
 </html>
 ```
 
-이렇게 하고 브라우저로 열어 보면 초라하지만 흔히 볼 수 있는 것과 뼈대는 같은 그런 로그인 창이 만들어진다.
+이렇게 하고 브라우저로 열어 보면 초라하지만 흔히 볼 수 있는 것과 뼈대는 같은 로그인 창이 만들어진다.
 
+![loginForm.png](./loginForm.png)
 
+이곳에 아이디와 패스워드를 입력하고 제출하면 그것을 담은 요청이 `/login` 으로 전달될 것이다.
 
+그럼 이제 이걸 처리해주기 위한 passport 설정을 해주자.
 
+먼저 passport를 사용하기 위해 필요한 미들웨어들을 설정해 준다. 그리고 로그인 성공시에 보여줄 간단한 페이지를 만들어 주겠다.
+
+```javascript
+router.use(session({
+    resave:false,
+    saveUninitialized:false,
+    secret:process.env.SESSION_SECRET
+    //.env를 사용한 세션 비밀 키
+}));
+
+router.use(express.urlencoded({extended:false}));
+router.use(passport.initialize());
+router.use(passport.session());
+
+router.use("/", express.static(__dirname+"/server/loginView/index.html"));
+router.use("/success", express.static(__dirname+"/server/loginView/success.html"));
+
+```
+
+```html
+<!-- loginView/success.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>LOGIN SUCCESS</h1>
+</body>
+</html>
+```
+
+이때 흔히 사용하는 `app.use` 가 아니라 `router.use` 인 까닭은 express router를 사용하여 홈 페이지가 아니라 따로 사용되는 로그인 페이지에서 로그인을 하도록 만들고자 했기 때문이다. 만약 홈 페이지에서 로그인을 해도 된다면 위의 `router.use` 를 `app.use` 로 바꾸면 된다.(사실 router인지 app인지 변수명이 중요하다기보다는 `express()` 와 `express.Router()` 의 차이이다)
+
+그럼 이제 passport에 strategy를 넣어주자.
+
+단 필요한 라이브러리와 검증에 사용되는 정보(추후에 DB를 연결하여 검증하도록 할 계획이지만 현재는 `userList.js` 에 저장된 배열)를 먼저 import해줘야 한다.
+
+```javascript
+import passport from "passport";
+import passportLocal from "passport-local";
+import userList from "./userList.js";
+
+const LocalStrategy=passportLocal.Strategy;
+```
+
+그 다음에 strategy와 `serializeUser`, `deserializeUser`를 넣어준다.
+
+```javascript
+passport.use(
+    new LocalStrategy(
+        (username, password, done)=>{
+            const result=userList.filter((user)=>user.username===username);
+
+            if(result.length>0){
+                const user=result[0];
+                if(user.password===password){
+                    return done(null, user);
+                }
+                else{
+                    return done(null, false, {message:"틀린 비밀번호입니다"});
+                }
+            }
+            else{
+                return done(null, false, {message:"존재하지 않는 유저입니다"});
+            }
+        }
+    )
+);
+
+passport.serializeUser((user, done)=>{
+    done(null, user.username);
+});
+
+passport.deserializeUser((username, done)=>{
+    //id는 req.session.passport.user 에 저장된 값
+    done(null, username);
+});
+```
+
+마지막으로, 우리가 아까 HTML로 만들었던 로그인 폼은 `post` 메서드를 통해서 지정한 도메인에 전달되므로 그 요청을 받아 주도록 하자.
+
+```javascript
+router.post("/", passport.authenticate("local",
+    { successRedirect: "/login/success",
+    failureRedirect: "/login",
+    failureFlash: "로그인 실패" })
+);
+```
+
+첫번째 인수로 준 도메인("/")에서 요청을 받으면 이 요청의 body는 `passport.authenticate` 콜백으로 넘어간 후 `LocalStrategy` 로 위임되어 거기서 처리하게 된다. 그리고 `LocalStrategy` 에서 요청을 검사한 결과는 성공 혹은 실패로써 다시 `passport.authenticate` 단계로 전달된다. 이는 `passport.authenticate` 의 두번째 인수로 들어와 있는 처리 방법으로 연결된다. 가령 성공시에는 `/login/success` 로 리다이렉트된다.
+
+## 4.1 LocalStrategy에서 다른 이름의 자격 사용하기
+
+`LocalStrategy` 는 기본적으로 `username` 과 `password` 라는 이름의 자격을 사용하여 인증하도록 되어 있다.  그런데 여기서 다른 이름의 자격을 사용하고 싶을 수도 있다. 예를 들어 유저의 아이디가 아니라 이메일을 이용해 로그인하도록 되어 있는 경우도 많다. 이럴 경우 유저의 이름 입력란에 `username` 보다는 `email` 을 넣는 게 더 적절한 선택일 것이다. 그럴 경우 `LocalStrategy` 에 다음과 같은 설정을 주는 것으로 가능하다.
+
+```javascript
+passport.use(new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password'
+  },
+  //LocalStrategy의 첫번째 인수를 통해서 바꿀 자격증명 이름을 설정
+  (username, password, done) => {
+    // ...
+  }
+));
+```
 
 
 
