@@ -90,3 +90,24 @@ app.post("/user-insert", async(req, res)=>{
 
 # 2. DB를 이용해 로그인 요청 검증하기
 
+바로 이전 글에서 passport에서 LocalStrategy를 이용해서 인증하던 것을 기억해 보자. 어떤 방식으로 했었나? userList라는 배열에서 filter함수를 이용해 요청에 있는 username을 가진 사용자가 존재하는지를 먼저 검사했다. 그리고 요청에 들어 있는 username과 같은 username을 가진 사용자가 없을 경우 로그인 실패였다.
+
+그리고 만약 같은 username을 가진 사용자는 있는데, 등록된 password와 요청에 들어있는 password가 다를 경우에도 로그인 실패였다. username과 password가 모두 같은 경우에만 로그인 성공으로 인정해 주었다.
+
+이를 DB를 이용하는 인증으로 바꿔 주자. 먼저 DB에 저장된 username들은 unique constraint가 걸려 있다. 일반적으로 회원 시스템은 중복 아이디를 허용하지 않으므로 이는 꽤 합리적인 모델링이다. 이는 무엇을 뜻하냐면, DB에 username으로 필터링하는 SELECT 쿼리를 날려서 결과를 받아오면 결과는 하나뿐이라는 것이다. 하나의 유저 정보 객체가 담긴 배열일 것이다.
+
+먼저 DB에서 username으로 필터링한 결과물을 리턴해 주는 함수를 만들자. 그 함수는 다음과 같을 것이다. 
+
+```javascript
+const userInfoFilteredByID = async (username) => {
+    const userFilterQuery = "select * from users where username=?";
+    const result = await connection.query(userFilterQuery, [username]);
+    return result[0];
+};
+```
+
+
+
+
+
+async/await으로 mysql 작성하기 https://holywater-jeong.github.io/2018/06/08/node-mysql-async-await
