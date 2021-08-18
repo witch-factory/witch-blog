@@ -295,24 +295,28 @@ app.post('/',
 
 보통의 웹사이트에서는 한 번 로그인을 하면 그 브라우저를 닫을 때까지 로그인이 유지된다. 어떤 사이트에 로그인해서 글을 하나 보려고 다음 페이지로 넘어가는 순간 다시 로그인을 해야 한다면 얼마나 귀찮겠는가?
 
-따라서 거의 모든 웹사이트에서는 브라우저에서 접속할 때 한 번만 자격 증명(즉, 로그인)을 요구한다. 그리고 만약 로그인이 성공하면 세션이 만들어진다. 이 세션은 브라우저의 쿠키를 통해 유지되면서 브라우저를 닫을 때까지 로그인을 지속시켜준다.
+따라서 거의 모든 웹사이트에서는 브라우저에서 접속할 때 한 번만 자격 증명(즉, 로그인)을 요구한다. 그리고 만약 로그인이 성공하면 세션이 만들어진다. 이 세션은 브라우저를 통해 유지되면서 브라우저를 닫을 때까지 로그인을 지속시켜준다. 
 
-인증에 이런 세션을 쓸 수 있게 하기 위해 passport에서는 `serializeUser` 와 `deserializeUser` 를 제공한다. 
+정확히는 클라이언트로부터 온 유효한 로그인 요청을 서버에서 받았을 때, 로그인 요청이 성공 시 그 아이디를 세션에 저장하고 응답헤더에 `set-cookie: sessionid`를 넣어서 응답하는 것이다. 그렇게 하면 클라이언트는 이후 서버로 보내는 요청(가령 다른 페이지로 이동한다든지)을 할 때 쿠키를 통해 `sessionid`를 자동으로 넣어서 요청하게 된다. 그럼 그 요청을 받은 서버에서는 요청에 들어 있는 `sessionid` 값을 유효한지 확인 후 요청을 처리한다.
+
+인증에 이런 로그인 세션을 쓸 수 있게 하기 위해 passport에서는 `serializeUser` 와 `deserializeUser` 를 제공한다. 
 
 ```javascript
 passport.serializeUser((user, done)=>{
-    done(null, user.username);
+    done(null, user);
 });
 
-passport.deserializeUser((username, done)=>{
+passport.deserializeUser((user, done)=>{
     //id는 req.session.passport.user 에 저장된 값
-    done(null, username);
+    done(null, user);
 });
 ```
 
+`serializeUser` 는 로그인 성공 시 실행되는 `done(null, user)` 에서 `user`를 전달받아서 세션에 저장한다. 그리고 `deserializeUser`는 서버로 요청이 들어올 때마다 세션에 들어 있는 정보를 실제의 데이터와 비교한다. 이때 `deserializeUser`의 `done`에서 받는 `user`는 `serializeUser` 에서 `done`으로 넘겨준 `user` 와 타입이 같아야 한다.
 
+왜냐 하면 `serializeUser`에서 `user` 를 세션에 저장하는데 `deserializeUser` 에서 받은 `user`는 세션에 들어 있는 것과 대조되어서 확인을 받기 때문이다. 만약 둘의 타입이 다르면, 가령 `serializeUser`는 `user.id` 만 저장했는데 `deserializeUser`는 `user` 전체가 세션에 있는지 확인한다면 무조건 인증은 실패할 것이다. 저장한 정보의 양과 인증 상태를 알기 위해 확인하라고 지시된 정보의 양이 다르기 때문이다.
 
-
+세션을 다루는 이 두 메서드는 꼭 있어야 passport가 작동한다.
 
 
 
@@ -341,3 +345,7 @@ express 미들웨어 공식 문서 https://expressjs.com/ko/guide/writing-middle
 jennyLee.log 블로그 https://velog.io/@wjddnjswjd12/node.js-express-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4%EB%9E%80
 
 serialize와 deserialize https://velog.io/@mollang/20.01.17-backend-serializeUser-%EC%99%80-deserializeUser
+
+웹의 쿠키와 세션 https://chrisjune-13837.medium.com/web-%EC%BF%A0%ED%82%A4-%EC%84%B8%EC%85%98%EC%9D%B4%EB%9E%80-aa6bcb327582
+
+패스포트 동작 원리와 인증 구현 https://jeonghwan-kim.github.io/dev/2020/06/20/passport.html
