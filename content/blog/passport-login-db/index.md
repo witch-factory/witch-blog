@@ -103,11 +103,40 @@ const userInfoFilteredByID = async (username) => {
     const userFilterQuery = "select * from users where username=?";
     const result = await connection.query(userFilterQuery, [username]);
     return result[0];
+    /* result는 db에서 오는 엄청나게 다양한 정보를 담고 있고 index 0에 있는 것이 우리가 원하는 필터링을 한 유저 정보의 배열이다. 단 async 함수이므로 리턴값은 promise 객체에 감싸인 배열이고 이를 받아 줄 때는 await으로 받아 줘야 한다. */
 };
 ```
 
+그러면 이제 이걸 이용해서 LocalStrategy의 인증 로직을 짜 줄 수 있다.
+
+위의 함수가 async 함수이므로 await으로 받아 준 데에 주의하라.
+
+```javascript
+passport.use(
+    new LocalStrategy(
+        async (username, password, done) => {
+            const result = await userInfoFilteredByID(username);
+			//result는 username으로 유저 DB를 필터링한 정보들을 담고 있는 배열이다
+            
+            if (result.length > 0) {
+                const user = result[0];
+                if (user.password === password) {
+                    return done(null, user);
+                } else {
+                    return done(null, false, {message: "틀린 비밀번호입니다"});
+                }
+            } else {
+                return done(null, false, {message: "존재하지 않는 유저입니다"});
+            }
+        }
+    )
+);
+```
+
+이제 우리는 DB에 담긴 유저 정보를 이용해서 사용자로부터 온 로그인 요청을 검사할 수 있다. 전체적인 구조는 앞에서 작성한, 배열을 이용한 것과 같다. 다만 로그인 요청에 담긴 정보가 실제로 존재하는 사용자에 대한 정보인지를 검증할 때 javascript 배열을 사용하는지 혹은 SQL 쿼리의 결과를 사용하는지의 차이가 있을 뿐이다.
 
 
 
+참고
 
 async/await으로 mysql 작성하기 https://holywater-jeong.github.io/2018/06/08/node-mysql-async-await
