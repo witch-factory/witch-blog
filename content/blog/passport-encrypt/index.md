@@ -25,3 +25,7 @@ yarn add crypto
 
 zerocho 블로그 암호화 관련 포스트 https://www.zerocho.com/category/NodeJS/post/593a487c2ed1da0018cff95d
 
+crypto 모듈 관련 블로그 포스트 https://lwndnjs93.tistory.com/101
+
+GeeksforGeeks의 scrypt 메서드 관련 글 https://www.geeksforgeeks.org/node-js-crypto-scrypt-method/
+
