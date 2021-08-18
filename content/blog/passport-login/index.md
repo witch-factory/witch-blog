@@ -320,6 +320,48 @@ passport.deserializeUser((user, done)=>{
 
 
 
+# 4. Passport-local로 로그인 구현하기
+
+우리가 흔히 사용하는, 아이디와 비밀번호 입력을 통해 구현하는 로그인 strategy가 바로 `passport-local` 이다. 이를 사용하기 위해서는 `passport-local` 모듈이 필요하다.
+
+```
+yarn add passport-local
+```
+
+터미널에서 설치해 주자.
+
+그리고 로그인 인증을 위한 코드를 짜 주기 전에 먼저 간단한 로그인 폼을 구현해 준다. 물론 postman 등으로 시험해 보아도 상관없지만 시각적인 효과가 있는 편이 좋다.
+
+```html
+<!-- loginView/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Form</title>
+</head>
+<body>
+<form action="/login" method="post">
+    <div>
+        <label>Username : </label>
+        <input type="text" name="username"/><br/>
+    </div>
+    <div>
+        <label>Password : </label>
+        <input type="password" name="password"/><br/>
+    </div>
+    <input type="submit" value="submit"/>
+</form>
+</body>
+</html>
+```
+
+이렇게 하고 브라우저로 열어 보면 초라하지만 흔히 볼 수 있는 것과 뼈대는 같은 그런 로그인 창이 만들어진다.
+
+
+
+
+
 
 
 
