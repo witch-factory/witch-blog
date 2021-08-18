@@ -1,5 +1,5 @@
 ---
-title: Express - passport로 로그인 구현하기
+title: Express - passport로 로그인과 회원가입 구현하기 - 시작
 date: "2021-08-17T00:00:00Z"
 description: "Passport 사용하기, 그 삽질의 기록"
 tags: ["passport", "web"]
@@ -475,7 +475,7 @@ passport.use(new LocalStrategy({
 
 
 
-
+다음 글에서는 사용자들의 정보를 담고 있는 DB에 연결해서 사용자를 인증하는 로직을 짜 보고, 간단하게 회원가입을 하는 부분을 만들어 보도록 하겠다.
 
 
 
