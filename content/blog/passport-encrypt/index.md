@@ -74,7 +74,7 @@ const userInfoInsert = async (username, password) => {
 };
 ```
 
-이때 주의할 점이 있다. 우리는 keylen을 32로 하여 `pbkdf2 ` 함수를 통해 길이 64의, 패스워드를 암호화한 코드를 생성한다. 그런데 만약 유저 정보를 저장하는 DB가 password 길이를 `nvarchar(20)` 과 같은 길이로 저장해 놓았다면 유저 정보를 삽입하는 과정에서 에러가 발생한다. 따라서 미리 DB를 잘 모델링해놓아야 할 것이다. 나는 password를 `nvarchar(70)` 으로 만들었다.
+이때 주의할 점이 있다. 우리는 keylen을 32로 하여 `pbkdf2 ` 함수를 통해 길이 64의, 패스워드를 암호화한 코드를 생성한다. 그런데 만약 유저 정보를 저장하는 DB가 password 길이를 `nvarchar(20)` 과 같은 길이로 저장해 놓았다면 유저 정보를 삽입하는 과정에서 에러가 발생한다. 따라서 미리 DB를 잘 모델링해놓아야 할 것이다. 나는 password를 넉넉하게 `nvarchar(200)` 으로 다시 만들었다.
 
 이때, 일반적인 웹사이트에는 아이디와 비밀번호에 길이 제한이 있다. 가령 아이디는 20자 미만이라든지, 비밀번호는 알파벳 소문자와 숫자와 특수문자를 조합한 8자 이상 20자 미만의 문자열이라든지 하는 식이다. 하지만 이런 부분은 암호화를 거치고 나면 모두 길이 64의 문자열이 되어버린다. 따라서 이런 부분은 클라이언트에서 유저에게 입력을 받는 창에서라든지, 아니면 DB에 삽입하기 전 `username` 과 `password` 를 DB 삽입 함수에 인수로 받을 때 검사해 줘야 한다. 아무튼 암호화하기 전에만 검사하면 된다. 이는 추후에 추가 예정이다.
 
@@ -95,7 +95,32 @@ console.log(buf.length, buf);
 
 이렇게 하면 길이 128의, 무작위로 생성된 문자열을 얻을 수 있다. 이때 `randomBytes`의 인수를 조정함으로써 다른 길이의 문자열도 얻을 수 있다. 우리는 추후에 길이 64의 salt 문자열을 사용할 예정이다.
 
-그럼 새로운 비밀번호를 생성할 때마다 랜덤 문자열을 생성해서 salt로 쓴다고 하는데, 이를 어떻게 비밀번호와 같이 저장해 줄까? 비밀번호 필드에 같이 저장해 주면 된다. 비밀번호를 암호화한 문자열과 salt에는 알파벳 소문자와 숫자만이 쓰이므로 거기에 들어가지 않는 문자를 구분자로 사용해서 구분해 주면 된다. 
+그럼 새로운 비밀번호를 생성할 때마다 랜덤 문자열을 생성해서 salt로 쓴다고 하는데, 이를 어떻게 비밀번호와 같이 저장해 줄까? 비밀번호 필드에 같이 저장해 주면 된다. 비밀번호를 암호화한 문자열과 salt에는 알파벳 소문자와 숫자만이 쓰이므로 거기에 들어가지 않는 문자를 구분자로 사용해서 구분해 주면 된다. 나는 `$`를 사용해 주기로 하였다.
+
+그걸 이용해 저장하는 함수를 고쳐 주면 이렇게 된다.
+
+```js
+const userInfoInsert = async (username, password) => {
+    const userInsertQuery = "insert into users(username, password) values(?,?)";
+    const randomSalt=randomBytes(32).toString("hex");
+    const cryptedPassword =
+      pbkdf2Sync(password, randomSalt, 65536, 64, "sha512").toString("hex");
+    const passwordWithSalt=cryptedPassword+"$"+randomSalt;
+    await connection.query(userInsertQuery, [username, passwordWithSalt]);
+};
+```
+
+이 코드를 이용해 `testpw` 라는 문자열을 암호화하면 다음과 같은 결과가 나온다.
+
+```
+1803148bc1c4ee7e914365d49009a62b4a89c7cfa85b41d6aa7e6fe890108e5aa7c74936c1d71ff79177add2a147064b9e085a4ddda0e68cc8dca880ab0ae01a$51fffaa2c8c55d76969e7ab927a47a82aa5dfd278fd3e01bd0d6a31b18be8326
+```
+
+이때 이는 랜덤 salt를 이용해서 암호화한 것이므로 다시 암호화하면 또 결과가 달라진다. 잘 찾아보면 위 문자열의 중간에 `$`가 있는데, `$` 뒤에 나오는 문자열이 salt이다. 나중에 입력된 암호와 대조할 때 이 salt를 이용할 것이다.
+
+# 3. 암호화된 문자열 대조
+
+
 
 
 
