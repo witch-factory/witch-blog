@@ -120,7 +120,52 @@ const userInfoInsert = async (username, password) => {
 
 # 3. 암호화된 문자열 대조
 
+```js
+const userPasswordVerify = async (givenPassword, encryptedPasswordAndSalt) => {
+  const [encrypted, salt] = encryptedPasswordAndSalt.split("$");
+  const givenEncrypted = pbkdf2Sync(givenPassword, salt, 65536, 64, "sha512").toString("hex");
+  if (givenEncrypted === encrypted) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
+```
 
+`givenPassword` 가 평문으로 주어지고, `encryptedPasswordAndSalt` 가 암호화된 상태로 주어진다. 그러면 아까 비밀번호를 저장할 때 비밀번호와 salt가 `$` 를 경계로 더해져 있으므로 먼저 `$`를 기준으로 split해서 비구조화 할당을 해준다. 그리고 평문으로 주어진 `givenPassword` 를 그 salt를 이용해 암호화한다. `pbkdf2Sync` 를 사용한다.
+
+그리고 `givenPassword` 를 암호화한 문자열과 아까 비구조화 할당한, `encrypted`를 비교하면 유저가 입력한 비밀번호와 암호화되어 저장된 비밀번호를 비교할 수 있다. 그렇게 비교해준 뒤 유저가 입력한 비밀번호가 저장된 것과 일치하면 1, 불일치하면 0을 반환해 준다.
+
+이를 `passport`에 인증하는 부분에 사용할 것이다.
+
+```js
+//passport에서 LocalStrategy 를 지정하는 부분
+passport.use(
+    new LocalStrategy(
+        async (username, password, done) => {
+            const result = await userInfoFilteredByID(username);
+
+            if (result.length > 0) {
+                const user = result[0];
+                if (await userPasswordVerify(password, user.password)===1) {
+                    return done(null, user);
+                } else {
+                    return done(null, false, {message: "틀린 비밀번호입니다"});
+                }
+            } else {
+                return done(null, false, {message: "존재하지 않는 유저입니다"});
+            }
+        }
+    )
+);
+```
+
+
+
+이걸 `bcrypt` 나 `scrpyt`를 활용해서 암호화하면 더 안전하게 암호화할 수 있다. 물론 DB 자체가 털리면 어쩔 수 없지만 그렇다 해도 비밀번호 해독에 걸리는 시간을 벌 수 있으므로 로그를 보고 DB가 털린 걸 알면 거기에 대한 대처를 할 수 있는 시간이 있다.
+
+그리고 더 안전한 암호화 방식을 쓰면 암호화할 때 CPU 연산이 더 들어가므로 그 부분이 디도스 공격에 대한 취약점이 될 수 있는 것이다. 따라서 어느 정도 trade-off가 존재하는 것이다. 하지만 안전하긴 하므로 다음에 할 프로젝트에서는 `scrypt`를 쓸 것이다.
 
 
 
@@ -141,3 +186,8 @@ crypto 공식 문서 https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_pas
 Node.js 단방향 암호화 https://velog.io/@neity16/NodeJS-crypto%EB%8B%A8%EB%B0%A9%ED%96%A5-%EC%95%94%ED%98%B8%ED%99%94
 
 https의 암호화 https://eun-jeong.tistory.com/27
+
+<div style="color:white"> 
+    내가 누구? 데브시스터즈 프론트 리드 xo.dev
+</div>
+
