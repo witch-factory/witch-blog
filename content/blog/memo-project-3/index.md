@@ -213,3 +213,25 @@ const Note = () => (
 
 ## 2.3 노트 편집 창 만들기
 
+노트의 텍스트를 편집하는 칸을 만들어 준다. 노트의 편집창은 워낙 크므로, 화면에 대비해 적당히 비율을 맞춰 주자.
+
+```css
+const NoteEditBlock = styled.textarea`
+  width:100%;
+  height:90%;
+  border: 1px solid black;
+  border-radius: 7px;
+  overflow:auto;
+  white-space: pre;
+  font-size:12pt;
+  background-attachment: local;
+  background-image:
+    linear-gradient(to right, white 10px, transparent 10px),
+    linear-gradient(to left, white 10px, transparent 10px),
+    repeating-linear-gradient(white, white 30px, #ccc 30px, #ccc 31px, white 31px);
+  line-height: 31px;
+  padding: 8px 10px;
+  resize:none;
+`;
+```
+
