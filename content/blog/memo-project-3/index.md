@@ -23,7 +23,7 @@ tags: ["memo-jang", "web"]
 
 먼저 아주 기본적인 배경만 넣어 보자. `src/note.js` 를 새로 생성한다.
 
-```react
+```js
 //note.js
 import React from 'react';
 
@@ -41,7 +41,7 @@ export default Note;
 
 이제 이 텍스트를 홈 페이지에 띄우고, 배경을 넣어주도록 하자. `src/App.js` 로 향한다.
 
-```react
+```js
 //App.js
 import React from 'react';
 import { Route } from 'react-router-dom';
@@ -133,7 +133,7 @@ const NoteListButton = styled(NoteBasicBlock)`
 
 간단히 이를 이용해서 버튼을 만들어 준 후 임시로 flex 컨테이너를 만들어서 배치해 주었다.
 
-```react
+```js
 //App.js
 import React from 'react';
 import styled from 'styled-components';
@@ -195,7 +195,7 @@ const NoteListBlock = styled(NoteBasicBlock)`
 
 이제 이를 시험삼아 몇 개 배치해 보면 잘 되는 것을 확인할 수 있다.
 
-```react
+```js
 const Note = () => (
   <>
     <FlexContainer>
