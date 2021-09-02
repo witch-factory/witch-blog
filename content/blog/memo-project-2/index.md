@@ -51,7 +51,7 @@ ESLINT_NO_DEV_ERRORS=true
 
 또한 jsx를 `.js`형식 파일에서도 쓸 수 있게 하기 위해 `.eslintrc.js` 에 다음 문구를 추가했다. 나는 리액트를 사용하여 프론트를 짤 것이기 때문에 필수적이다.
 
-```
+```json
 rules: {
     'react/jsx-filename-extension': [2, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
   }
@@ -88,7 +88,7 @@ https://velog.io/@ohzzi/Node.js-%EC%97%90%EC%84%9C-importexport-%EC%82%AC%EC%9A%
 
 위 글의 내용을 참고하여 node.js에서 import를 사용할 수 있게 한 후 다음과 같은 간단한 예제 코드를 실행해 본다.
 
-```js
+```jsx
 import express from 'express';
 
 const app=express();

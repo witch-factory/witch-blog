@@ -23,7 +23,7 @@ tags: ["memo-jang", "web"]
 
 먼저 아주 기본적인 배경만 넣어 보자. `src/note.js` 를 새로 생성한다.
 
-```js
+```jsx
 //note.js
 import React from 'react';
 
@@ -41,7 +41,7 @@ export default Note;
 
 이제 이 텍스트를 홈 페이지에 띄우고, 배경을 넣어주도록 하자. `src/App.js` 로 향한다.
 
-```js
+```jsx
 //App.js
 import React from 'react';
 import { Route } from 'react-router-dom';
@@ -73,7 +73,7 @@ export default App;
 
 이때 주의해 줄 점은 `yarn start`를 통해 실행되는 index.js에서도 React Router를 쓸 수 있도록 설정해 줘야 한다는 것이다.
 
-```js
+```jsx
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
@@ -133,7 +133,7 @@ const NoteListButton = styled(NoteBasicBlock)`
 
 간단히 이를 이용해서 버튼을 만들어 준 후 임시로 flex 컨테이너를 만들어서 배치해 주었다.
 
-```js
+```jsx
 //App.js
 import React from 'react';
 import styled from 'styled-components';
@@ -179,6 +179,29 @@ export default Note;
 ![button](./button.png)
 
 텍스트에 써 있는 대로, 이 버튼을 통해 노트 추가/삭제가 가능하도록 할 것이다. 하지만 레이아웃을 위한 디자인을 모두 구성할 때까지 이런 기능 구현은 잠시 미뤄 두도록 하자.
+
+## 2.1.1 버튼 hover 옵션 넣기
+
+우리가 일반적인 프로그램들에서 볼 수 있는 버튼들은 보통 마우스를 올리면 색이 조금 진해지거나 연해지는 방식으로 현재 버튼이 활성 직전의 상태라는 걸 나타낸다. 비슷한 원리로 버튼이 어떤 기능을 켜고 끄는 역할을 담당할 경우 활성 상태일 경우와 비활성 상태일 경우를 색깔로 나타내 주기도 한다.
+
+이는 css의 hover, active 의사 클래스를 통해서 나타내 줄 수 있다. 그런데 노트를 추가하고 삭제하는 기능은 어떤 활성/비활성 상태가 있는 게 아니라 한번 클릭하면 바로 실행되는 어떤 동작을 하는 것이다. 따라서 굳이 active 옵션을 넣지 않고, 마우스를 올렸을 경우(hover)만 색을 진하게 해 주기로 했다.
+
+그런데 우리는 아까 `props`로 색을 받아서 그걸 버튼의 색으로 삼았다. 따라서 버튼의 색은 사용자가 지정하는 어떤 색이든 될 수 있다. 그러면 버튼의 색이 진해지고 밝아지는 것도 직접 색을 하나하나 지정하기보다는 좀더 일반적인 처리가 가능하면 좋을 것이다. 이를 위해 `polished` 라이브러리를 사용해 주자.
+
+```
+yarn add polished
+```
+
+그리고 우리가 쓸 기능들을 import해 주자.
+
+```jsx
+import styled, { css } from 'styled-components';
+import { darken } from 'polished';
+```
+
+
+
+
 
 ## 2.2 개별 메모장 블럭 만들기
 
