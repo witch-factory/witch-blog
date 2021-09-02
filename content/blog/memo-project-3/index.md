@@ -116,16 +116,16 @@ const NoteBasicBlock = styled.div`
   align-items: center;
   border-radius: 10px;
   font-size:1rem;
-  margin:3px;
 `;
 ```
 
-이제 노트 추가, 삭제를 위한 버튼을 만들 것인데 이건 그저 위의 블럭을 상속해서 크기만 지정해 주면 된다.
+이제 노트 추가, 삭제를 위한 버튼을 만들 것인데 이건 그저 위의 블럭을 상속해서 크기만 지정해 주면 된다. 추가적으로 margin을 좀 주는 정도.
 
 ```css
 const NoteListButton = styled(NoteBasicBlock)`
   width:8rem;
   height:2.5rem;
+  margin:5px;
 `;
 ```
 
@@ -140,7 +140,11 @@ import styled from 'styled-components';
 
 const FlexContainer = styled.div`
   display:flex;
-  margin:5px;
+`;
+
+const NoteContainer = styled(FlexContainer)`
+  height:100%;
+  width:100%;
 `;
 
 const NoteBasicBlock = styled.div`
@@ -150,21 +154,21 @@ const NoteBasicBlock = styled.div`
   justify-content: center;
   align-items: center;
   border-radius: 10px;
-  font-size:1.2rem;
-  margin:3px;
+  font-size:1rem;
 `;
 
 const NoteListButton = styled(NoteBasicBlock)`
-  width:9rem;
-  height:3rem;
+  width:8rem;
+  height:2.5rem;
+  margin:5px;
 `;
 
 const Note = () => (
   <>
-    <FlexContainer>
+    <NoteContainer>
       <NoteListButton color="#b197fc">노트 추가</NoteListButton>
       <NoteListButton color="#ff6b6b">노트 삭제</NoteListButton>
-    </FlexContainer>
+    </NoteContainer>
   </>
 );
 
@@ -199,7 +203,26 @@ import styled, { css } from 'styled-components';
 import { darken } from 'polished';
 ```
 
+그리고 hover 조건이 만족될 경우에, props의 color를 받아서 일정 비율만큼 darken 해 주는 간단한 css를 리턴하는 익명 함수의 코드를 추가해 준다.
 
+```jsx
+const NoteListButton = styled(NoteBasicBlock)`
+  width:8rem;
+  height:2.5rem;
+  margin:5px;
+  ${(props) => {
+    const selected = props.color;
+    return css`
+      &:hover {
+        background: ${darken(0.1, selected)};
+      }
+    `;
+  }
+}
+`;
+```
+
+이렇게 하면 마우스를 올렸을 경우 버튼이 기존보다 좀 진해진 색깔로 변하게 된다.
 
 
 
