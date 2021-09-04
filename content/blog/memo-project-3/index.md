@@ -1,5 +1,5 @@
 ---
-title: 메모장 만들기 프로젝트 - 3. 메모장 페이지 만들기
+title: 메모장 만들기 프로젝트 - 3. 메모장 페이지 기본 만들기
 date: "2021-08-30T00:00:00Z"
 description: "웹 메모장 프로젝트, 그 삽질의 기록3"
 tags: ["memo-jang", "web"]
@@ -99,7 +99,7 @@ reportWebVitals();
 
 ```
 
-# 2. 기본적인 레이아웃 만들기 
+# 2. 메모장의 기본 레이아웃 만들기 
 
 ## 2.1 버튼 만들기
 
@@ -264,10 +264,10 @@ const Note = () => (
 
 ```css
 const NoteEditBlock = styled.textarea`
-  width:100%;
-  height:100%;
+  width:95%;
+  height:95%;
   border: 1px solid black;
-  border-radius: 7px;
+  border-radius: 10px;
   overflow:auto;
   white-space: pre;
   font-size:12pt;
@@ -279,7 +279,6 @@ const NoteEditBlock = styled.textarea`
     repeating-linear-gradient(white, white 30px, #ccc 30px, #ccc 31px, white 31px);
   line-height: 31px;
   padding: 8px 10px;
-  margin:3px;
   resize:none;
 `;
 ```
@@ -331,4 +330,146 @@ box-sizing은 영역의 넓이 확장에 관련된 부분은 아니고, 요소�
   </body>
 ```
 
-그리고 요소들을 더 잘 배치하기 위해 컨테이너도 바꿔 준다.
+그리고 요소들을 더 잘 배치하기 위해 컨테이너도 바꿔 준다. 내부 아이템들이 column 기준으로 쌓이는 `ColumnContainer` (즉 열은 하나이고 그 열 내부에 요소들이 세로 방향으로 쌓이는 것) 와 row기준으로 쌓이는 `RowContainer` (행은 하나이고 그 행 내부에 요소들이 가로 방향으로 쌓이는 것)를 만들어 주었다. 이때 width와 height는 컨테이너에 따라 달라질 수 있으므로 props로 줄 수 있도록 했다.
+
+```jsx
+const FlexContainer = styled.div`
+  display:flex;
+`;
+
+const ColumnContainer = styled(FlexContainer)`
+  height: ${(props) => props.height || 'auto'};
+  width: ${(props) => props.width || 'auto'};
+  flex-direction: column;
+`;
+
+const RowContainer = styled(FlexContainer)`
+  height: ${(props) => props.height || 'auto'};
+  width: ${(props) => props.width || 'auto'};
+  flex-direction: row;
+`;
+```
+
+이제 컨테이너들을 이용해서 `Note` 컴포넌트 안에 지금까지 만든 요소들을 적절히 배치해 주면 된다.
+
+```jsx
+const Note = () => (
+  <ColumnContainer width="100%" height="100%">
+    <RowContainer>
+      <NoteListButton color="#b197fc">노트 추가</NoteListButton>
+      <NoteListButton color="#ff6b6b">노트 삭제</NoteListButton>
+    </RowContainer>
+    <RowContainer width="100%" height="100%">
+      <ColumnContainer>
+        <NoteListBlock />
+        <NoteListBlock />
+        <NoteListBlock />
+      </ColumnContainer>
+      <ColumnContainer width="100%" height="100%">
+        <NoteEditBlock />
+      </ColumnContainer>
+    </RowContainer>
+  </ColumnContainer>
+);
+```
+
+이 상태로 실행하면, 아직 고쳐야 할 게 많긴 하지만 적당히 메모장 같아 보이는 화면 구성은 완성된다. 마지막으로 `note.js`의 전체 코드를 첨부한다.
+
+```jsx
+import React from 'react';
+import styled, { css } from 'styled-components';
+import { darken } from 'polished';
+
+const FlexContainer = styled.div`
+  display:flex;
+`;
+
+const ColumnContainer = styled(FlexContainer)`
+  height: ${(props) => props.height || 'auto'};
+  width: ${(props) => props.width || 'auto'};
+  flex-direction: column;
+`;
+
+const RowContainer = styled(FlexContainer)`
+  height: ${(props) => props.height || 'auto'};
+  width: ${(props) => props.width || 'auto'};
+  flex-direction: row;
+`;
+
+const NoteBasicBlock = styled.div`
+  background: ${(props) => props.color || 'white'};
+  color:white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  font-size:1rem;
+`;
+
+const NoteListButton = styled(NoteBasicBlock)`
+  width:8rem;
+  height:2.5rem;
+  margin:5px;
+  ${(props) => {
+    const selected = props.color;
+    return css`
+      &:hover {
+        background: ${darken(0.1, selected)};
+      }
+    `;
+  }
+}
+`;
+
+const NoteListBlock = styled(NoteBasicBlock)`
+  width:18rem;
+  height:2.5rem;
+  border:solid 1px #868e96;
+  background:#f1f3f5;
+  margin:3px;
+`;
+
+const NoteEditBlock = styled.textarea`
+  width:95%;
+  height:95%;
+  border: 1px solid black;
+  border-radius: 10px;
+  overflow:auto;
+  white-space: pre;
+  font-size:12pt;
+  display:flex;
+  background-attachment: local;
+  background-image:
+    linear-gradient(to right, white 10px, transparent 10px),
+    linear-gradient(to left, white 10px, transparent 10px),
+    repeating-linear-gradient(white, white 30px, #ccc 30px, #ccc 31px, white 31px);
+  line-height: 31px;
+  padding: 8px 10px;
+  resize:none;
+`;
+
+const Note = () => (
+  <ColumnContainer width="100%" height="100%">
+    <RowContainer>
+      <NoteListButton color="#b197fc">노트 추가</NoteListButton>
+      <NoteListButton color="#ff6b6b">노트 삭제</NoteListButton>
+    </RowContainer>
+    <RowContainer width="100%" height="100%">
+      <ColumnContainer>
+        <NoteListBlock />
+        <NoteListBlock />
+        <NoteListBlock />
+      </ColumnContainer>
+      <ColumnContainer width="100%" height="100%">
+        <NoteEditBlock />
+      </ColumnContainer>
+    </RowContainer>
+  </ColumnContainer>
+);
+
+export default Note;
+
+```
+
+일단 먼저 각 페이지의 뼈대를 잡고 나서 구체적인 부분들을 고치려고 하므로 다음으로는 로그인 페이지를 만들어 볼 것이다.
+
