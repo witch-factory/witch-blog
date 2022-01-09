@@ -1,5 +1,5 @@
 ---
-title: C-through - 1.2. 두번째 예제
+title: C - 1.2. 두번째 예제
 date: "2021-07-02T00:00:00Z"
 description: "C언어 1.2 두번째 예제"
 tags: ["C", "language"]

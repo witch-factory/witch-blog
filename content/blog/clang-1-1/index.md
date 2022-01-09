@@ -1,5 +1,5 @@
 ---
-title: C-through - 1.1. 시작
+title: C - 1.1. 시작
 date: "2021-06-25T00:00:00Z"
 description: "C언어 1.1 시작"
 tags: ["C", "language"]

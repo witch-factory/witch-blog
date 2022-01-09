@@ -1,5 +1,5 @@
 ---
-title: C-through - 1.4. 두번째 예제 마무리
+title: C - 1.4. 두번째 예제 마무리
 date: "2021-08-05T00:00:00Z"
 description: "C언어 1.4. 두번째 예제 마무리"
 tags: ["C", "language"]
