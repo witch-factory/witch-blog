@@ -1,5 +1,5 @@
 ---
-title: C-through - 1.2. Unknown parameter
+title: C-through - 2. Unknown parameter
 date: "2022-01-10T00:00:00Z"
 description: "C언어의 함수 파라미터에 대하여"
 tags: ["C", "language"]
