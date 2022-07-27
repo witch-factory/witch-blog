@@ -32,7 +32,8 @@ interface SocialLink {
 
 const Profile = () => {
   const siteMetadata = useAuthorProfile().site?.siteMetadata;
-  const isAboutPageExists = useCheckAboutPage();
+  //const isAboutPageExists = useCheckAboutPage();
+  const isAboutPageExists = false;
 
   const author = siteMetadata?.author;
   const description = siteMetadata?.description;

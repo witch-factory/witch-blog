@@ -51,7 +51,6 @@ export const pageQuery = graphql`
       siteMetadata {
         title
         siteUrl
-        thumbnail
       }
     }
   }

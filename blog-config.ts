@@ -19,6 +19,7 @@ const config = {
     utterances: 'witch-factory/witch-blog', // Your GitHub repository
     disqusShortName: '',  // Disqus short name
   },
+  thumbnail: 'src/assets/images/thumbnail.png',
   icon: 'src/images/gatsby-icon.png', // path of blog icon
   googleAnalytics: '0',  // Google Analytics tracking id
 };
