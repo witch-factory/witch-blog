@@ -1,5 +1,5 @@
 ---
-title: 프론트 지식 익히기 : tailwind - 1
+title: 프론트 지식 익히기 tailwind - 1
 date: "2022-07-27T00:00:00Z"
 description: "프로젝트에서 tailwind를 사용하는 기록"
 tags: ["web", "study", "front"]
