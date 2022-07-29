@@ -254,5 +254,7 @@ break-{normal, words, all}
 
 # 참고
 CSS grid https://studiomeal.com/archives/533
+
 padding, margin의 차이 https://ofcourse.kr/css-course/margin-padding-%EC%86%8D%EC%84%B1
+
 font-smooth에 대하여 https://developer.mozilla.org/en-US/docs/Web/CSS/font-smooth
