@@ -1,6 +1,6 @@
 ---
 title: 프론트 지식 익히기 HTML - 1
-date: "2022-07-29T00:00:00Z"
+date: "2022-07-30T00:00:00Z"
 description: "HTML 제대로 익히기"
 tags: ["web", "study", "front", "HTML"]
 ---
