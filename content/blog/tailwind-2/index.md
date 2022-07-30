@@ -61,7 +61,7 @@ overflow-{auto, hidden, clip, visible, scroll, x-auto, y-auto, x-hidden, y-hidde
 - z-index
 말 그대로 요소의 z-index를 조정한다. 요소가 얼만큼 우선적으로 보일지 결정한다. z-0, z-10...z-50까지 있다. z-auto도 있다. z-뒤 숫자가 높을수록 더 우선적으로 보인다.
 
-# 4. flex display 관련 스타일
+# 4. Display(Layout) 관련 스타일
 
 - Flex Direction
 flex-direction을 지정하는 것. flex-row, flex-col, flex-row-reverse, flex-col-reverse가 있다. 
