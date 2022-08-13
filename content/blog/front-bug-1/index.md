@@ -80,7 +80,7 @@ function updateUserGenres(curUserGenres, serverUserGenres) {
 
 ```jsx
 async function updateUserGenres(curUserGenres, serverUserGenres) {
-  // 밴드 활동 요일을 서버와 동기화
+  // 사용자의 선호 장르를 서버와 동기화
   const UserGenreDeletePromises = serverUserGenres.map((genre) => {
     return UserProfileAPI.deleteUserGenres(genre.id);
   });
@@ -116,7 +116,6 @@ async function updateUserGenres(curUserGenres, serverUserGenres) {
   try {
     await Promise.all(
       serverUserGenres.map((genre) => {
-        // deleteBandArea 가 리턴되는 순간 이미 axios 요청은 간다.
         return UserProfileAPI.deleteUserGenre(genre.id);
       })
     );
