@@ -109,7 +109,7 @@ deleteUserGenre: (genreID) => {
 
 위에서 작성한 `updateUserGenres`함수의 코드에서 `UserGenreDeletePromises`와 `UserGenreAddPromises` 배열을 만들고 있는 시점에 `addUserGenre`와 `deleteUserGenre`함수의 리턴 Promise가 생성되면서 이미 axios의 요청이 서버로 전송되었던 것이다. 이때 이 axios 요청의 Promise들은 비동기로 처리된다. 따라서 서버에 저장된 선호 장르를 지우는 동작과 사용자의 편집 내역의 선호 장르를 서버에 추가하는 동작의 순서가 꼬이는 race condition이 발생할 수 있다.
 
-이 상황은 다음과 같이 코드를 작성하여 axios 요청 순서를 강제하는 방식으로 해결했다. 다만 Promise.all 내부에 묶이는 Promise들은 `BandProfileAPI.deleteBandArea`에서 진행되는 axios 요청에서 리턴되는 Promise이다. 실질적으로 우리가 필요로 하는 동작은 리턴되는 Promise가 아니라 그 axios 요청에서 이루어진다. 따라서 실질적으로 axios 요청을 하는 코드의 순서를 강제하는 법은 좀 더 찾아봐야 할 것 같다.
+이 상황은 다음과 같이 코드를 작성하여 axios 요청 순서를 강제하는 방식으로 해결했다.
 
 ```jsx
 async function updateUserGenres(curUserGenres, serverUserGenres) {
@@ -129,3 +129,17 @@ async function updateUserGenres(curUserGenres, serverUserGenres) {
   }
 }
 ```
+
+위와 같이 코드를 짜면
+
+```jsx
+serverUserGenres.map((genre) => {
+  return UserProfileAPI.deleteUserGenre(genre.id);
+});
+```
+
+이 api 요청들은 Promise.all로 인해서 하나의 Promise로 묶인다. 즉 deleteUserGenre 함수에서 일어나는 사용자의 기존 선호 장르 삭제 요청들이 하나로 묶여서 비동기적으로 실행되게 된다. 그리고 그 하나로 묶인 Promise가 resolve될 때까지 기다린 다음에 다른 코드를 실행하도록 하여 순서를 강제하는 역할을 await이 맡는다.
+
+사용자의 선호 장르를 삭제하는 요청이 모두 해결되고 난 다음 사용자의 선호 장르를 추가하는 요청을 보내야 한다. 이 순서를 강제하는 부분은 await이 맡는다. 사용자의 선호 장르를 삭제하는 요청들(Promise.all로 묶여 있다)이 모두 resolve 되고 난 후에야 다음 코드로 실행한다.
+
+그런데 선호 장르를 삭제하는 요청 각각, 그리고 사용자의 선호 장르를 추가하는 요청 각각은 순서대로 실행될 필요가 없다. 그럴 경우 실행 결과는 똑같은데 실행 시간만 길어지게 된다. 따라서 그 각각의 요청들은 Promise.all로 묶어서 각각의 요청들이 비동기로 실행되게 하였다.
