@@ -1,5 +1,5 @@
 ---
-title: 프로젝트 트러블 슈팅 - 회원가입 폼 제작의 제출 시점
+title: 프로젝트 트러블 슈팅 - 회원가입 폼의 제출 시점
 date: "2022-08-14T00:00:00Z"
 description: "form의 default 제출 버튼 설정으로 인한 문제"
 tags: ["web", "study", "front", "html", "react"]
