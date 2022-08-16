@@ -1,5 +1,5 @@
 ---
-title: 프론트 지식 익히기 react - useReducer의 사용
+title: 프론트 지식 익히기 React - useReducer의 사용
 date: "2022-08-03T00:00:00Z"
 description: "React 지식 1번째, useReducer"
 tags: ["web", "study", "front", "react"]
@@ -66,39 +66,35 @@ const [state, dispatch] = useReducer(reducer, initialState);
 
 이때 state는 당연히 우리가 컴포넌트에서 사용할 상태이고 dispatch는 액션을 받아서 실행시키는 함수라고 생각하면 된다. 우리가 취하고 싶은 액션을 dispatch에 전달하면 dispatch함수는 그 액션의 정보에 따라 reducer에서 state를 업데이트하도록 한다.
 
-공식 문서에 있는 간단한 카운터 예제를 타입스크립트로 작성하였다. 먼저 리듀서 함수를 작성하자. 
+공식 문서에 있는 간단한 카운터 예제를 타입스크립트로 작성하였다. 먼저 리듀서 함수를 작성하자.
 
 ```tsx
-function reducer(state:{count:number}, action:{type:string}){
-    switch(action.type){
-        case 'increment':
-            return {count:state.count+1};
-        case 'decrement':
-            return {count:state.count-1};
-        default:
-            throw new Error();
-    }
+function reducer(state: { count: number }, action: { type: string }) {
+  switch (action.type) {
+    case "increment":
+      return { count: state.count + 1 };
+    case "decrement":
+      return { count: state.count - 1 };
+    default:
+      throw new Error();
+  }
 }
 ```
 
 state와 거기에 취할 action을 받아서 action.type에 따라 새로운 state를 만들어서 돌려준다. 그리고 카운터 컴포넌트는 다음과 같이 제작한다.
 
 ```tsx
-function Counter(){
-    const [state, dispatch]=useReducer(reducer, initialCount);
-    return (
-        <>
-            Count: {state.count}
-            <button onClick={() => dispatch({type: 'decrement'})}>-</button>
-            <button onClick={() => dispatch({type: 'increment'})}>+</button>
-        </>
-    )
+function Counter() {
+  const [state, dispatch] = useReducer(reducer, initialCount);
+  return (
+    <>
+      Count: {state.count}
+      <button onClick={() => dispatch({ type: "decrement" })}>-</button>
+      <button onClick={() => dispatch({ type: "increment" })}>+</button>
+    </>
+  );
 }
 ```
-
-
-
-
 
 # 참고
 

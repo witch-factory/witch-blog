@@ -1,5 +1,5 @@
 ---
-title: 프론트 지식 익히기 react - react query 사용기 1
+title: 프론트 지식 익히기 React - react query 사용기 1
 date: "2022-08-05T00:00:00Z"
 description: "React 지식 2번째, React-query"
 tags: ["web", "study", "front", "react"]
@@ -114,7 +114,7 @@ function UserProfile() {
   });
 
   useEffect(() => {
-//    데이터를 확인하는 부분은 좀더 세련되게 짤 수도 있다. 이따가 다룬다.
+    //    데이터를 확인하는 부분은 좀더 세련되게 짤 수도 있다. 이따가 다룬다.
     if (data) {
       console.log(data.data);
     }
@@ -134,9 +134,9 @@ export default UserProfile;
 
 쿼리는 비동기 데이터 소스(보통 서버)에 대한 의존성이며 unique key로 식별될 수 있다. 이는 Axios나 fetch 등 Promise 기반의 메서드를 사용하여 서버에서 데이터를 가져오는 데 사용할 수 있다. 만약 서버 데이터를 수정하는 메서드를 만들고 싶다면 Mutation을 사용하자. (useMutation이라는 훅을 사용하며 다음 글에서 다룰 예정이다) 즉 서버 데이터 중 일부를 unique key와 엮어서 가져와 준다는 것이다. 딱 내가 필요한 부분 중 하나이다.
 
-컴포넌트나 커스텀 훅에서 이런 쿼리를 사용하려면 위에서 이미 한번 사용해 봤던 `useQuery`훅을 사용해야 한다. 이는 인자로 쿼리에 사용할 unique key와 데이터 fetch에 사용할 함수를 기본으로 줘야 한다. 그 외에도 옵션을 줄 수 있는데 이는 당장 사용과는 큰 관련이 없으니 필요할 때 쓰도록 하겠다. 
+컴포넌트나 커스텀 훅에서 이런 쿼리를 사용하려면 위에서 이미 한번 사용해 봤던 `useQuery`훅을 사용해야 한다. 이는 인자로 쿼리에 사용할 unique key와 데이터 fetch에 사용할 함수를 기본으로 줘야 한다. 그 외에도 옵션을 줄 수 있는데 이는 당장 사용과는 큰 관련이 없으니 필요할 때 쓰도록 하겠다.
 
-공식 문서의 `useQuery`사용 예시는 다음과 같다. 
+공식 문서의 `useQuery`사용 예시는 다음과 같다.
 
 ```
 const result = useQuery(['todos'], fetchTodoList)
@@ -144,74 +144,91 @@ const result = useQuery(['todos'], fetchTodoList)
 
 첫번째로 들어간 인자가 쿼리에 사용할 키이다. 다른 곳에서도 이 키로 같은 정보를 관리한다. 또한 두번째로 들어갈 인자가 함수 이름답게 데이터를 fetch해 오는 함수이다. 이 함수는 오류에 대한 throw 기능도 갖춰야 한다고 하지만 그냥 axios를 쓰면 된다.
 
-
-
-
-
 mutation까지 들어가 있는 코드
 
 ```tsx
 // src/components/UserProfile.tsx
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {useState} from "react";
-import {AxiosResponse} from "axios";
+import { useState } from "react";
+import { AxiosResponse } from "axios";
 
-const addProfile=(newProfile:{name:string, nickname:string, email:string}):Promise<AxiosResponse>=>{
-    console.log("프로필 추가 함수 실행")
-    return axios.post("http://localhost:4000/userprofile", newProfile);
-}
+const addProfile = (newProfile: {
+  name: string;
+  nickname: string;
+  email: string;
+}): Promise<AxiosResponse> => {
+  console.log("프로필 추가 함수 실행");
+  return axios.post("http://localhost:4000/userprofile", newProfile);
+};
 
-const useAddProfile=()=>{
-    const qc=useQueryClient();
-    return useMutation(addProfile, {
-        onSuccess:()=>{
-            qc.invalidateQueries(['user-profile'])
-        }
-    })
-}
+const useAddProfile = () => {
+  const qc = useQueryClient();
+  return useMutation(addProfile, {
+    onSuccess: () => {
+      qc.invalidateQueries(["user-profile"]);
+    },
+  });
+};
 
 function UserProfile() {
-    const [curID, setCurID]=useState(4);
-    const [name, setName]=useState('');
-    const [nickname, setNickname]=useState('');
-    const [email, setEmail]=useState('');
+  const [curID, setCurID] = useState(4);
+  const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [email, setEmail] = useState("");
 
-    const { isLoading, isError, data, error } = useQuery(["user-profile"], () => {
-        return axios.get("http://localhost:4000/userprofile");
-    });
+  const { isLoading, isError, data, error } = useQuery(["user-profile"], () => {
+    return axios.get("http://localhost:4000/userprofile");
+  });
 
-    const {mutate}=useAddProfile();
+  const { mutate } = useAddProfile();
 
-    const profileMutation=()=>{
-        console.log("버튼으로 프로필 추가");
-        const newProfile={name:name, nickname:nickname, email:email};
-        mutate(newProfile)
-    }
+  const profileMutation = () => {
+    console.log("버튼으로 프로필 추가");
+    const newProfile = { name: name, nickname: nickname, email: email };
+    mutate(newProfile);
+  };
 
-    if(isLoading){
-        return <span>profile Loading...</span>
-    }
-    if(isError){
-        return <span>error occurred</span>
-    }
-    return (
-        <>
-            <div>
-                <input type="text" value={name} onChange={(e)=>setName(e.target.value)} />
-                <input type="text" value={nickname} onChange={(e)=>setNickname(e.target.value)} />
-                <input type="text" value={email} onChange={(e)=>setEmail(e.target.value)} />
-            </div>
-            <button onClick={profileMutation}>새로운 프로필 추가</button>
-            <ul>
-                {data.data.map((profile:{id:number, name:string, nickname:string, email:string})=>{
-                    return <div key={profile.id}>{profile.name}</div>
-                })}
-            </ul>
-        </>
-
-    )
-
+  if (isLoading) {
+    return <span>profile Loading...</span>;
+  }
+  if (isError) {
+    return <span>error occurred</span>;
+  }
+  return (
+    <>
+      <div>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="text"
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+        />
+        <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <button onClick={profileMutation}>새로운 프로필 추가</button>
+      <ul>
+        {data.data.map(
+          (profile: {
+            id: number;
+            name: string;
+            nickname: string;
+            email: string;
+          }) => {
+            return <div key={profile.id}>{profile.name}</div>;
+          }
+        )}
+      </ul>
+    </>
+  );
 }
 
 export default UserProfile;
