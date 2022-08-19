@@ -209,3 +209,4 @@ function App() {
 
 리액트 라우터 공식문서의 Route 컴포넌트 https://reactrouter.com/docs/en/v6/components/route
 리액트 라우터 공식문서의 Outlet 컴포넌트 https://reactrouter.com/docs/en/v6/components/outlet
+스택오버플로우 질문답변 https://stackoverflow.com/questions/66266216/how-can-i-exactly-match-routes-nested-deeply-in-react-router-6
