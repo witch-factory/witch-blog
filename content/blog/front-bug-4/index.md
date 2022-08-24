@@ -21,8 +21,6 @@ App 컴포넌트에 다음과 같은 코드를 작성하였다.
 
 ```jsx
 function App() {
-  const checkRef = useRef < HTMLInputElement > null;
-
   const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
     console.log("체크박스 클릭됨" + e.currentTarget.checked);
   };
@@ -37,18 +35,115 @@ function App() {
       <label htmlFor="onclick-checkbox">onClick을 쓰는 체크박스</label>
       <input id="onclick-checkbox" type="checkbox" onClick={handleClick} />
       <label htmlFor="onchange-checkbox">onChange 쓰는 체크박스</label>
-      <input
-        ref={checkRef}
-        id="onchange-checkbox"
-        type="checkbox"
-        onChange={handleChange}
-      />
+      <input id="onchange-checkbox" type="checkbox" onChange={handleChange} />
     </div>
   );
 }
 ```
 
 두 체크박스는 크롬 환경에서는 완전히 똑같이 동작한다. 그러나 IE에서는 onChange가, 체크박스에서 focus가 벗어나는 시점에 이벤트가 발생한다고 한다(엣지 브라우저에서는 이런 문제가 없다). 이를 해결하기 위해 onClick을 사용하는 것이 좋다.
+
+# 2. onClick에서 발생하는 문제
+
+그런데 이 체크박스가 초기에 체크되어 있도록 하고 싶을 수 있다. 그러면 checked props를 사용하는 방식을 생각해 보자.
+
+```jsx
+const [checked, setChecked] = useState(true);
+
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setChecked(!checked);
+};
+
+<input
+  id="onchange-checkbox"
+  type="checkbox"
+  checked={checked}
+  onChange={handleChange}
+/>;
+```
+
+이러면 체크박스의 체크 여부를 나타내는 `checked` state가 초기에 true로 설정된다. 따라서 체크박스가 초반에 체크되어서 렌더링된다. 또한 onChange에서 checked를 반전시키는 역할도 해준다. onChange가 없으면 체크박스의 체크 여부를 바꿀 수 없다.
+
+그런데 onChange 대신 onClick을 사용하면?
+
+```jsx
+const [checked, setChecked] = useState(true);
+
+const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+  console.log("체크박스 클릭됨" + e.currentTarget.checked);
+  setChecked(!checked);
+};
+
+<input
+  id="onclick-checkbox"
+  type="checkbox"
+  checked={checked}
+  onClick={handleClick}
+/>;
+```
+
+이렇게 하면 에러가 발생한다. 에러 메시지는 다음과 같다.
+
+```
+Warning: You provided a `checked` prop to a form field without an `onChange` handler. This will render a read-only field. If the field should be mutable use `defaultChecked`. Otherwise, set either `onChange` or `readOnly`.
+```
+
+이 에러를 해결하는 방법은 그냥 에러 메시지에서 시키는 대로 하면 된다. 어차피 우리는 체크박스가 처음에 체크되어 있기만 하면 되기 때문에 defaultChecked를 설정해 주는 것이다.
+
+```jsx
+<input
+  id="onclick-checkbox"
+  type="checkbox"
+  defaultChecked
+  onClick={handleClick}
+/>
+```
+
+이러면 에러 메시지도 사라지고 체크박스가 처음에 체크되어 있는 상태로 렌더링된다. onClick 이벤트도 잘 동작한다. 어떻게든 결과는 냈다. 그런데 이 에러는 왜 발생하는지 잠깐 알아보았다.
+
+# 3. 에러의 발생 이유
+
+리액트에는 폼(input도 포함)을 만드는 데 2가지 방법이 있다. Controlled component와 Uncontrolled Component이다. 이때 두 컴포넌트에는 요구되는 attribute들이 있는데 이것들을 제대로 설정해 주지 않았을 때 위의 에러가 발생한다.
+
+Controlled component는 `value`와 `onChange` attribute를 요구한다. 이때 체크박스나 라디오버튼 컴포넌트의 경우 `value` 대신 `checked` attribute를 요구한다.
+
+Controlled component의 경우 어떤 값을 제어하는 데 쓰이기 때문에 state 혹은 props로 된 값을 가져야 한다. 따라서 value 를 갖는 건 당연하다. 또한 이 값이 바뀌었을 경우 이벤트 핸들러를 통해 값이 변경되었고 리렌더링시 이를 반영해야 한다는 것을 React에 알려야 한다. onChange가 이를 수행한다. 이것이 Controlled component가 앞의 두 attribute를 요구하는 이유이다.
+
+Uncontrolled component의 경우 state/props와 이벤트 핸들러가 아니라 DOM 자체에서 관리되는 컴포넌트이다. 따라서 value, onChange 이벤트핸들러 같은 건 필요없다. 만약 이런 uncontrolled component의 값을 가져오고 싶다면 useRef 혹은 id를 통해서(getElementById 등의 사용) 가져와야 한다.
+
+이런 Uncontrolled component의 초기값을 설정해 주는 attribute는 defaultValue 혹은 위에서 사용한 defaultChecked(checkbox, radio type input에만)이다. 물론 이걸 통해 초기값을 제공해주는 게 필수는 아니다. controlled component의 value와 달리 핸들링도 안된다. 그저 초기값을 전달하는 것 뿐이다.
+
+위의 에러는 체크박스에 `checked` 를 전달함으로써 체크박스를 controlled component라고 리액트에 전달했지만 controlled component라면 같이 전달해 줘야 하는 `onChange` 를 전달해 주지 않았기 때문에 일어난 것이다.
+
+따라서 해결 방법은 위처럼 `checked`를 아예 지워서 Uncontrolled component로 만들고 초기값은 `defaultChecked`로 전달하고 값을 받아오는 작업은 `useRef`를 통해 진행하는 방법이 있을 수 있다. 체크박스의 값을 받아오는 것까지 작성하면 다음과 같이 된다.
+
+```tsx
+function App() {
+  const checkedRef = useRef<HTMLInputElement>(null);
+
+  const handleClick = () => {
+    if (checkedRef.current !== null) {
+      console.log("체크박스 클릭됨" + checkedRef.current.checked);
+    }
+  };
+
+  return (
+    <div>
+      <h1>체크박스 테스트</h1>
+      <label htmlFor="onclick-checkbox">onClick을 쓰는 체크박스</label>
+      <input
+        ref={checkedRef}
+        id="onclick-checkbox"
+        type="checkbox"
+        onClick={handleClick}
+        defaultChecked
+      />
+    </div>
+  );
+}
+```
+
+체크박스를 Controlled component로 다루고 싶다면 `onClick` 대신 `onChange`로 이벤트를 핸들링하는 방법이 있다.
 
 # 참고
 
@@ -57,3 +152,9 @@ https://devlog.jwgo.kr/2018/11/28/checkbox-error-with-react/
 관련 스택오버플로우 질문답변 https://stackoverflow.com/questions/5575338/what-the-difference-between-click-and-change-on-a-checkbox
 
 https://stackoverflow.com/questions/70022781/react-checkbox-event-preventdefault-breaks-onchange-function-why
+
+https://stackoverflow.com/questions/36715901/reactjs-error-warning
+
+리액트 공식 문서의 Uncontrolled Component와 Controlled Component에 대한 설명
+https://reactjs.org/docs/uncontrolled-components.html
+https://reactjs.org/docs/forms.html#controlled-components
