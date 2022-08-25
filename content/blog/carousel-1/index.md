@@ -126,7 +126,7 @@ function Carousel({ items }: { items: CarouselItemType[] }) {
 
   return (
     <section>
-      <div>
+      <div className="overflow-hidden">
         <div
           // translation state에 따라서 평행이동 정도를 바꿔 준다.
           className={`flex flex-row w-fit h-[50vh] translate-x-[-${
@@ -157,6 +157,139 @@ function Carousel({ items }: { items: CarouselItemType[] }) {
 
 # 3. 이미지가 안 넘어가는 문제 해결
 
+tailwind는 우리의 소스 코드를 직접 파싱하거나 어떤 부분을 실행하지 않는다. 그저 정규 표현식을 통해서 tailwind class가 될 수 있는 문자열을 탐색할 뿐이다. `className="..."`으로 되어 있는 부분만 찾지도 않는다. 소스 코드의 전체를 탐색한다. 이는 아래 참고에 적어 놓은 공식 문서에 나오는 내용이다.
+
+여기서 중요한 점은, 소스 코드를 실행시켜서 그 결과로 css가 나오는 것이 아니라 그냥 코드에서 className이 될 수 있는 부분을 탐색할 뿐이라는 것이다. 따라서 `complete unbroken string`, 중간에 어떤 계산식 등으로 인해 끊긴 게 아니라 온전한 class name만이 찾아진다.
+
+물론 safelist지정 등을 통해 동적 className 생성을 가능하게 할 수 있다고 하지만 이는 전혀 권장되지 않는다.
+
+즉 우리는 위에서 한 것처럼 동적으로 문자열을 생성하는 것이 아니라 온전한 className을 제공해야 한다. string interpolation을 하거나(백틱으로 감싸진 문자열에 변수명 넣기) className의 일부를 이어붙이는 식으로 만든 className은 인식되지 않는다.
+
+이를 어떻게 해결할까? classnames(https://www.npmjs.com/package/classnames)라는 라이브러리를 사용하는 방법이 있다고 한다. 그러나 이는 그렇게 좋지 않아 보인다.
+
+함수를 이용해서 먼저 complete class name을 생성해 주고 그걸 class에 전달하면 어떨까? 다음과 같은 코드를 작성하는 것이다.
+
+```jsx
+function Carousel({ items }: { items: CarouselItemType[] }) {
+  const [translation, setTranslation] = useState(0);
+
+  const prevClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (translation === 0) {
+      setTranslation(items.length - 1);
+    } else {
+      setTranslation(translation - 1);
+    }
+  };
+
+  const nextClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (translation === items.length - 1) {
+      setTranslation(0);
+    } else {
+      setTranslation(translation + 1);
+    }
+  };
+
+  const calculateTranslation = (index: number) => {
+    return `translate-x-[-${index * 100}%]`;
+  };
+
+  return (
+    <section>
+      <div className="overflow-hidden">
+        <div
+          className={`flex flex-row w-fit h-[50vh] ${calculateTranslation(
+            translation
+          )}`}
+        >
+          {items.map((item) => (
+            <CarouselItem key={item.id} item={item} />
+          ))}
+        </div>
+      </div>
+      <button onClick={prevClick} className="p-3 border border-gray-500">
+        이전 슬라이드
+      </button>
+      <button onClick={nextClick} className="p-3 border border-gray-500">
+        다음 슬라이드
+      </button>
+    </section>
+  );
+}
+```
+
+하지만 함수 역시 className을 동적으로 생성하는 것으로 취급되는 듯 했다. 전혀 작동하지 않았다. 이외에도 items 배열을 통해 className을 구할 수 있는 객체를 생성한 후 거기서 ClassName을 얻어오려고 하는 시도를 하는 등 여러 시도를 해봤지만 어떻게든 뭔가 '동적'으로 className을 구해낸다는 아이디어는 다 실패했다.
+
+다음과 같이 미리 생성한 객체 translateConfig를 이용하는 방법만이 성공했다.
+
+```tsx
+function Carousel({ items }: { items: CarouselItemType[] }) {
+  const [translation, setTranslation] = useState(0);
+
+  const prevClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (translation === 0) {
+      setTranslation(items.length - 1);
+    } else {
+      setTranslation(translation - 1);
+    }
+  };
+
+  const nextClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (translation === items.length - 1) {
+      setTranslation(0);
+    } else {
+      setTranslation(translation + 1);
+    }
+  };
+
+  const translateConfig: { [key: number]: string } = {
+    0: "translate-x-[0%]",
+    1: "translate-x-[-100%]",
+    2: "translate-x-[-200%]",
+    3: "translate-x-[-300%]",
+    4: "translate-x-[-400%]",
+    5: "translate-x-[-500%]",
+  };
+
+  return (
+    <section>
+      <div className="overflow-hidden">
+        <div
+          className={`flex flex-row w-fit h-[50vh] ${translateConfig[translation]}`}
+        >
+          {items.map((item) => (
+            <CarouselItem key={item.id} item={item} />
+          ))}
+        </div>
+      </div>
+      <button onClick={prevClick} className="p-3 border border-gray-500">
+        이전 슬라이드
+      </button>
+      <button onClick={nextClick} className="p-3 border border-gray-500">
+        다음 슬라이드
+      </button>
+    </section>
+  );
+}
+```
+
+객체가 정적으로 생성되어 있다면 여기서 값을 구해오는 건 동적인 것으로 취급되지 않는 모양이다. 물론 이런 방식으로 할 수 있다. 객체를 미리 선언해 줘야 하긴 하지만 현실적으로 캐로셀에 많은 수의 이미지를 넣지 않을 것이므로 약 30개의 이미지가 캐로셀에 들어가 있는 경우까지, 즉 `translate-x-[-3000%]`정도까지만 커버할 수 있게 객체를 생성해 준다면 문제없이 작동할 것이다.
+
+하지만 이는 누가 봐도 좋지 않아 보인다. 지금까지 만든 캐로셀이 좋지 않은 이유는 2가지를 들 수 있다.
+
+1. 화면에 보이는 게 이미지 하나일 뿐 모든 이미지를 렌더링하긴 한다.
+2. translate 너비를 구하기 위한 객체를 하드코딩해야 한다.
+
+물론 캐로셀을 만드는 방식은 margin-left를 이용하는 방식도 있다. 그러나 transform 연산이 gpu를 이용하기 때문에 더 낫거니와 그걸 쓰더라도 위의 2가지 문제를 해결하지 못한다. 따라서 다음 글에서는 캐로셀을 만들 때 현재 보여주는 이미지, 이전 차례 이미지, 다음 차례 이미지만 렌더링하며, translateConfig 객체도 만들 필요 없는 방식의 캐로셀을 제작할 것이다.
+
 # 참고
 
 캐로셀의 정의와 UI 디자인 원칙들 https://mytory.net/2021/08/03/carousel-usability.html
+
+tailwind의 파싱 방식과 dynamic class name https://tailwindcss.com/docs/content-configuration#class-detection-in-depth
+
+관련 스택오버플로우 질문답변
+https://stackoverflow.com/questions/72550439/tailwind-css-unresponsive-to-react-state-change
+
+https://stackoverflow.com/questions/71791472/fontawesome-icons-not-accepting-color-props-through-react-functional-components/
