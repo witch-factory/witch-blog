@@ -192,6 +192,75 @@ function Carousel({ items }: { items: CarouselItemType[] }) {
 
 이를 실행해 보면 우리가 의도한 대로 잘 작동하는 것을 확인할 수 있다. 또한 지난 글의 경우와 달리 tailwind style만을 적절히 사용했고 하드 코딩을 해주지도 않았다. 이제 애니메이션을 넣고 이를 좀 꾸며 보자.
 
+# 3. 애니메이션 삽입
+
+지금 만든 캐로셀은 화면 전환 시 딱히 전환 효과 없이 바로 화면에 표시되는 사진이 바뀐다. 하지만 일반적인 캐로셀은 사진이 넘어가는 효과가 있다. 이 효과를 삽입해 보자.
+
+이는 간단하다. `CarouselItem` 컴포넌트에 transform에 대한 transition을 주면 된다. 이를 위해 tailwind의 transition 관련 클래스를 사용하자. 또한 tailwind의 기본 duration은 150ms인데 이는 좀 짧다고 느껴지므로 500ms로 늘려주었다. 최상위 div의 classname에 `transition-transform duration-500`가 추가된 걸 볼 수 있다.
+
+```tsx
+function CarouselItem({
+  item,
+  itemState,
+}: {
+  item: CarouselItemType;
+  itemState: CarouselItemStateType;
+}) {
+  const carouselItemTranslateX = {
+    [CarouselItemStates.PREV]: "-translate-x-full",
+    [CarouselItemStates.CURRENT]: "",
+    [CarouselItemStates.NEXT]: "translate-x-full",
+  };
+
+  return itemState !== CarouselItemStates.INACTIVE ? (
+    <div
+      className={`transition-transform duration-500 absolute w-full h-full shrink-0 ${carouselItemTranslateX[itemState]}`}
+    >
+      <img
+        className="object-fill w-full h-full"
+        src={item.image}
+        alt={`carousel-item-${item.id}`}
+      />
+    </div>
+  ) : null;
+}
+```
+
+# 4. 캐로셀 조작을 화살표로 하도록 바꿔주기
+
+현재 캐로셀에서 이미지가 뜨는 곳 아래에는 `이전 슬라이드`, `다음 슬라이드`버튼이 있다. 이를 좀 더 사용자 친화적으로 바꿔보자. 이전 슬라이드, 다음 슬라이드 버튼을 좌우 화살표로 바꿔주고, 이를 클릭하면 캐로셀이 이동하도록 하자.
+
+따라서 `react-icons`에 있는 화살표 아이콘을 사용하도록 하자. 이는 npm을 이용하여 설치할 수 있다. 나는 프로젝트의 다른 페이지를 만들면서 이미 `react-icons`를 설치해 놓았다. 따라서 여기 있는 `IoIosArrowForward`와 `IoIosArrowBack`를 사용하겠다.
+
+먼저 `IoIosArrowForward`와 `IoIosArrowBack`를 import해주자. 그리고 현재 캐로셀의 구조는 다음과 같다. 캐로셀의 아이템들은 relative position으로 지정되어 있는 div 태그 내부에 있다. 또한 아이템 각각은 absolute position으로 지정되어 있다. 그런데 absolute position으로 지정된 요소는 일반적인 문서 흐름에 들어 있지 않다. 또한 페이지 레이아웃에 공간도 배정되지 않는다. 캐로셀의 각 아이템 요소는 absolute position이므로 문서 흐름에 없다는 것이다! relative position으로 지정된 div 내에는 아무 요소도 없는 것으로 간주된다.
+
+따라서 아무 요소도 없이 비어 있는 것으로 간주되는 div 태그(relative position으로 된 것)에 화살표 아이콘을 넣어주면 된다. 이 빈 태그에 `flex flex-row justify-between`을 추가해주면 두 화살표가 좌우 끝으로 정렬되는 것을 볼 수 있다. 이 화살표의 onClick 이벤트에 기존에 있던 `prevClick`과 `nextClick`함수를 연결해 주면 된다. 코드를 보자. 위에 있는 캐로셀 코드의 컴포넌트 구조를 다음과 같이 바꿔주면 된다.
+
+```tsx
+<section>
+  <div className="overflow-hidden">
+    <div className="relative flex flex-row justify-between w-full h-[50vh]">
+      {/* 이 CarouselItem들은 absolute position이기 때문에 레이아웃에서 공간을 차지하지 않는다 */}
+      {items.map((item, index) => (
+        <CarouselItem
+          key={item.id}
+          item={item}
+          itemState={determineCarouselItemState(index, carouselIndex)}
+        />
+      ))}
+      <button onClick={prevClick} className="z-10 h-full">
+        <IoIosArrowBack className="text-base-100" size={60} />
+      </button>
+      <button onClick={nextClick} className="z-10 h-full">
+        <IoIosArrowForward className="text-base-100" size={60} />
+      </button>
+    </div>
+  </div>
+</section>
+```
+
 # 참고
 
 enum type보다는 union type을 쓰자 https://engineering.linecorp.com/ko/blog/typescript-enum-tree-shaking/
+
+position absolute https://developer.mozilla.org/ko/docs/Web/CSS/position
