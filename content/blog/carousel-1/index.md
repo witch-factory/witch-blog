@@ -276,12 +276,58 @@ function Carousel({ items }: { items: CarouselItemType[] }) {
 
 객체가 정적으로 생성되어 있다면 여기서 값을 구해오는 건 동적인 것으로 취급되지 않는 모양이다. 물론 이런 방식으로 할 수 있다. 객체를 미리 선언해 줘야 하긴 하지만 현실적으로 캐로셀에 많은 수의 이미지를 넣지 않을 것이므로 약 30개의 이미지가 캐로셀에 들어가 있는 경우까지, 즉 `translate-x-[-3000%]`정도까지만 커버할 수 있게 객체를 생성해 준다면 문제없이 작동할 것이다.
 
-하지만 이는 누가 봐도 좋지 않아 보인다. 지금까지 만든 캐로셀이 좋지 않은 이유는 2가지를 들 수 있다.
+또다른 방법으로는 tailwind와 별개로 스타일을 주는 방법이 있겠다. tailwind도 애초에 css 기반이므로 같이 사용할 수도 있다. 코드는 다음과 같다.
 
-1. 화면에 보이는 게 이미지 하나일 뿐 모든 이미지를 렌더링하긴 한다.
-2. translate 너비를 구하기 위한 객체를 하드코딩해야 한다.
+```tsx
+function Carousel({ items }: { items: CarouselItemType[] }) {
+  const [translation, setTranslation] = useState(0);
 
-물론 캐로셀을 만드는 방식은 margin-left를 이용하는 방식도 있다. 그러나 transform 연산이 gpu를 이용하기 때문에 더 낫거니와 그걸 쓰더라도 위의 2가지 문제를 해결하지 못한다. 따라서 다음 글에서는 캐로셀을 만들 때 현재 보여주는 이미지, 이전 차례 이미지, 다음 차례 이미지만 렌더링하며, translateConfig 객체도 만들 필요 없는 방식의 캐로셀을 제작할 것이다.
+  const prevClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (translation === 0) {
+      setTranslation(items.length - 1);
+    } else {
+      setTranslation(translation - 1);
+    }
+  };
+
+  const nextClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (translation === items.length - 1) {
+      setTranslation(0);
+    } else {
+      setTranslation(translation + 1);
+    }
+  };
+
+  return (
+    <section>
+      <div className="overflow-hidden">
+        <div
+          className={`flex flex-row w-fit h-[50vh]`}
+          style={{ transform: `translateX(${-translation * 100}%)` }}
+        >
+          {items.map((item) => (
+            <CarouselItem key={item.id} item={item} />
+          ))}
+        </div>
+      </div>
+      <button onClick={prevClick} className="p-3 border border-gray-500">
+        이전 슬라이드
+      </button>
+      <button onClick={nextClick} className="p-3 border border-gray-500">
+        다음 슬라이드
+      </button>
+    </section>
+  );
+}
+```
+
+하지만 앞선 2가지 방식 모두 좋지 않아 보인다. 지금까지 만든 캐로셀이 좋지 않은 이유는 2가지를 들 수 있다.
+
+1. 화면에 보이는 게 이미지 하나일 뿐 결국 모든 이미지를 렌더링해야 한다.
+2. translate 너비를 구하기 위한 객체를 하드코딩해야 한다. 혹은 Tailwind 외에 다른 style을 사용해야 한다.
+
+물론 캐로셀을 만드는 방식은 margin-left를 이용하는 방식도 있다. Tailwind에서도 시도해 볼 수 있을 것이다. 그러나 transform 연산이 gpu를 이용하기 때문에 더 낫거니와 그걸 쓰더라도 위의 2가지 문제를 해결하지 못한다. 따라서 다음 글에서는 캐로셀을 만들 때 현재 보여주는 이미지, 이전 차례 이미지, 다음 차례 이미지만 렌더링하며, translateConfig 객체도 만들 필요 없는 방식의 캐로셀을 제작할 것이다.
 
 # 참고
 
