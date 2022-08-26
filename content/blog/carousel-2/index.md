@@ -259,8 +259,124 @@ function CarouselItem({
 </section>
 ```
 
+# 5. 캐로셀 내에 텍스트와 링크 추가하기
+
+일반적인 캐로셀에는 텍스트와 링크가 들어가는 경우가 많다. 이번에는 캐로셀 내에 텍스트와 링크를 추가해보자. 먼저 `CarouselItemType`을 다음과 같이 수정해주자. 캐로셀의 제목, 부제목, 간단한 내용, 그리고 그 캐로셀에 해당하는 링크를 타입에 추가해주었다.
+
+```tsx
+interface CarouselItemType {
+  id: number;
+  image: string;
+  title: string;
+  subtitle: string;
+  content: string;
+  link: string;
+}
+```
+
+그리고 다음과 같은 내용들을 담은 샘플을 만들어 주었다. 내용은 나중에 필요한 대로 바꾸면 되니까 일단은 이렇게 해두자.
+
+```tsx
+const tempItems: CarouselItemType[] = [
+  {
+    id: 1,
+    image: carouselImage,
+    title: "환영합니다",
+    subtitle: "이건 첫번째 샘플 캐로셀입니다.",
+    content: "샘플 캐로셀의 내용입니다.",
+    link: "/",
+  },
+  {
+    id: 2,
+    image: carouselImage2,
+    title: "환영합니다 2",
+    subtitle: "이건 두번째 샘플 캐로셀입니다.",
+    content: "샘플 캐로셀의 내용입니다.",
+    link: "/",
+  },
+  {
+    id: 3,
+    image: carouselImage3,
+    title: "환영합니다 3",
+    subtitle: "이건 세번째 샘플 캐로셀입니다.",
+    content: "샘플 캐로셀의 내용입니다.",
+    link: "/",
+  },
+];
+```
+
+그러면 이를 수용할 부분을 먼저 만들어 준다. 새로 추가된 제목, 부제목 등의 내용은 캐로셀 요소의 사진 위에 들어가야 한다. 이는 사진과 문서 흐름이 섞이지 않고 배치되어야 함을 뜻한다. 따라서 이 요소는 absolute position으로 지정되어야 한다. 부모에도 absolute position으로 지정된 요소가 있기 때문에 위치 지정 조상 요소에 대해서도 걱정할 필요가 없다.
+
+앞서 말한 대로 div 태그를 구성하고 나면 내부 내용은 자유롭게 배치하면 된다. 난 그냥 위에서 아래로 쭉 늘어놓았다. 또한 링크는 daisyUI에서 제공하는 버튼을 한번 사용해 보았다. glass 효과를 한번 써보고 싶어서..그리고 링크는 react-router-dom에서 제공하는 Link 컴포넌트이다. 아무튼 캐로셀 개별 아이템은 다음과 같이 생긴 컴포넌트에 수용하였다.
+
+```tsx
+<div className="absolute flex flex-col gap-2 items-center">
+  <h1 className="text-4xl text-base-100">{item.title}</h1>
+  <h2 className="text-2xl text-base-100">{item.subtitle}</h2>
+  <p className="text-base text-base-100">{item.content}</p>
+  <Link to={item.link}>
+    <button className="btn btn-primary w-32 btn-outline glass hover:glass">
+      이동하기
+    </button>
+  </Link>
+</div>
+```
+
+이렇게 사진 위에 들어갈 요소들을 디자인했으니 배치해 줘야 한다. 이는 상위 컴포넌트에 `flex flex-col justify-center items-center` 클래스를 지정해 주면 된다. 이것까지 처리한 `CarouselItem` 컴포넌트는 다음과 같다.
+
+```tsx
+function CarouselItem({
+  item,
+  itemState,
+}: {
+  item: CarouselItemType;
+  itemState: CarouselItemStateType;
+}) {
+  const carouselItemTranslateX = {
+    [CarouselItemStates.PREV]: "-translate-x-full",
+    [CarouselItemStates.CURRENT]: "",
+    [CarouselItemStates.NEXT]: "translate-x-full",
+  };
+
+  return itemState !== CarouselItemStates.INACTIVE ? (
+    <div
+      className={`absolute flex flex-col justify-center items-center w-full h-full shrink-0 transition-transform duration-500 ${carouselItemTranslateX[itemState]}`}
+    >
+      <img
+        className="object-fill w-full h-full"
+        src={item.image}
+        alt={`carousel-item-${item.id}`}
+      />
+      {/* 사진 위에 배치되는 글자, 링크 등의 요소들이다 */}
+      <div className="absolute flex flex-col gap-2 items-center">
+        <h1 className="text-4xl text-base-100">{item.title}</h1>
+        <h2 className="text-2xl text-base-100">{item.subtitle}</h2>
+        <p className="text-base text-base-100">{item.content}</p>
+        <Link to={item.link}>
+          <button className="btn btn-primary w-32 btn-outline glass hover:glass">
+            이동하기
+          </button>
+        </Link>
+      </div>
+    </div>
+  ) : null;
+}
+```
+
+이렇게 하면 문제없이 캐로셀 요소의 이미지 위에 우리가 원하는 제목, 부제목, 컨텐츠, 링크 버튼이 배치된다. 지금까지 만든 캐로셀의 형태는 다음과 같다.
+
+![carousel-2-2](./carousel-2-2.png)
+
+디자인은 조금 조악하지만 어쨌든 있을 건 다 있어 보이고, 버튼들도 잘 동작한다. 애니메이션 효과도 촌스럽긴 하지만 있다. 다 된 것 같은데? 물론 그럴 리가 없다. 네비게이션도 구현해야 하고 모바일 환경을 고려해서 터치 이벤트에도 반응하도록 해야 한다. 접근성도 고민해야 한다. 그럼 캐로셀의 네비게이션부터 구현하고 이 글을 마치도록 하자.
+
+# 6. 캐로셀의 페이지네이션 구현하기
+
+우리의 캐로셀엔 아직 문제가 많다. 첫번째로 생각나는 문제는 이 캐로셀이 현재 보여주는 이미지 외에는 아무 정보도 제공하지 않는다는 것이다. 사용자는 캐로셀에 얼마나 많은 이미지가 있는지, 각 캐로셀에 들어 있는 이미지는 무슨 의미인지 알 수가 없다. 캐로셀에 있는 특정 차례로 이동할 수도 없다. 따라서 캐로셀의 각 페이지로 이동할 수 있으며 간단한 설명이 있는 버튼을 캐로셀 하단에 만들어 보자.
+
 # 참고
 
 enum type보다는 union type을 쓰자 https://engineering.linecorp.com/ko/blog/typescript-enum-tree-shaking/
 
 position absolute https://developer.mozilla.org/ko/docs/Web/CSS/position
+
+position css에 대한 좀더 구체적인 설명 https://velog.io/@rimu/css-%EC%9A%94%EC%86%8C%EC%9D%98-%EC%9C%84%EC%B9%98position-%EC%A0%95%EB%A6%AC
