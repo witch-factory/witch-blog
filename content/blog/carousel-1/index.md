@@ -79,11 +79,12 @@ function CarouselItem({ item }: { item: CarouselItemType }) {
 
 어떻게 하면 다음 이미지를 보여줄 수 있을까? 현재 캐로셀의 형태를 생각해 보자. 사진이 길게 늘어진 띠가 `section`태그 안에 들어가서 일정 부분만 보이는 상태라고 생각할 수 있다. 그러면 이 띠를 조금 이동시켜서 section 태그에 비치는 부분을 바꿀 수 있지 않을까?
 
-이걸 해주는 것이 바로 `transform`의 `translate`이다. 일단 슬라이드를 옮길 버튼을 만들어 보자. Carousel 컴포넌트를 다음과 같이 바꾼다. 버튼을 캐로셀 아래에 삽입하고 section 태그가 최외곽 태그가 되도록 바꾸었지만 레이아웃에 변화는 없다.
+이걸 해주는 것이 바로 `transform`의 `translate`이다. 일단 슬라이드를 옮길 버튼을 만들어 보자. `이전 슬라이드`, `다음 슬라이드` 버튼을 캐로셀 아래에 삽입했다. Carousel 컴포넌트의 변경된 코드는 다음과 같다.
 
 ```tsx
 function Carousel({ items }: { items: CarouselItemType[] }) {
   return (
+    // section 태그가 최외곽 태그가 되도록 바꾸었지만 레이아웃에 변화는 없다.
     <section>
       <div className="overflow-hidden">
         <div className="flex flex-row w-fit h-[50vh]">
@@ -92,6 +93,7 @@ function Carousel({ items }: { items: CarouselItemType[] }) {
           ))}
         </div>
       </div>
+      {/* 이전 슬라이드, 다음 슬라이드 버튼을 추가했다. */}
       <button className="p-3 border border-gray-500">이전 슬라이드</button>
       <button className="p-3 border border-gray-500">다음 슬라이드</button>
     </section>
