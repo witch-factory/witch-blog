@@ -13,10 +13,53 @@ tags: ["web", "study", "front", "react"]
 
 또한 내가 보고 싶은 게 어디 있는지 알아서 캐로셀의 그 이미지로 이동하려고 하더라도 캐로셀에 있는 특정 차례로 바로 이동할 수도 없다. 따라서 캐로셀의 각 페이지로 이동할 수 있으며 간단한 설명이 있는 네비게이션 버튼들을 캐로셀 하단에 만들어 보자.
 
+# 2. 네비게이션 버튼 만들기
+
+우리는 이미 각 이미지에 대한 간략한 정보를 제공하는 속성을 가지고 있다. `CarouselItemType`타입에는 이미 `title`이라는 속성이 붙어 있다. 이 속성을 이용해서 각 이미지에 대한 설명이 표시된 네비게이션 버튼을 만들어 보자. 먼저 한 줄에 버튼이 모두 들어가게 만들어 보자.
+
+캐로셀의 현재 영역 아래에 div 태그를 하나 더 만들고 full width를 부여한 후 flex를 이용해서 가로로 배열시킨다. 그리고 각 버튼은 flex-1 클래스(`flex:1 1 0;`)을 부여해서 버튼들이 부모 컨테이너를 같은 크기로 분할하도록 한다. 이를 코드로 짠 버튼 묶음 컴포넌트는 다음과 같다.
+
+```tsx
+<div className="flex flex-row w-full">
+  {items.map((item) => (
+    <button className="flex-1 h-8 border border-gray-500" key={item.id}>
+      {item.title}
+    </button>
+  ))}
+</div>
+```
+
+이를 Carousel 컴포넌트의 하단에 추가하면 다음과 같은 모습으로 렌더링되게 된다.
+
+![Carousel-4-1](./carousel-4-1.png)
+
+## 2.1 겹치는 테두리 제거
+
+그런데 렌더링된 걸 잘 보면 두 버튼이 만나는 곳의 테두리가 겹치는 것을 볼 수 있다. 이를 해결하는 건 간단하다. 버튼이 겹치는 곳에는 테두리를 안 만들면 된다. 먼저 버튼의 오른쪽 테두리를 제거한다. 단순한 `border` 클래스 대신 `border-y border-l` 클래스를 주면 된다. 이렇게 하면 오른쪽 테두리는 제거되고 위쪽과 왼쪽 테두리는 그대로 남게 된다.
+
+아직 하나의 문제가 있다. 우리가 오른쪽 테두리를 제거해 준 것은 다음에 오는 버튼의 왼쪽 테두리가 있어서 이 버튼의 오른쪽 테두리 역할도 겸해 줄 거라고 생각했기 때문이다. 하지만 맨 오른쪽 버튼의 경우 다음에 오는 버튼이 없다. 즉 맨 오른쪽 버튼의 경우 오른쪽 테두리가 아예 없게 된다.
+
+이는 현재 버튼이 한 줄에 다 들어가 있으므로 last-child 선택자를 이용해서 맨 오른쪽 버튼의 오른쪽 테두리를 다시 만들어 주는 걸로 해결해 줄 수 있다. 나중에 버튼이 2줄 이상이게 되면 또 문제가 발생하겠지만 일단은 이렇게 해결해 주자.
+
+```tsx
+<div className="flex flex-row w-full">
+  {items.map((item) => (
+    <button
+      className="flex-1 h-8 border-y border-l last:border-r border-gray-500"
+      key={item.id}
+    >
+      {item.title}
+    </button>
+  ))}
+</div>
+```
+
+이렇게 하면 버튼의 테두리 겹침이 일어나지 않는다.
+
 # 참고
 
-enum type보다는 union type을 쓰자 https://engineering.linecorp.com/ko/blog/typescript-enum-tree-shaking/
+자식 요소들의 너비를 균등하게 분배하기 https://stackoverflow.com/questions/23930684/allocate-equal-width-to-child-elements-with-css
 
-position absolute https://developer.mozilla.org/ko/docs/Web/CSS/position
+`flex:1 1 0;`의 의미 https://heewon26.tistory.com/275
 
-position css에 대한 좀더 구체적인 설명 https://velog.io/@rimu/css-%EC%9A%94%EC%86%8C%EC%9D%98-%EC%9C%84%EC%B9%98position-%EC%A0%95%EB%A6%AC
+버튼 테두리가 겹치는 현상 막기 https://stackoverflow.com/questions/12692089/preventing-double-borders-in-css
