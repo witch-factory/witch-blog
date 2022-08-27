@@ -54,7 +54,154 @@ tags: ["web", "study", "front", "react"]
 </div>
 ```
 
-이렇게 하면 버튼의 테두리 겹침이 일어나지 않는다.
+이렇게 하면 현재 코드에서는 버튼의 테두리 겹침이 일어나지 않는다.
+
+# 3. 네비게이션 버튼의 현재 위치 표시
+
+사용자가 지금 보고 있는 페이지가 어디인지 알 수 있게 해주는 정보도 제공해 보자. 간단하게, 캐로셀이 현재 위치한 페이지의 경우 해당 버튼이 활성화되었다는 표시로 색을 입혀 주는 정도면 될 것이다. 그리고 이왕이면 활성화된 버튼이 네비게이션의 가운데 위치하면 좋을 것이다.
+
+이제 네비게이션의 코드가 복잡해지기 시작하므로 네비게이션 버튼 묶음을 컴포넌트로 분리해 주자. 이름은 `CarouselNavigation`정도로 짓자. 다시 한번 코드를 쓰면 이런 식이 될 것이다.
+
+```tsx
+function CarouselNavigation({
+  items,
+  currentIndex,
+}: {
+  items: CarouselItemType[];
+  currentIndex: number;
+}) {
+  return (
+    <div className="flex flex-row w-full">
+      {items.map((item) => (
+        <button
+          className="flex-1 h-8 border-y border-l last:border-r border-gray-500"
+          key={item.id}
+        >
+          {item.title}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+이제 우리가 원하는 작업을 진행시켜 보자. 캐로셀 네비게이션의 각 버튼도 컴포넌트로 분리할 것이다. 가져야 할 상태를 props로 받고(active, pending, inactive 정도의 상태가 있을 것)거기에 따라 적절한 방식으로 렌더링해주는 컴포넌트로 만들 예정이다. 그전에 먼저 캐로셀 네비게이션 컴포넌트를 완성시켜 보자.
+
+캐로셀 네비게이션엔 기본적으로 현재 활성화되어 있는 페이지의 버튼, 그리고 그 앞뒤 2개씩의 인덱스에 해당하는 버튼까지 5개의 버튼이 들어가도록 할 것이다. 나머지 버튼은 일단은 화면에 보이지 않도록 한다. 각 버튼은 이에 해당하는 상태를 props로 받아서 거기에 맞게 적절한 버튼을 렌더링하거나 아무것도 렌더링하지 않을 것이다.
+
+이에 맞게 캐로셀 네비게이션 컴포넌트를 다음과 같이 작성한다.
+
+```tsx
+function CarouselNavigation({
+  items,
+  currentIndex,
+}: {
+  items: CarouselItemType[];
+  // 현재 캐로셀이 보여주고 있는 인덱스
+  currentIndex: number;
+}) {
+  //버튼의 상태를 결정하는 함수
+  const determineCarouselButtonState = (buttonIndex: number) => {
+    switch (currentIndex) {
+      // 캐로셀의 현재 인덱스
+      case buttonIndex:
+        return "active";
+      // 현재 캐로셀이 초반부에 있을 경우
+      case 0:
+      case 1:
+        return buttonIndex < 5 ? "pending" : "inactive";
+      // 현재 캐로셀이 후반부에 있을 경우
+      case items.length - 1:
+      case items.length - 2:
+        return buttonIndex >= items.length - 5 ? "pending" : "inactive";
+      default:
+        return currentIndex - 2 <= buttonIndex &&
+          buttonIndex <= currentIndex + 2
+          ? "pending"
+          : "inactive";
+    }
+  };
+
+  return (
+    <div className="flex flex-row w-full">
+      {items.map((item, index) => (
+        <CarouselNavigationButton
+          item={item}
+          buttonState={determineCarouselButtonState(index)}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+그러면 이렇게 버튼의 상태를 props로 받아서 적절하게 버튼을 렌더링해주는 `CarouselNavigationButton` 컴포넌트를 만들어보자. 코드는 다음과 같다. 첫번째 글에서 설명했던, 객체를 이용해서 tailwind의 className을 결정해 주는 방식을 썼다.
+
+```tsx
+function CarouselNavigationButton({
+  item,
+  buttonState,
+}: {
+  item: CarouselItemType;
+  buttonState: string;
+}) {
+  // active는 현재 캐로셀에서 보이고 있는 아이템에 해당하는 버튼의 상태
+  // pending은 화면에는 보이지만 활성화되어 있지 않은 버튼의 상태
+  const carouselButtonConfig: { [key: string]: string } = {
+    active: "border-none bg-gray-500 text-base-100 hover:bg-gray-600",
+    pending:
+      "border-y border-l last:border-r border-gray-500 hover:bg-gray-200",
+  };
+
+  return buttonState !== "inactive" ? (
+    <button
+      className={`flex-1 h-8 ${carouselButtonConfig[buttonState]}`}
+      key={item.id}
+    >
+      {item.title}
+    </button>
+  ) : null;
+}
+```
+
+여기까지 완료하고 캐로셀을 렌더링해보면 아래와 같이 보인다. 디자인이 그렇게 훌륭하지는 않지만 어쨌든 각 페이지에 해당하는 버튼이 표시되고, 주변 페이지의 버튼도 네비게이션에 잘 표시된다. 캐로셀이 초반 페이지나 후반 페이지에 있을 때에도 꽤 일반적으로 잘 작동한다. 네비게이션은 언제나 5개(물론 캐로셀에 5개 미만의 요소가 있을 때는 제외)의 버튼을 가지고 활성화된 페이지의 버튼을 잘 감지한다.
+
+![carousel-4-2](./carousel-4-2.png)
+
+## 3.1 네비게이션 버튼에도 애니메이션 넣기
+
+네비게이션에서 활성화된 버튼이 바뀔 때에도 애니메이션 효과를 줄 수 있다. 하지만 위에서 캐로셀 페이지가 전환될 때 이미 translation에 대한 애니메이션이 있다. 따라서 네비게이션의 전환에도 현란한 전환 효과를 넣는 건 좋지 않아 보인다. 따라서 색상에 대한 transition 효과만 주자. duration은 적당히 700ms로 주자. `transition-colors duration-700` className만 추가하면 된다. 이를 추가한 `CarouselNavigationButton`컴포넌트는 다음과 같다.
+
+```tsx
+function CarouselNavigationButton({
+  item,
+  buttonState,
+}: {
+  item: CarouselItemType;
+  buttonState: string;
+}) {
+  // active는 현재 캐로셀에서 보이고 있는 아이템에 해당하는 버튼의 상태
+  // pending은 화면에는 보이지만 활성화되어 있지 않은 버튼의 상태
+  const carouselButtonConfig: { [key: string]: string } = {
+    active: "border-none bg-gray-500 text-base-100 hover:bg-gray-600",
+    pending:
+      "border-y border-l last:border-r border-gray-500 hover:bg-gray-200",
+  };
+
+  return buttonState !== "inactive" ? (
+    <button
+      className={`flex-1 h-8 transition-colors duration-700 ${carouselButtonConfig[buttonState]}`}
+      key={item.id}
+    >
+      {item.title}
+    </button>
+  ) : null;
+}
+```
+
+# 4. 네비게이션 버튼 동작 구현
+
+하지만 지금은 캐로셀의 네비게이션 버튼을 눌렀을 때 그 페이지로 이동하는 기능이 없다. 기존에 있는 화살표를 통해 이동하면 거기에 맞는 버튼 색이 바뀔 뿐이다. 이제 네비게이션 버튼의 기능을 구현해 보자.
 
 # 참고
 
