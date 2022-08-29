@@ -268,6 +268,116 @@ function CarouselNavigationItem({
 
 그런데 지금 캐로셀에서 활성화된 페이지 인덱스를 관리하는 기능은 `CarouselNavigation`의 상위 컴포넌트인 `Carousel`에서 `carouselIndex` state를 통해 가지고 있다. 따라서 네비게이션에 페이지 이동 기능을 추가해 주기 위해서는 `CarouselNavigation`컴포넌트에 props로 `setCarouselIndex`를 넘겨줘야 한다.
 
+그렇게 작성한 `CarouselNavigation`컴포넌트는 다음과 같아진다.
+
+```tsx
+function CarouselNavigation({
+  items,
+  carouselIndex,
+  setCarouselIndex,
+}: {
+  items: CarouselItemType[];
+  // 현재 캐로셀이 보여주고 있는 인덱스
+  carouselIndex: CarouselIndexType;
+  setCarouselIndex: (newCarouselIndex: CarouselIndexType) => void;
+}) {
+  //버튼의 상태를 결정하는 함수
+  const determineCarouselItemState = (itemIndex: number) => {
+    if (itemIndex === carouselIndex.currentIndex) {
+      return "active";
+    } else if (
+      /* 
+    캐로셀의 초반부나 후반부 페이지가 활성화되어있을 경우 
+    활성화 요소를 가운데에 배치하지 못하더라도 5개를 일단 채운다 
+    */
+      carouselIndex.currentIndex === 0 ||
+      carouselIndex.currentIndex === 1
+    ) {
+      return itemIndex < 5 ? "pending" : "inactive";
+    } else if (
+      carouselIndex.currentIndex === items.length - 1 ||
+      carouselIndex.currentIndex === items.length - 2
+    ) {
+      return itemIndex >= items.length - 5 ? "pending" : "inactive";
+    } else {
+      return carouselIndex.currentIndex - 2 <= itemIndex &&
+        itemIndex <= carouselIndex.currentIndex + 2
+        ? "pending"
+        : "inactive";
+    }
+  };
+
+  // 특정 인덱스의 페이지로 이동하는 함수
+  const onCarouselNavigationItemClick = (itemIndex: number) => {
+    setCarouselIndex({
+      prevIndex: itemIndex === 0 ? items.length - 1 : itemIndex - 1,
+      currentIndex: itemIndex,
+      nextIndex: itemIndex === items.length - 1 ? 0 : itemIndex + 1,
+    });
+  };
+
+  return (
+    <dl className="flex flex-row w-full h-10">
+      {items.map((item, index) => (
+        <CarouselNavigationItem
+          key={index}
+          item={item}
+          itemState={determineCarouselItemState(index)}
+          onItemClick={() => {
+            onCarouselNavigationItemClick(index);
+          }}
+        />
+      ))}
+    </dl>
+  );
+}
+```
+
+그리고 `onCarouselNavigationItemClick` 함수를 받은 `CarouselNavigationItem` 컴포넌트는 다음과 같이 버튼으로 만든 후 onClick 이벤트 핸들러를 부여한다.
+
+```tsx
+function CarouselNavigationItem({
+  item,
+  itemState,
+  onItemClick,
+}: {
+  item: CarouselItemType;
+  itemState: string;
+  onItemClick: () => void;
+}) {
+  // active는 현재 캐로셀에서 보이고 있는 아이템에 해당하는 버튼의 상태
+  // pending은 화면에는 보이지만 활성화되어 있지 않은 버튼의 상태
+  const carouselItemConfig: { [key: string]: string } = {
+    active:
+      "border-y border-l last:border-r border-gray-500 bg-gray-500 text-base-100 hover:bg-gray-600",
+    pending: "border-y border-l last:border-r border-gray-500 brightness-50",
+    inactive: "hidden",
+  };
+
+  return (
+    <button
+      onClick={onItemClick}
+      className={`flex-1 flex flex-row transition-all duration-700 ${carouselItemConfig[itemState]}`}
+    >
+      <dt className="flex-1">
+        <img
+          className="object-fill w-full h-full"
+          src={item.image}
+          alt={`carousel-item-${item.id}`}
+        />
+      </dt>
+      <dd className="flex-1 text-sm">{item.title}</dd>
+    </button>
+  );
+}
+```
+
+그러나 여전히 거슬리는 부분이 있다. 아까는 캐로셀 아이템이 이동하는 듯한 효과를 위해 transform 애니메이션을 넣었다. 하지만 네비게이션 바의 버튼을 이용해서 페이지를 이동하면 그 효과가 제대로 발생하지 않는다. 이는 캐로셀에서 이전 인덱스와 다음 인덱스의 정보만 저장하고 있기 때문이다.
+
+이를 어떻게든 처리해서 기존 페이지에서 이동할 페이지로 페이지가 쭉 넘어가는 효과를 줄 수도 있을 것이다. 하지만 그렇게 하면 넘길 페이지가 많을 때 10개가 넘는 페이지가 사용자의 시선을 빠른 속도로 지나가게 된다. 이는 매우 어지러울 것이다. 따라서 전환 효과를 리뉴얼하자.
+
+캐로셀의 동작 로직을 좀 많이 바꿀 예정이라 이는 다음 글에서 다룬다.
+
 # 참고
 
 디자인 참고 https://maplestory.nexon.com/Home/Main
