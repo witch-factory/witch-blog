@@ -81,6 +81,8 @@ function CarouselItem({
 
 Carousel 컴포넌트는 다음과 같이 변경되었다. carouselIndex 형식을 변경하고 그에 따라 `prevClick`, `nextClick`함수를 변경한 것, 그리고 `determineCarouselItemState`를 도입해 각 페이지의 상태를 결정하는 변경사항이 있었다.
 
+또한 이제 캐로셀의 작동 방식이 바뀌어서 화면 밖으로 넘쳐 나오는 사진이 없다. 따라서 화면 밖으로 나오는 사진을 가리기 위해 `overflow-hidden`클래스를 주었던 div element를 제거하였다.
+
 ```tsx
 function Carousel({ items }: { items: CarouselItemType[] }) {
   const [carouselIndex, setCarouselIndex] = useState<CarouselIndexType>({
@@ -118,29 +120,27 @@ function Carousel({ items }: { items: CarouselItemType[] }) {
 
   return (
     <section>
-      <div className="overflow-hidden">
-        <div className="relative flex flex-row justify-between w-full h-[50vh]">
-          {/* 이 CarouselItem들은 absolute position이기 때문에 레이아웃에서 공간을 차지하지 않는다 */}
-          {items.map((item, index) => (
-            <CarouselItem
-              key={item.id}
-              item={item}
-              itemState={determineCarouselItemState(index)}
-            />
-          ))}
-          <button onClick={prevClick} className="z-10 h-full">
-            <IoIosArrowBack className="text-base-100" size={60} />
-          </button>
-          <button onClick={nextClick} className="z-10 h-full">
-            <IoIosArrowForward className="text-base-100" size={60} />
-          </button>
-        </div>
-        <CarouselNavigation
-          items={items}
-          carouselIndex={carouselIndex}
-          setCarouselIndex={setCarouselIndex}
-        />
+      <div className="relative flex flex-row justify-between w-full h-[50vh]">
+        {/* 이 CarouselItem들은 absolute position이기 때문에 레이아웃에서 공간을 차지하지 않는다 */}
+        {items.map((item, index) => (
+          <CarouselItem
+            key={item.id}
+            item={item}
+            itemState={determineCarouselItemState(index)}
+          />
+        ))}
+        <button onClick={prevClick} className="z-10 h-full">
+          <IoIosArrowBack className="text-base-100" size={60} />
+        </button>
+        <button onClick={nextClick} className="z-10 h-full">
+          <IoIosArrowForward className="text-base-100" size={60} />
+        </button>
       </div>
+      <CarouselNavigation
+        items={items}
+        carouselIndex={carouselIndex}
+        setCarouselIndex={setCarouselIndex}
+      />
     </section>
   );
 }
