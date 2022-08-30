@@ -347,6 +347,47 @@ function CarouselNavigationItem({
 }
 ```
 
-이렇게 하면 모바일 화면에서는 아래와 같이 네비게이션 바에서 이미지가 보이지 않게 된다. 좀 볼품없어지기는 했지만 아까처럼 텍스트가 늘어지는 것보다는 낫다.
+이렇게 하면 모바일 화면에서는 아래와 같이 네비게이션 바에서 이미지가 보이지 않게 된다. 좀 볼품없어지기는 했지만 아까처럼 텍스트가 네비게이션 바를 넘어가서 늘어지는 것보다는 낫다.
 
 ![carousel-7-4](carousel-7-4.png)
+
+# 3. 네비게이션 바에 페이지 번호 표시
+
+이는 캐로셀 네비게이션에서 캐로셀의 현재 인덱스와 전체 items를 props로 받기 때문에 디자인만 하면 간단하게 구현할 수 있다. 위치를 잡는 건 absolute position으로 처리하고 나머지 디자인은 네비게이션 바 아이템과 같은 색, 그리고 적절한 크기로 구현하면 된다.
+
+다음과 같은 버튼을 `CarouselNavigation` 컴포넌트의 dl 태그 안에 추가한다.
+
+```tsx
+<button className="absolute bottom-[15%] btn btn-xs bg-gray-400/70 hover:bg-gray-400 w-28 h-7 z-30 border-none rounded-none rounded-t-lg text-lg tracking-[0.3rem]">
+  {carouselIndex.currentIndex + 1} / {items.length}
+</button>
+```
+
+그러면 다음과 같이 페이지 번호가 표시된다.
+
+![carousel-7-5](./carousel-7-5.png)
+
+# 4. 일정 시간마다 자동 넘김
+
+setInterval함수를 사용하면 간단히 할 수 있다. carousel 컴포넌트의 useEffect에서 인터벌을 설정하여, 일정 시간마다 캐로셀이 다음 인덱스로 넘어가도록 설정한다.
+
+다음 코드를 `Carousel` 컴포넌트에 추가하면 된다. 그러면 3초마다 캐로셀 화면이 전환된다.
+
+```tsx
+useEffect(() => {
+  const carouselTimer = setInterval(() => {
+    setCarouselIndex((prev) => ({
+      previousIndex: prev.currentIndex,
+      currentIndex: (prev.currentIndex + 1) % items.length,
+    }));
+  }, 3000);
+
+  return () => {
+    clearInterval(carouselTimer);
+  };
+}, []);
+```
+
+# 참고
+
+setInterval 사용 https://ko.javascript.info/settimeout-setinterval
