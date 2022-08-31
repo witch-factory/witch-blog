@@ -391,3 +391,5 @@ useEffect(() => {
 # 참고
 
 setInterval 사용 https://ko.javascript.info/settimeout-setinterval
+
+완벽한 캐로셀 만들기 1부 https://code.tutsplus.com/ko/tutorials/create-the-perfect-carousel-part-1--cms-29481
