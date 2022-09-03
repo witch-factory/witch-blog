@@ -140,6 +140,10 @@ function Counter() {
 
 이 문단은 참고문헌에 있는 [리액트 프로처럼 쓰기](https://devtrium.com/posts/how-to-use-react-usereducer-hook#usereducer-a-backend-mental-model)글의 `useReducer: A Backend Mental Model`문단과 [이창희](https://xo.dev/)님과의 대화를 참고하여 작성되었다.
 
+useReducer를 사용해서 좋은 점에 대해서 알아보기 전에 먼저 useReducer가 어떤 식으로 작동하는지 직관적으로 이해해 보도록 하자. useReducer는 백엔드를 다루는 것과 비슷하게 생각할 수 있다.
+
+state를 데이터베이스로 생각하고 dispatch는 DB의 api로 생각하는 것이다. 이 dispatch에 주는 인자인 action으로 우리는 마치 다양한 api로 데이터베이스를 관리하듯이 state를 관리할 수 있다. action.type으로 어떤 종류의 api인지를 선택할 수 있고, action.payload로 api에 전달할 데이터를 넣을 수 있다. POST 메서드 같은 경우 데이터를 함께 전달하는데 그것과 비슷하다.
+
 # 2. useReducer의 이용
 
 프로젝트를 하다 보니 많은 정보를 담고 있는 state를 관리하는 컴포넌트가 생기게 되었다. 예를 하나 들자면 회원가입 폼이 있겠다. 이름, 아이디, 비밀번호, 비밀번호 확인, 이메일만 받는다 해도 벌써 5개의 정보를 관리해 줘야 한다.
