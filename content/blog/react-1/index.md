@@ -142,7 +142,11 @@ function Counter() {
 
 useReducer를 사용해서 좋은 점에 대해서 알아보기 전에 먼저 useReducer가 어떤 식으로 작동하는지 직관적으로 이해해 보도록 하자. useReducer는 백엔드를 다루는 것과 비슷하게 생각할 수 있다.
 
-state를 데이터베이스로 생각하고 dispatch는 DB의 api로 생각하는 것이다. 이 dispatch에 주는 인자인 action으로 우리는 마치 다양한 api로 데이터베이스를 관리하듯이 state를 관리할 수 있다. action.type으로 어떤 종류의 api인지를 선택할 수 있고, action.payload로 api에 전달할 데이터를 넣을 수 있다. POST 메서드 같은 경우 데이터를 함께 전달하는데 그것과 비슷하다.
+state를 데이터베이스로 생각하고 dispatch는 DB의 api로 생각하는 것이다. 이 dispatch에 주는 인자인 action으로 우리는 마치 다양한 api로 데이터베이스를 관리하듯이 state를 관리할 수 있다. action.type으로 어떤 종류의 api인지를 선택할 수 있고, action.payload로 api에 전달할 데이터를 넣을 수 있다. POST 메서드 같은 경우 request body에 데이터를 함께 전달하는데 그것과 비슷하다.
+
+그리고 reducer는 api의 내부 로직과 대응시켜 생각할 수 있다. 실제 백엔드 api의 경우 내부 로직과는 별개로 데이터베이스에 접근하는 방법을 제공한다. 예를 들어서 `AddUser` 라는 api가 있다면 이 api는 실제로는 어떤 DB 쿼리(혹은 ORM을 통한 DB 요청)에 해당하는 동작을 할 것이다.
+
+하지만 이 api를 사용하는 사람은 그런 내부 로직을 알 필요가 없다. 그냥 `AddUser`라는 api를 호출하면 된다. 이와 비슷하게 useReducer를 사용하는 사람은 reducer의 내부 로직을 알 필요가 없다. dispatch에 action을 넣어서 호출하면 된다. 이런 상태 관리 로직의 분리는 실제로 useReducer의 장점이기도 하다.
 
 # 2. useReducer의 이용
 
