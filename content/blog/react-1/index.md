@@ -1,7 +1,7 @@
 ---
 title: 프론트 지식 익히기 React - useReducer의 사용
-date: "2022-08-31T00:00:00Z"
-description: "React 지식 1번째, useReducer에 대한 탐구"
+date: "2022-09-12T00:00:00Z"
+description: "React useReducer에 대한 탐구"
 tags: ["web", "study", "front", "react"]
 ---
 
@@ -39,7 +39,7 @@ number는 똑같이 상태를 저장하고 있고, dispatch는 reducer 함수를
 
 reducer는 상태를 받아서 새로운 상태를 리턴하는 함수이다. 즉 상태의 업데이트를 담당한다. 그런데 단순히 하나의 상태만 돌려준다면 useState에 비해 할 수 있는 게 현저히 적을 것이다. 유명한 Counter 예제만 봐도 증가와 감소 두 가지의 상태 업데이트가 필요하지 않은가? 이런 다양한 종류의 상태 업데이트를 위해 reducer는 상태 외에 액션(action)이라는 것을 받아서 새로운 상태를 리턴해 준다.
 
-이 action은 일반적으로 어떤 상태 업데이트 로직인지를 뜻하는 type과 그 업데이트에 필요한 기타 데이터인 payload로 이루어진 객체이다.(물론 다른 형태의 action을 원하는 대로 사용해도 된다) 즉 일반적인 reducer의 형태는 다음과 같다. (payload는 생략 가능하다. 이 payload는 redux에서 온 이름인데 그냥 그대로 쓰면 된다..)
+이 action은 일반적으로 어떤 상태 업데이트 로직인지를 뜻하는 type과 그 업데이트에 필요한 기타 데이터인 payload로 이루어진 객체이다. 물론 다른 형태의 action을 원하는 대로 사용해도 된다. 굳이 action과 payload를 원소로 가지는 객체일 필요는 없다. 하지만 관행이므로 이 글에서는 따르도록 하겠다. 즉 일반적인 reducer의 형태는 다음과 같다. payload는 redux에서 온 이름인데 그냥 그대로 쓰면 된다..
 
 ```jsx
 function reducer(state, action) {
@@ -144,70 +144,64 @@ useReducer를 사용해서 좋은 점에 대해서 알아보기 전에 먼저 us
 
 state를 데이터베이스로 생각하고 dispatch는 DB의 api로 생각하는 것이다. 이 dispatch에 주는 인자인 action으로 우리는 마치 다양한 api로 데이터베이스를 관리하듯이 state를 관리할 수 있다. action.type으로 어떤 종류의 api인지를 선택할 수 있고, action.payload로 api에 전달할 데이터를 넣을 수 있다. POST 메서드 같은 경우 request body에 데이터를 함께 전달하는데 그것과 비슷하다.
 
-그리고 reducer는 api의 내부 로직과 대응시켜 생각할 수 있다. 실제 백엔드 api의 경우 내부 로직과는 별개로 데이터베이스에 접근하는 방법을 제공한다. 예를 들어서 `AddUser` 라는 api가 있다면 이 api는 실제로는 어떤 DB 쿼리(혹은 ORM을 통한 DB 요청)에 해당하는 동작을 할 것이다.
+그리고 reducer는 api의 내부 로직과 대응시켜 생각할 수 있다. 실제 백엔드 api의 경우 내부 로직과는 별개로 데이터베이스에 접근하는 방법을 제공한다. 예를 들어서 `AddUser` 라는 api가 있다면 이 api는 실제로는 어떤 DB 쿼리(혹은 ORM을 통한 DB 요청)를 날리는 것에 해당하는 동작을 할 것이다.
 
-하지만 이 api를 사용하는 사람은 그런 내부 로직을 알 필요가 없다. 그냥 `AddUser`라는 api를 호출하면 된다. 이와 비슷하게 useReducer를 사용하는 사람은 reducer의 내부 로직을 알 필요가 없다. dispatch에 action을 넣어서 호출하면 된다. 이런 상태 관리 로직의 분리는 실제로 useReducer의 장점이기도 하다.
+하지만 이 api를 사용하는 사람은 그렇게 내부에서 무슨 일이 일어나는지를 알 필요가 없다. 그냥 `AddUser`라는 api를 호출하면 된다. 이와 비슷하게 useReducer를 사용하는 사람은 reducer의 내부 로직을 알 필요가 없다. dispatch에 action을 넣어서 호출하면 된다. 이런 상태 관리 로직의 분리는 실제로 useReducer의 장점이다. 그리고 이런 점이 useState와의 차별점을 만든다.
 
-# 2. useReducer의 이용
+# 2. useReducer의 활용
 
-프로젝트를 하다 보니 많은 정보를 담고 있는 state를 관리하는 컴포넌트가 생기게 되었다. 예를 하나 들자면 회원가입 폼이 있겠다. 이름, 아이디, 비밀번호, 비밀번호 확인, 이메일만 받는다 해도 벌써 5개의 정보를 관리해 줘야 한다.
+그럼 이제 useReducer가 어떤 문법으로 작동하는지도 알았고 백엔드와 같이 특정 데이터를 api를 통해 관리하는 모델처럼 볼 수 있다는 점도 알았다. 이제 useReducer를 어떻게 활용할 수 있는지 알아보자.
 
-물론 지금 하고 있는 프로젝트에서는 그보다 훨씬 많은 정보를 받는다. 하지만 예시를 위해 위 5개의 정보만 받는 폼이 있다고 해보자. 각 정보에 대해 state를 만들고 해당하는 input의 onChange 핸들러도 모두 따로 만들어 준다고 하면 다음과 같은 모양이 될 것이다.
+## 2.1 여러 개의 state를 관리
+
+useReducer를 사용하면 여러 개의 state를 편리하게 관리할 수 있다는 장점이 있다. 예를 들어서 회원가입 컴포넌트를 만든다고 하자. 이 컴포넌트는 이름, 아이디, 이메일, 비밀번호, 비밀번호 확인 등의 정보를 입력받아야 한다. 일단 이 5개의 요소만 받아서 회원가입을 시켜준다고 해보자. 이렇게 여러 개의 state를 관리해야 하는 경우에는 useState를 사용하면 다음과 같이 작성할 수 있다.
 
 ```tsx
+interface SignUpFormType {
+  userName: string;
+  userID: string;
+  userEmail: string;
+  userPassword: string;
+  userConfirmPassword: string;
+}
+
 function SignUpForm() {
-  const [userName, setUserName] = useState("");
-  const [userID, setUserID] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
-  const [userConfirmPassword, setUserConfirmPassword] = useState("");
+  const [form, setForm] =
+    useState <
+    SignUpFormType >
+    {
+      userName: "",
+      userID: "",
+      userEmail: "",
+      userPassword: "",
+      userConfirmPassword: "",
+    };
 
-  const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserName(e.target.value);
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(form);
   };
 
-  const handleUserIDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserID(e.target.value);
-  };
-
-  const handleUserEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserEmail(e.target.value);
-  };
-
-  const handleUserPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserPassword(e.target.value);
-  };
-
-  const handleUserConfirmPasswordChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setUserConfirmPassword(e.target.value);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({
+      ...form,
+      [e.target.id]: e.target.value,
+    });
   };
 
   return (
     <section>
       <h1>Sign Up</h1>
       <form
-        style={{ display: "flex", flexDirection: "column", width: "200px" }}
+        style={{ display: "flex", flexDirection: "column", width: "150px" }}
+        onSubmit={handleSubmit}
       >
-        <label htmlFor="userName">Name</label>
-        <input type="text" id="userName" onChange={handleUserNameChange} />
-        <label htmlFor="userID">ID</label>
-        <input type="text" id="userID" onChange={handleUserIDChange} />
-        <label htmlFor="userEmail">Email</label>
-        <input type="text" id="userEmail" onChange={handleUserEmailChange} />
-        <label htmlFor="userPassword">Password</label>
-        <input
-          type="password"
-          id="userPassword"
-          onChange={handleUserPasswordChange}
-        />
-        <label htmlFor="userConfirmPassword">Confirm Password</label>
-        <input
-          type="password"
-          id="userConfirmPassword"
-          onChange={handleUserConfirmPasswordChange}
-        />
+        {Object.keys(form).map((key) => (
+          <label key={key}>
+            {key}
+            <input type="text" id={key} onChange={handleChange} />
+          </label>
+        ))}
         <button type="submit">Sign Up</button>
       </form>
     </section>
@@ -215,7 +209,7 @@ function SignUpForm() {
 }
 ```
 
-아, 끔찍한 코드다. state들이 같은 회원가입 폼에 속해 있다는 것도 드러나 있지 않고, 각각의 state를 담당하는 input에 대해 onChange 함수도 다 만들어 줘야 한다. 이런 문제는 각 state가 쓰이는 컴포넌트가 많아지면 더 많은 문제가 생긴다. 이런 문제를 해결하는 하나의 방법으로 useReducer를 사용할 수 있다.
+## 2.2 state를 설정할 때 특정 작업을 함께하기
 
 # 참고
 
