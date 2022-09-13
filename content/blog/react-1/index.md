@@ -154,60 +154,80 @@ state를 데이터베이스로 생각하고 dispatch는 DB의 api로 생각하�
 
 ## 2.1 여러 개의 state를 관리
 
-useReducer를 사용하면 여러 개의 state를 편리하게 관리할 수 있다는 장점이 있다. 예를 들어서 회원가입 컴포넌트를 만든다고 하자. 이 컴포넌트는 이름, 아이디, 이메일, 비밀번호, 비밀번호 확인 등의 정보를 입력받아야 한다. 일단 이 5개의 요소만 받아서 회원가입을 시켜준다고 해보자. 이렇게 여러 개의 state를 관리해야 하는 경우에는 useState를 사용하면 다음과 같이 작성할 수 있다.
+### 2.1.2 useState를 사용하는 경우
+
+useReducer를 사용하면 여러 개의 state를 편리하게 관리할 수 있다는 장점이 있다. 예를 들어서 회원가입 컴포넌트를 만든다고 하자. 이 컴포넌트는 이름, 아이디, 이메일, 비밀번호, 비밀번호 확인 등의 정보를 입력받아야 한다. 일단 이 5개의 요소만 받아서 회원가입을 시켜준다고 해보자. 이렇게 여러 개의 state를 관리해야 하는 경우에는 useState를 사용하면 다음과 같이 폼 관리 로직을 작성할 수 있다. 물론 이 경우에는 객체를 이용해서 단순화할 수 있을 것이다. 하지만 여러 개의 상태를 관리해야 하는 경우는 분명 생긴다.
 
 ```tsx
-interface SignUpFormType {
-  userName: string;
-  userID: string;
-  userEmail: string;
-  userPassword: string;
-  userConfirmPassword: string;
-}
-
 function SignUpForm() {
-  const [form, setForm] =
-    useState <
-    SignUpFormType >
-    {
-      userName: "",
-      userID: "",
-      userEmail: "",
-      userPassword: "",
-      userConfirmPassword: "",
-    };
+  const [userName, setUserName] = useState("");
+  const [userID, setUserID] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [userConfirmPassword, setUserConfirmPassword] = useState("");
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log(form);
+  const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserName(e.target.value);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({
-      ...form,
-      [e.target.id]: e.target.value,
-    });
+  const handleUserIDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserID(e.target.value);
+  };
+
+  const handleUserEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserEmail(e.target.value);
+  };
+
+  const handleUserPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserPassword(e.target.value);
+  };
+
+  const handleUserConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setUserConfirmPassword(e.target.value);
   };
 
   return (
     <section>
       <h1>Sign Up</h1>
       <form
-        style={{ display: "flex", flexDirection: "column", width: "150px" }}
-        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", width: "180px" }}
       >
-        {Object.keys(form).map((key) => (
-          <label key={key}>
-            {key}
-            <input type="text" id={key} onChange={handleChange} />
-          </label>
-        ))}
+        <label>
+          User Name
+          <input type="text" onChange={handleUserNameChange} />
+        </label>
+        <label>
+          User ID
+          <input type="text" onChange={handleUserIDChange} />
+        </label>
+        <label>
+          User Email
+          <input type="text" onChange={handleUserEmailChange} />
+        </label>
+        <label>
+          User Password
+          <input type="text" onChange={handleUserPasswordChange} />
+        </label>
+        <label>
+          User Confirm Password
+          <input type="text" onChange={handleUserConfirmPasswordChange} />
+        </label>
         <button type="submit">Sign Up</button>
       </form>
     </section>
   );
 }
 ```
+
+스타일링을 하지 않아서 별로 볼품은 없지만 다음과 같은 간단한 회원가입 폼이 완성되었다. 제출 동작은 콘솔에 폼의 내용을 출력하는 것으로 구현했다.
+
+![signupform](./signupform.png)
+
+### 2.1.2 useReducer를 이용한 경우
+
+useReducer를 이용하면 다음과 같은 코드가 된다.
 
 ## 2.2 state를 설정할 때 특정 작업을 함께하기
 
