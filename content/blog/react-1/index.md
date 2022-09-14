@@ -227,7 +227,77 @@ function SignUpForm() {
 
 ### 2.1.2 useReducer를 이용한 경우
 
-useReducer를 이용하면 다음과 같은 코드가 된다.
+useReducer를 이용하면 다음과 같은 코드가 된다. typescript를 이용해 좀더 세련되게 짜보았다.
+
+```tsx
+interface SignUpFormType {
+  "User Name": string;
+  "User ID": string;
+  "User Email": string;
+  "User Password": string;
+  "User Confirm Password": string;
+}
+
+const initialSignUpForm: SignUpFormType = {
+  "User Name": "",
+  "User ID": "",
+  "User Email": "",
+  "User Password": "",
+  "User Confirm Password": "",
+};
+
+const signUpReducer = (
+  state: SignUpFormType,
+  action: { type: string; payload: { key: string; value: string } }
+) => {
+  switch (action.type) {
+    case "UPDATE":
+      return {
+        ...state,
+        [action.payload.key]: action.payload.value,
+      };
+    default:
+      throw new Error(`Unknown action type: ${action.type}`);
+  }
+};
+
+const ReducerSignUpForm = () => {
+  const [state, dispatch] = useReducer(signUpReducer, initialSignUpForm);
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(state);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({
+      type: "UPDATE",
+      payload: {
+        key: e.target.name,
+        value: e.target.value,
+      },
+    });
+  };
+
+  return (
+    <section>
+      <h1>Sign Up</h1>
+      <form
+        style={{ display: "flex", flexDirection: "column", width: "180px" }}
+        onSubmit={handleSubmit}
+      >
+        {Object.keys(state).map((key) => (
+          <label key={key}>
+            {key}
+            <input type="text" id={key} name={key} onChange={handleChange} />
+          </label>
+        ))}
+        <button type="submit">Sign Up</button>
+      </form>
+    </section>
+  );
+};
+```
 
 ## 2.2 state를 설정할 때 특정 작업을 함께하기
 
