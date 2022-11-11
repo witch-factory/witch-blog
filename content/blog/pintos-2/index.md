@@ -93,13 +93,160 @@ int process_wait (tid_t child_tid UNUSED) {
 
 호출 규약에 따르면 다음과 같이 스택에 쌓여야 한다. 이 작업을 시작하자.
 
-[calling convention](./calling_convention.png)
+![calling convention](./calling_convention.png)
 
 ### 2.3.1 스택에 인자 넣기
 
 이 작업은 전달받은 커맨드 라인과 스택 포인터를 통해서 이루어진다. 커맨드 라인의 인자들과 주소 등을 유저 스택에 쌓으면서 스택 포인터(esp)를 이동시켜 주는 것이다. 따라서 그 둘을 받는 함수 `construct_stack`을 `src/userprog/process.c`에 추가하고 프로토타입도 `src/userprog/process.h`에 추가한다.
 
-먼저 인자들을 문자열 형태로 스택에 쌓아 줘야 한다. 단 거꾸로 쌓아줘야 하므로 이 동작을 위해서는 전체 인자의 개수를 알아야 한다.
+먼저 인자들을 문자열 형태로 스택에 쌓아 줘야 한다. 단 거꾸로 쌓아줘야 하므로 이 동작을 위해서는 전체 인자의 개수를 알아야 한다. 따라서 먼저 인자의 개수를 세어 주자. 먼저 문자열을 공백으로 구분하기 위해 <string.h>의 `strtok_r`함수를 사용할 것인데 이 함수는 인자로 들어오는 문자열을 훼손시키므로 먼저 복사본을 만들어 주자.
+
+```c
+void construct_stack(const char* file_name, void** esp){
+  int argc, idx;
+  char** argv;
+  int total_arg_len, cur_arg_len;
+  char* file_name_token, *save_ptr;
+  char* file_name_copy;
+
+  file_name_copy=malloc(sizeof(char)*(strlen(file_name)+2));
+  strlcpy(file_name_copy, file_name, strlen(file_name)+1);
+  file_name_copy[strlen(file_name)]='\0';
+}
+```
+
+그리고 하나하나 파싱해 가며 인자 개수를 센다. 중간중간 주석에 있는 출력 코드는 디버깅을 위한 것인데 저런 식으로 복사된 것이나 토크나이징된 결과를 출력하면서 코드를 짰다.
+
+```c
+  argc=0;
+  // count arg
+  // function name parse
+  // file_name_token=strtok_r(file_name_copy, " ", &save_ptr);
+  // Argument number count
+  for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
+    //printf("tokenized file name : %s\n", file_name_token);
+    argc++;
+  }
+  //printf("arg count : %d\n\n",argc);
+```
+
+그 다음으로는 인자들(문자열)을 넣어 줘야 한다. 하지만 호출 규약에 맞추려면 인자가 주어진 순서와 반대로 스택에 넣어야 한다. 따라서 먼저 인자들을 저장할 공간을 할당해 주자. 그리고 다시 토크나이징을 해서 인자들을 저장해 준다. 이때 추후를 위해서 인자들이 들어간 전체 공간의 길이도 `total_arg_len`으로 저장한다.
+
+```c
+  argv=malloc(sizeof(char)*(argc+1));
+  strlcpy(file_name_copy, file_name, strlen(file_name)+1);
+  file_name_copy[strlen(file_name)]='\0';
+  idx=0;
+  total_arg_len=0;
+  for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
+    total_arg_len+=strlen(file_name_token)+1;
+    argv[idx]=file_name_token;
+    idx++;
+  }
+```
+
+이제 드디어 인자들을 스택에 넣을 차례다. 인자들의 주소를 저장한 배열 argv를 역순으로 순회하면서 인자들을 문자열 형태로 스택에 담아 준다. 그러면서 이후 스택에 인자들의 주소도 담을 것을 대비해서 argv배열에는 각 인자들의 시작 주소를 저장해 둔다.
+
+```c
+  for(idx=argc-1;idx>=0;idx--){
+    cur_arg_len=strlen(argv[idx]);
+    *esp-=cur_arg_len+1; // include null character
+    strlcpy(*esp, argv[idx], cur_arg_len+1);
+    // 각 인자들의 시작 주소 저장
+    argv[idx]=*esp;
+    //printf("file name token %s\n", *esp);
+  }
+```
+
+그 다음으로는 word alignment, NULL, 인자들의 시작 주소, argv주소, argc, return address를 차례로 넣어 준 후 동적 할당한 메모리를 해제해 준다. 이렇게 해서 구성된 `construct_stack` 함수는 다음과 같다.
+
+```c
+void construct_stack(const char* file_name, void** esp){
+  int argc, idx;
+  char** argv;
+  int total_arg_len, cur_arg_len;
+  char* file_name_token, *save_ptr;
+  char* file_name_copy;
+
+  file_name_copy=malloc(sizeof(char)*(strlen(file_name)+2));
+  strlcpy(file_name_copy, file_name, strlen(file_name)+1);
+  file_name_copy[strlen(file_name)]='\0';
+
+  argc=0;
+  // count arg
+  // function name parse
+  // file_name_token=strtok_r(file_name_copy, " ", &save_ptr);
+  // Argument number count
+  for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
+    //printf("tokenized file name : %s\n", file_name_token);
+    argc++;
+  }
+  //printf("arg count : %d\n\n",argc);
+
+  argv=malloc(sizeof(char)*(argc+1));
+  strlcpy(file_name_copy, file_name, strlen(file_name)+1);
+  file_name_copy[strlen(file_name)]='\0';
+  idx=0;
+  total_arg_len=0;
+  for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
+    total_arg_len+=strlen(file_name_token)+1;
+    argv[idx]=file_name_token;
+    idx++;
+  }
+
+  for(idx=argc-1;idx>=0;idx--){
+    cur_arg_len=strlen(argv[idx]);
+    *esp-=cur_arg_len+1; // include null character
+    strlcpy(*esp, argv[idx], cur_arg_len+1);
+    argv[idx]=*esp;
+    //printf("file name token %s\n", *esp);
+  }
+
+  /* word alignment */
+  if(total_arg_len%4){
+    *esp-=4-(total_arg_len%4);
+  }
+  /* NULL pointer seltinel ensures that argv[argc] is NULL
+  (required by C standard) */
+  *esp-=4;
+  **((uint32_t**)esp)=0;
+
+  for(idx=argc-1;idx>=0;idx--){
+    *esp-=4;
+    **((uint32_t**)esp)=argv[idx];
+  }
+
+  //argv
+  *esp-=4;
+  **((uint32_t**)esp)=*esp+4;
+
+  //argc
+  *esp-=4;
+  **((uint32_t**)esp)=argc;
+
+  //return address
+  *esp-=4;
+  **((uint32_t**)esp)=0;
+
+  free(argv);
+  free(file_name_copy);
+}
+```
+
+이때 스택에 인자들이 잘 담겼는지 디버깅을 위해서는 `hex_dump`함수를 이용할 수 있다. `construct_stack`함수의 끝에 다음과 같은 코드를 추가해 보자.
+
+```c
+printf("hex dump in construct_stack start\n\n");
+hex_dump(*esp, *esp, 100, true);
+```
+
+그 상태에서 `src/userprog`에서 make를 하고 이를 실행하면 다음과 같이 메모리가 hex형태로 출력되어 나온다. 이게 호출 규약에 맞게 잘 구성된 메모리인지를 직접 계산해서 확인할 수 있다.
+
+```
+pintos --filesys-size=2 -p ../examples/echo -a echo -- -f -q run 'echo x'
+```
+
+![hex_dump](./hex_dump.png)
 
 # 참고
 
