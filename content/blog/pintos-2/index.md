@@ -108,12 +108,10 @@ void construct_stack(const char* file_name, void** esp){
   int argc, idx;
   char** argv;
   int total_arg_len, cur_arg_len;
+  char file_name_copy[1000];
   char* file_name_token, *save_ptr;
-  char* file_name_copy;
 
-  file_name_copy=malloc(sizeof(char)*(strlen(file_name)+2));
   strlcpy(file_name_copy, file_name, strlen(file_name)+1);
-  file_name_copy[strlen(file_name)]='\0';
 }
 ```
 
@@ -123,9 +121,11 @@ void construct_stack(const char* file_name, void** esp){
   argc=0;
   // count arg
   // function name parse
-  // file_name_token=strtok_r(file_name_copy, " ", &save_ptr);
-  // Argument number count
-  for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
+  file_name_token=strtok_r(file_name_copy, " ", &save_ptr);
+  //printf("tokenized file name : %s\n", file_name_token);
+  // count argument number
+  while(file_name_token!=NULL){
+    file_name_token=strtok_r(NULL, " ", &save_ptr);
     //printf("tokenized file name : %s\n", file_name_token);
     argc++;
   }
@@ -137,7 +137,6 @@ void construct_stack(const char* file_name, void** esp){
 ```c
   argv=malloc(sizeof(char)*(argc+1));
   strlcpy(file_name_copy, file_name, strlen(file_name)+1);
-  file_name_copy[strlen(file_name)]='\0';
   idx=0;
   total_arg_len=0;
   for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
@@ -167,19 +166,18 @@ void construct_stack(const char* file_name, void** esp){
   int argc, idx;
   char** argv;
   int total_arg_len, cur_arg_len;
+  char file_name_copy[1000];
   char* file_name_token, *save_ptr;
-  char* file_name_copy;
 
-  file_name_copy=malloc(sizeof(char)*(strlen(file_name)+2));
   strlcpy(file_name_copy, file_name, strlen(file_name)+1);
-  file_name_copy[strlen(file_name)]='\0';
-
   argc=0;
   // count arg
   // function name parse
-  // file_name_token=strtok_r(file_name_copy, " ", &save_ptr);
-  // Argument number count
-  for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
+  file_name_token=strtok_r(file_name_copy, " ", &save_ptr);
+  //printf("tokenized file name : %s\n", file_name_token);
+  // count argument number
+  while(file_name_token!=NULL){
+    file_name_token=strtok_r(NULL, " ", &save_ptr);
     //printf("tokenized file name : %s\n", file_name_token);
     argc++;
   }
@@ -187,7 +185,6 @@ void construct_stack(const char* file_name, void** esp){
 
   argv=malloc(sizeof(char)*(argc+1));
   strlcpy(file_name_copy, file_name, strlen(file_name)+1);
-  file_name_copy[strlen(file_name)]='\0';
   idx=0;
   total_arg_len=0;
   for(file_name_token=strtok_r(file_name_copy, " ", &save_ptr);file_name_token!=NULL;file_name_token=strtok_r(NULL, " ", &save_ptr)){
@@ -231,7 +228,6 @@ void construct_stack(const char* file_name, void** esp){
   **((uint32_t**)esp)=0;
 
   free(argv);
-  free(file_name_copy);
 }
 ```
 
@@ -325,7 +321,554 @@ void check_address(void* vaddr){
 
 ## 3.2 시스템 콜 구현
 
-이제 각 시스템 콜 함수들을 구현해 보자. 이는 핀토스 공식 매뉴얼과 프로젝트 ppt를 참고했다. 먼저 userprog/syscall.h에 시스템 콜들의 프로토타입을 선언해 주자.
+이제 각 시스템 콜 함수들을 구현해 보자. 이는 핀토스 공식 매뉴얼과 프로젝트 ppt를 참고했다. 먼저 userprog/syscall.h에 시스템 콜들의 프로토타입을 선언해 주자. bool타입을 리턴해 주는 함수들이 있으므로 `stdbool.h`도 인클루드해 준다.
+
+```c
+// src/userprog/syscall.h
+#ifndef USERPROG_SYSCALL_H
+#define USERPROG_SYSCALL_H
+
+#include <stdbool.h>
+
+typedef int pid_t;
+
+void syscall_init (void);
+void check_address(void* vaddr);
+void halt(void);
+void exit(int status);
+pid_t exec(const char *cmd_line);
+int wait(pid_t pid);
+bool create(const char* file, unsigned int initial_size);
+bool remove(const char* file);
+int open(const char* file);
+int filesize(int fd);
+int read(int fd, void *buffer, unsigned int size);
+int write(int fd, const void* buffer, unsigned int size);
+void seek(int fd, unsigned int position);
+unsigned int tell(int fd);
+void close(int fd);
+int fibonacci(int n);
+int max_of_four_int(int a, int b, int c, int d);
+
+#endif /* userprog/syscall.h */
+```
+
+그리고 프로젝트 1에서는 이 중 halt, exit, exec, wait을 구현하고 read는 stdin에 대해, write는 stdout에 대해서 작동하도록 구현해야 한다. 추가적인 시스템 콜인 fibonacci와 max_of_four_int도 구현해야 하지만 일단 핀토스 공식 매뉴얼에 있는 건 저게 전부다.
+
+나머지 시스템 콜은 프로젝트 2에서 구현하게 될 것이다. 그러므로 이 중에서 구현해야 할 함수들을 syscall.c에 구현해 주자. 구현 방법은 학교에서 제공한 ppt를 참고했다.
+
+### 3.2.1 halt
+
+halt는 `src/devices/shutdown.c`에 있는 `shutdown_power_off()` 함수를 호출하면 된다. 이 함수는 핀토스를 종료시키는 함수이다.
+
+```c
+// src/userprog/syscall.c
+void halt(void){
+  shutdown_power_off();
+}
+```
+
+### 3.2.2 exit
+
+exit는 현재 실행 중인 프로세스를 종료시키는 함수이다. 이 함수는 프로세스의 종료 상태를 인자로 받는다. 프로세스의 종료 상태는 부모 프로세스가 `wait()` 함수를 호출했을 때 리턴되는 값이다.
+
+이렇게 exit함수가 인자로 받은 프로세스의 종료 상태는 `thread_current()->exit_status`에 저장해야 한다. 따라서 이 값을 인자로 받은 종료 상태로 바꿔주고, 종료 메시지를 출력하고 현재 프로세스를 종료시키면 된다. 이는 `thread_exit()` 함수를 호출하면 된다. 단 문제가 있다. 현재 스레드 구조체에는 스레드의 종료 상태를 나타내는 요소가 없다는 것이다.
+
+따라서 src/threads/thread.h의 thread 구조체에 다음과 같이 exit_status라는 멤버 변수를 추가해 주어야 한다.
+
+```c
+// src/threads/thread.h 의 thread 구조체 내용의 일부
+#ifdef USERPROG
+    /* Owned by userprog/process.c. */
+    uint32_t *pagedir;                  /* Page directory. */
+    int exit_status;
+
+#endif
+```
+
+이제 exit 함수를 구현해 주면 된다. 이것은 한양대 학교에서 제공한 ppt의 80쪽의 exit 구현 설명을 참고했다.
+
+```c
+// src/userprog/syscall.c
+void exit(int status){
+  struct thread *t=thread_current();
+  printf("%s: exit(%d)\n", thread_name(), status);
+  t->exit_status=status;
+  thread_exit();
+}
+```
+
+### 3.2.3 exec
+
+exec는 `process_execute`함수만 호출해 주면 된다.
+
+```c
+// src/userprog/syscall.c
+pid_t exec(const char *cmd_line){
+  process_execute(cmd_line);
+}
+```
+
+### 3.2.4 wait
+
+wait는 `process_wait`함수만 호출해 주면 된다. 아직 `process_wait` 함수는 단순히 2초 대기하는 식으로 구현되어 있다. 추가적인 구현은 나중에 한다.
+
+```c
+// src/userprog/syscall.c
+int wait(pid_t pid){
+  process_wait(pid);
+}
+```
+
+### 3.2.5 read
+
+read 함수는 `src/devices/input.c`에 있는 `input_getc()` 함수를 이용하면 된다. 이 함수는 키보드에서 입력된 문자를 리턴한다. 그리고 아직은 stdin만 지원하므로 인자로 받은 fd가 0이 아니면 -1을 리턴하면 된다.
+
+```c
+// src/userprog/syscall.c
+int read(int fd, void *buffer, unsigned int size){
+  // not from STDIN
+  unsigned int cnt;
+  uint8_t temp;
+  if(fd==0){
+    cnt=0;
+    for(cnt=0;(cnt<size) && (temp=input_getc());cnt++){
+      *(uint8_t*)(buffer+cnt)=temp;
+    }
+    return cnt;
+  }
+  else{
+    return -1;
+  }
+}
+```
+
+### 3.2.6 write
+
+write 함수는 putbuf 함수를 이용하면 된다. 이는 <stdio.h>에 있다. 또한 아직은 stdout에 대해서만 구현하면 되므로 fd가 1이 아니면 -1을 리턴하면 된다.
+
+```c
+int write(int fd, const void* buffer, unsigned int size){
+  if(fd==1){
+    putbuf(buffer, size);
+    return size;
+  }
+  return -1;
+}
+```
+
+## 3.3 시험해 보기
+
+시스템 콜 핸들러에 지금까지 구현한 함수들을 추가하고 아까의 echo x 명령을 실행해 보자. 먼저 syscall_handler에 다음과 같이 시스템 콜 함수들의 실행을 추가해 주자. 시스템 콜 실행 전 시스템 콜 함수의 인자들의 주소가 정상적인지 체크해 주는 걸 꼭 하자.
+
+```c
+// src/userprog/syscall.c
+static void
+syscall_handler (struct intr_frame *f UNUSED)
+{
+  switch(*(int32_t*)(f->esp)){
+    case SYS_HALT:                   /* Halt the operating system. */
+    halt();
+    break;
+    case SYS_EXIT:                   /* Terminate this process. */
+    check_address(f->esp+4);
+    exit(*(int*)(f->esp+4));
+    break;
+    case SYS_EXEC:                   /* Start another process. */
+    check_address(f->esp+4);
+    f->eax=exec((char*)*(uint32_t*)(f->esp+4));
+    break;
+    case SYS_WAIT:                   /* Wait for a child process to die. */
+    check_address(f->esp+4);
+    f->eax = wait(*(uint32_t*)(f->esp+4));
+    break;
+    case SYS_CREATE:                 /* Create a file. */
+    break;
+    case SYS_REMOVE:                 /* Delete a file. */
+    break;
+    case SYS_OPEN:                   /* Open a file. */
+    break;
+    case SYS_FILESIZE:               /* Obtain a file's size. */
+    break;
+    case SYS_READ:                   /* Read from a file. */
+    check_address(f->esp+4);
+    check_address(f->esp+8);
+    check_address(f->esp+12);
+    f->eax = read((int)*(uint32_t*)(f->esp+4), (void*)*(uint32_t*)(f->esp+8),
+					(unsigned)*(uint32_t*)(f->esp+12));
+    break;
+    case SYS_WRITE:                  /* Write to a file. */
+    //printf("write system call!\n");
+    check_address(f->esp+4);
+    check_address(f->esp+8);
+    check_address(f->esp+12);
+    f->eax = write((int)*(uint32_t*)(f->esp+4), (const void*)*(uint32_t*)(f->esp+8),
+					(unsigned)*(uint32_t*)(f->esp+12));
+    break;
+    case SYS_SEEK:                   /* Change position in a file. */
+    break;
+    case SYS_TELL:                   /* Report current position in a file. */
+    break;
+    case SYS_CLOSE:                  /* Close a file. */
+    break;
+  }
+  //printf ("system call! %d\n", *(int32_t*)(f->esp));
+  thread_exit ();
+}
+```
+
+이 상태에서 make를 하고 echo x 명령을 실행해 보자. 제대로 되지 않는다.. 문제는 syscall_handler 의 마지막 줄에서 thread_exit()를 해버린다는 것이다. 여기서 핸들러 함수가 다른 곳으로 넘어가지 않도록 해야 한다. 이를 위해 thread_exit()를 호출하는 부분을 주석처리하자.
+
+그러면 echo x를 했을 때 제대로 실행되는 것처럼 보인다.
+
+![check-1](./check1.png)
+
+그러면 이제 make check을 한번 해보자. args-single부터 실패한다. `src/userprog/build/tests/userprog`에 가서 args-single에 관련된 파일들을 열어 보면 실패한 이유를 알 수 있다. 파일명 파싱에 관련된 문제였다.
+
+예를 들어서 `args-many a b c`라는 명령이 전달되면 args-many 명령에 따르는 파일이 실행되어야 하는데 `args-many a b c` 전체가 파일명으로 인식된다.
+
+이 오류는 '참고'에 있는 네이버 블로그에서 쉽게 해결 가능했다. userprog/process.c의 process-create 함수에서 thread-create함수를 호출할 때, 파일명을 넘겨주는 부분을 수정하면 된다. 주어진 파일명의 첫 번째 단어만 넘겨주도록 하자. process_execute 함수를 다음과 같이 수정한다.
+
+```c
+tid_t
+process_execute (const char *file_name)
+{
+  char *fn_copy;
+  tid_t tid;
+  char file_name_copy[1000];
+  char* parsed_file_name;
+  char* save_ptr;
+
+  /* Make a copy of FILE_NAME.
+     Otherwise there's a race between the caller and load(). */
+  fn_copy = palloc_get_page (0);
+  if (fn_copy == NULL)
+    return TID_ERROR;
+  strlcpy (fn_copy, file_name, PGSIZE);
+
+  // 첫 단어만 파싱
+  strlcpy(file_name_copy, file_name, strlen(file_name)+1);
+  parsed_file_name=strtok_r(file_name_copy, " ", &save_ptr);
+
+  /* Create a new thread to execute FILE_NAME. */
+  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  if (tid == TID_ERROR)
+    palloc_free_page (fn_copy);
+  return tid;
+}
+```
+
+이제 make check을 돌려보면 그럭저럭 통과한다. args-multiple은 실패하는데 이걸 한번 고쳐보자.
+
+## 3.4 페이지 폴트 디버깅
+
+가장 먼저 실패하는 것은 args-multiple. 페이지 폴트가 뜬다. 페이지 폴트는 src/userprog/exception.c를 수정해서 고칠 수 있다. page_fault 함수에서, 커널 모드일 땐 커널 주소만 읽게 하고 유저 모드일 땐 유저 주소만 읽게 하는 것이다.
+
+```c
+static void
+page_fault (struct intr_frame *f)
+{
+  bool not_present;  /* True: not-present page, false: writing r/o page. */
+  bool write;        /* True: access was write, false: access was read. */
+  bool user;         /* True: access by user, false: access by kernel. */
+  void *fault_addr;  /* Fault address. */
+
+  /* Obtain faulting address, the virtual address that was
+     accessed to cause the fault.  It may point to code or to
+     data.  It is not necessarily the address of the instruction
+     that caused the fault (that's f->eip).
+     See [IA32-v2a] "MOV--Move to/from Control Registers" and
+     [IA32-v3a] 5.15 "Interrupt 14--Page Fault Exception
+     (#PF)". */
+  asm ("movl %%cr2, %0" : "=r" (fault_addr));
+
+  /* Turn interrupts back on (they were only off so that we could
+     be assured of reading CR2 before it changed). */
+  intr_enable ();
+
+  /* Count page faults. */
+  page_fault_cnt++;
+
+  /* Determine cause. */
+  not_present = (f->error_code & PF_P) == 0;
+  write = (f->error_code & PF_W) != 0;
+  user = (f->error_code & PF_U) != 0;
+
+  /* new! 커널 모드일 땐 커널 주소만, 유저 모드일 땐 유저 주소만 읽도록.
+  그렇지 않으면 exit 시스템 콜. 덤으로 not_present 도 처리 */
+  if(not_present){exit(-1);}
+  if(!user && !is_kernel_vaddr(fault_addr)){
+    exit(-1);
+  }
+  if(user && !is_user_vaddr(fault_addr)){
+    exit(-1);
+  }
+
+  /* To implement virtual memory, delete the rest of the function
+     body, and replace it with code that brings in the page to
+     which fault_addr refers. */
+  printf ("Page fault at %p: %s error %s page in %s context.\n",
+          fault_addr,
+          not_present ? "not present" : "rights violation",
+          write ? "writing" : "reading",
+          user ? "user" : "kernel");
+  kill (f);
+}
+```
+
+이렇게 하면 args-multiple에서 페이지 폴트는 더 이상 뜨지 않는다. 하지만 인자가 제대로 출력되지 않는 문제가 발생한다. 뭔가 스택 구성에 문제가 있는 건가? 스택을 구성할 때를 아무리 살펴봐도 딱히 문제가 보이지 않는다. 또 꽤 많은 테스트가 통과하므로 일단 아직 구현하지 않은 어디선가 발생한 문제로 생각하고 다음 과정으로 넘어가 보자.
+
+다음은 프로젝트 계층 구조를 구현하고 그것을 통해 process_wait을 구현하는 것이다.
+
+# 4. Wait 구현하기
+
+## 4.1 프로젝트 계층 구조 구현
+
+wait은 부모 프로세스가 자식 프로세스 종료까지 기다리는 기능이다. 단 지금 스레드 구조체에는 어떤 프로세스가 부모이고 어떤 프로세스가 자식인지 나타내는 부분이 없다. 따라서 스레드 구조체에 이 부분을 추가하고 계층 구조를 편하게 사용하기 위한 함수들을 추가하자.
+
+한양대학교 ppt를 참고하면 일단 다음과 같은 정보들을 스레드 구조체에 추가해야 한다고 한다.
+
+![thread](./thread.png)
+
+따라서 스레드 구조체에 다음과 같은 부분을 추가한다. 아까 exit_status를 추가한 부분과 같은 곳이다.
+
+```c
+#ifdef USERPROG
+    /* Owned by userprog/process.c. */
+    uint32_t *pagedir;                  /* Page directory. */
+    // parent process descriptor
+    struct thread* parent_thread;
+
+    /* each structure
+   that is a potential list element must embed a struct list_elem
+   member. */
+    /* child list element */
+    struct list_elem child_thread_elem;
+    /* child list */
+    struct list child_threads;
+    /* 프로세스의 프로그램 메모리 적재 여부 */
+    bool load_flag;
+    /* 프로세스 종료 유무 확인 */
+    bool exit_flag;
+    /* exit semaphore, 자식 프로세스 종료 대기를 위한 세마포어 */
+    struct semaphore exit_sema;
+    /* load semaphore, 자식 프로세스 생성 대기 */
+    struct semaphore load_sema;
+    /* exit 호출 시 종료 상태 */
+    int exit_status;
+
+#endif
+```
+
+그리고 src/threads/thread.c의 `init_thread`함수에 새로 추가한 스레드 구조체의 원소들을 초기화하는 부분을 넣는다.
+
+```c
+  #ifdef USERPROG
+  /* 자식 리스트 초기화 */
+  list_init(&(t->child_threads));
+  // push to the child list of the running thread
+  list_push_back(&(running_thread()->child_threads), &(t->child_thread_elem));
+  // 부모 프로세스 저장
+  t->parent_thread=running_thread();
+  sema_init(&(t->exit_sema), 0);
+  sema_init(&(t->load_sema), 0);
+  #endif
+```
+
+자식 리스트 중 특정 pid를 갖는 스레드를 검색하여 리턴하는 함수도 구현한다.
+
+```c
+struct thread* get_child_process(pid_t pid){
+  struct thread* child_thread;
+  struct list_elem* elem;
+
+  for(elem=list_begin(&(thread_current()->child_threads)); elem!=list_end(&(thread_current()->child_threads)); elem=list_next(elem)){
+    child_thread=list_entry(elem, struct thread, child_thread_elem);
+    if(pid==child_thread->tid){
+      return child_thread;
+    }
+  }
+  // 리스트에 존재하지 않으면 NULL 리턴
+  return NULL;
+}
+```
+
+## 4.2 process_wait 구현
+
+그럼 process_wait에서는 뭘 해야 하는가? 인자로 주어진 tid 프로세스가 끝날 때까지 기다리면 된다. 이는 세마포어를 사용해서 구현한다. 자식 프로세스가 실행될 때 sema_down을 이용해서 부모 프로세스를 대기시키고 자식 프로세스가 종료될 때 sema_up을 이용해서 부모 프로세스를 재개시킨다.
+
+```c
+// src/userprog/process.c
+int
+process_wait (tid_t child_tid UNUSED)
+{
+  struct thread* child_thread;
+  struct list_elem* elem;
+  int exit_status;
+
+  child_thread=get_child_process(child_tid);
+  // child thread not found
+  if(child_thread==NULL){
+    return -1;
+  }
+  // 자식 프로세스 종료까지 대기
+  sema_down(&(child_thread->exit_sema));
+  exit_status=child_thread->exit_status;
+  list_remove(&(child_thread->child_thread_elem));
+  return exit_status;
+}
+```
+
+그리고 thread_exit 함수에서는 자식 스레드가 종료될 때 세마포어를 풀어준다.
+
+```c
+// src/threads/thread.c
+void
+thread_exit (void)
+{
+  ASSERT (!intr_context ());
+
+#ifdef USERPROG
+  process_exit ();
+#endif
+
+  /* Remove thread from all threads list, set our status to dying,
+     and schedule another process.  That process will destroy us
+     when it calls thread_schedule_tail(). */
+  intr_disable ();
+  list_remove (&thread_current()->allelem);
+  // 부모 프로세스의 대기 상태를 이탈시킨다.
+  sema_up(&(thread_current()->exit_sema));
+  thread_current ()->status = THREAD_DYING;
+  schedule ();
+  NOT_REACHED ();
+}
+```
+
+그런데 문제가 있다. 부모 프로세스는 자식 프로세스를 기다린다. 자식 프로세스는 종료되면서 sema_up을 하고 따라서 부모 프로세스는 재개된다. 부모 프로세스는 list_remove를 수행하고 자식 스레드의 종료 상태를 저장한다. 하지만 그때 자식 프로세스의 메모리가 남아 있을까? 없기에 문제가 생긴다. 프로세스가 끝나질 않는다.
+
+자식 프로세스가 종료된 후 종료 상태를 저장해 주고 자식 리스트에서 삭제하는 동작을 수행해 줘야 한다. 하지만 자식 프로세스가 종료됨과 동시에 sema_up을 하면서 자식 프로세스의 프로세스 디스크립터 메모리가 사라져 버린다. 그래서 자식 프로세스를 삭제하면서 수행해야 하는 동작을 못하게 된다. 따라서 부모 프로세스도 종료되지 못해서 아예 프로세스 전체가 종료가 안되는 듯하다.
+
+따라서 프로세스 디스크립터 메모리를 삭제하지 않도록 `src/userprog/thread.c`의 `thread_schedule_tail `함수를 수정한다.
+
+```c
+void
+thread_schedule_tail (struct thread *prev)
+{
+  struct thread *cur = running_thread ();
+
+  ASSERT (intr_get_level () == INTR_OFF);
+
+  /* Mark us as running. */
+  cur->status = THREAD_RUNNING;
+
+  /* Start new time slice. */
+  thread_ticks = 0;
+
+#ifdef USERPROG
+  /* Activate the new address space. */
+  process_activate ();
+#endif
+
+  /* If the thread we switched from is dying, destroy its struct
+     thread.  This must happen late so that thread_exit() doesn't
+     pull out the rug under itself.  (We don't free
+     initial_thread because its memory was not obtained via
+     palloc().) */
+  if (prev != NULL && prev->status == THREAD_DYING && prev != initial_thread)
+    {
+      ASSERT (prev != cur);
+      /* 이 부분을 주석처리해서 프로세스 디스크립터 삭제를 막는다. */
+      //palloc_free_page (prev);
+    }
+}
+```
+
+이러면 많은 것이 해결된다. 이제 `make check`을 해보면 80개 중 46개가 통과되고, 프로젝트 1에서 요구되는 21개의 테스트는 모두 통과된다.
+
+```
+pass tests/userprog/args-none
+pass tests/userprog/args-single
+pass tests/userprog/args-multiple
+pass tests/userprog/args-many
+pass tests/userprog/args-dbl-space
+pass tests/userprog/sc-bad-sp
+pass tests/userprog/sc-bad-arg
+pass tests/userprog/sc-boundary
+pass tests/userprog/sc-boundary-2
+pass tests/userprog/sc-boundary-3
+pass tests/userprog/halt
+pass tests/userprog/exit
+pass tests/userprog/create-normal
+FAIL tests/userprog/create-empty
+FAIL tests/userprog/create-null
+FAIL tests/userprog/create-bad-ptr
+FAIL tests/userprog/create-long
+FAIL tests/userprog/create-exists
+pass tests/userprog/create-bound
+pass tests/userprog/open-normal
+FAIL tests/userprog/open-missing
+pass tests/userprog/open-boundary
+FAIL tests/userprog/open-empty
+pass tests/userprog/open-null
+FAIL tests/userprog/open-bad-ptr
+pass tests/userprog/open-twice
+pass tests/userprog/close-normal
+pass tests/userprog/close-twice
+pass tests/userprog/close-stdin
+pass tests/userprog/close-stdout
+pass tests/userprog/close-bad-fd
+FAIL tests/userprog/read-normal
+FAIL tests/userprog/read-bad-ptr
+FAIL tests/userprog/read-boundary
+FAIL tests/userprog/read-zero
+pass tests/userprog/read-stdout
+pass tests/userprog/read-bad-fd
+FAIL tests/userprog/write-normal
+FAIL tests/userprog/write-bad-ptr
+FAIL tests/userprog/write-boundary
+FAIL tests/userprog/write-zero
+pass tests/userprog/write-stdin
+pass tests/userprog/write-bad-fd
+pass tests/userprog/exec-once
+pass tests/userprog/exec-arg
+pass tests/userprog/exec-bound
+pass tests/userprog/exec-bound-2
+pass tests/userprog/exec-bound-3
+pass tests/userprog/exec-multiple
+pass tests/userprog/exec-missing
+pass tests/userprog/exec-bad-ptr
+pass tests/userprog/wait-simple
+pass tests/userprog/wait-twice
+pass tests/userprog/wait-killed
+pass tests/userprog/wait-bad-pid
+pass tests/userprog/multi-recurse
+FAIL tests/userprog/multi-child-fd
+FAIL tests/userprog/rox-simple
+FAIL tests/userprog/rox-child
+FAIL tests/userprog/rox-multichild
+pass tests/userprog/bad-read
+pass tests/userprog/bad-write
+pass tests/userprog/bad-read2
+pass tests/userprog/bad-write2
+pass tests/userprog/bad-jump
+pass tests/userprog/bad-jump2
+FAIL tests/userprog/no-vm/multi-oom
+FAIL tests/filesys/base/lg-create
+FAIL tests/filesys/base/lg-full
+FAIL tests/filesys/base/lg-random
+FAIL tests/filesys/base/lg-seq-block
+FAIL tests/filesys/base/lg-seq-random
+FAIL tests/filesys/base/sm-create
+FAIL tests/filesys/base/sm-full
+FAIL tests/filesys/base/sm-random
+FAIL tests/filesys/base/sm-seq-block
+FAIL tests/filesys/base/sm-seq-random
+FAIL tests/filesys/base/syn-read
+FAIL tests/filesys/base/syn-remove
+FAIL tests/filesys/base/syn-write
+34 of 80 tests failed.
+```
 
 # 참고
 
