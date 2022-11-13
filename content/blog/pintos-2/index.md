@@ -21,13 +21,13 @@ pintos --filesys-size=2 -p ../examples/echo -a echo -- -f -q run 'echo x'
 
 하지만 아직 핀토스에는 유저 스택, 스택의 인자를 커널에 전달하는 로직, 시스템 콜 핸들러가 구현되어 있지 않기 때문에 `echo x`를 실행하면 아무것도 출력되지 않는다. 즉 유저와 커널이 연결되어 있지 않다.(커널에는 적절한 시스템 콜들이 이미 구현되어 있다) 이번 프로젝트1에서는 이 연결 부분 일부를 구현해야 한다.
 
-# 2. 유저 스택 구현
+# 2. argument passing
 
 ## 2.1 분석
 
-유저 스택은 커널이 아닌 유저 프로그램이 사용하는 스택이다. 유저 프로그램이 커널에게 시스템 콜을 요청할 때, 인자를 유저 스택에 쌓아두고, 커널에게 전달한다. 커널은 유저 스택에 있는 인자를 꺼내서 시스템 콜을 실행한다.
+유저 스택은 커널이 아닌 유저 프로그램이 사용하는 스택이다. 유저 프로그램이 커널에게 시스템 콜을 요청할 때, 인자를 유저 스택에 쌓아두고, 커널에게 전달한다. 커널은 유저 스택에 있는 인자를 꺼내서 시스템 콜을 실행한다. 이렇게 사용자가 전달한 인자를 커널에 전달하는 것을 argument passing이라 한다.
 
-이 유저 스택에 인자를 쌓는 것을 80x86 호출 규약에 따라서 구현해야 한다. 그럼 이걸 어디서 구현해야 하는가?
+이 유저 스택에 인자를 쌓아서 커널에 전달하는 것을 80x86 호출 규약에 따라서 구현해야 한다. 그럼 이걸 어디서 구현해야 하는가?
 
 먼저 핀토스에서 프로그램을 실행하는 과정을 파헤쳐 본다. `threads/init.c`의 메인 함수가 실행되면서 `run_actions` 함수를 호출한다. 이때 `run` 옵션이 주어져 있으면 `run_task`함수가 호출되고 `run_task`에서는 `process_execute`함수를 이용하여 유저 프로세스를 생성한다. 또한 이 생성된 프로세스는 `process_wait` 내에 들어가서 핀토스가 유저 프로세스 종료까지 기다리게 한다(`process_wait` 부분은 아직 구현되어 있지 않긴 하다. 원래는 그렇다는 것).
 
@@ -39,7 +39,9 @@ pintos --filesys-size=2 -p ../examples/echo -a echo -- -f -q run 'echo x'
 
 ## 2.2 실행 파일 이름 수정
 
-먼저 load 함수의 file name이 무엇인지 체크하자. load에 `printf`로 file_name을 출력하는 코드를 추가한다. 단 아직 `process_wait`이 구현되어 있지 않으므로 `printf`의 결과가 출력되기 전에 핀토스가 종료될 수 있다. 그래서 `process_wait`을 일단 2초 정도 대기하는 것으로 대체했다. 여기는 `src/devices/timer.h`의 `timer_msleep`을 사용하였다.
+하지만 그 전에 할 일이 있다. 앞에서 본 방법대로 echo x를 실행하면 load failed가 뜬다(아니라면 process_wait에 timer_msleep을 넣고 해보자. load failed가 뜰 것이다.). 에러 메시지를 읽어보면 'echo x'라는 이름의 파일을 열기를 실패했다고 한다...echo 명령어에 대한 동작이 담긴 파일 이름은 상식적으로 echo일 텐데 애초에 실행할 파일 이름을 잘못 전달하고 있다. 이것부터 고치자.
+
+먼저 load 함수의 file_name이 무엇인지 체크하자. 이 file_name을 통해서 load에 `printf`로 file_name을 출력하는 코드를 추가한다. 단 아직 `process_wait`이 구현되어 있지 않으므로 `printf`의 결과가 출력되기 전에 핀토스가 종료될 수 있다. 그래서 `process_wait`을 일단 2초 정도 대기하는 것으로 대체했다. 여기는 `src/devices/timer.h`의 `timer_msleep`을 사용하였다.
 
 ```c
 int process_wait (tid_t child_tid UNUSED) {
@@ -81,7 +83,7 @@ int process_wait (tid_t child_tid UNUSED) {
 
 다시 `src/userprog`에서 make를 하고 `pintos --filesys-size=2 -p ../examples/echo -a echo -- -f -q run 'echo x'`를 실행하면 `file_name_first_word`의 값으로 `echo`가 출력되는 것을 확인할 수 있다. 물론 페이지 폴트가 뜨지만 이건 유저 스택을 구성하면 해결된다.
 
-## 2.3 유저 스택 구성
+## 2.3 유저 스택을 호출 규약에 맞게 구성
 
 이제 80x86 호출 규약에 따라서 유저 스택을 구성해 주자. 이 내용은 [pintos 공식 매뉴얼](https://web.stanford.edu/class/cs140/projects/pintos/pintos.pdf)의 35-38쪽에 자세히 나와 있다.
 
@@ -247,6 +249,8 @@ pintos --filesys-size=2 -p ../examples/echo -a echo -- -f -q run 'echo x'
 ```
 
 ![hex_dump](./hex_dump.png)
+
+# 3. 시스템 콜 핸들러 구성
 
 # 참고
 
