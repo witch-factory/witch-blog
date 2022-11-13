@@ -250,9 +250,86 @@ pintos --filesys-size=2 -p ../examples/echo -a echo -- -f -q run 'echo x'
 
 ![hex_dump](./hex_dump.png)
 
-# 3. 시스템 콜 핸들러 구성
+# 3. 시스템 콜 핸들러
+
+이제 시스템 콜을 구현하러 가보자. 이 시스템 콜은 어디서 구현해야 할까? 위에 hex_dump를 캡처한 사진을 보면 hex_dump의 결과 출력 다음 `system call!` 이라는 문구가 있는 것을 확인할 수 있다. 이 문구가 어디서 출력되는지 찾아보자. 찾아보면 `src/userprog/syscall.c`에 있다. 거기의 `syscall_handler`함수가 호출되면서 system call! 이 출력되는 것이다. 그럼 이 함수는 무엇을 하는가?
+
+글 맨 아래의 참고 사이트들을 참고하면 다음과 같다. init.c의 메인 함수에서 write를 호출한다. 그러면 src/lib/user/syscall.c에 있는 syscall 어셈블리 함수에서 유저 스택에 시스템 콜 넘버와 시스템 콜 인자들을 담아서 syscall_handler를 호출한다.
+
+이때 유저 스택은 다음과 같은 구조로 쌓여 있다.
+
+![syscall_stack](./syscall_stack.PNG)
+
+즉 syscall number가 esp 위치에 있고 시스템 콜 인자들이 그 위 즉 esp+4, esp+8, esp+12...의 위치에 들어가는 것이다. 이 스택 포인터 esp는 syscall_handler 함수가 인자로 받는 intr_frame 구조체의 esp에 있다. 이 intr_frame은 인터럽트의 각종 레지스터 정보를 담고 있다. 추후 시스템 콜의 리턴값을 담을 때 여기의 eax 레지스터에 담을 것이다.
+
+따라서 우리는 이 esp의 시스템 콜 넘버를 이용해서 알맞은 시스템 콜을 호출하는 부분을 짜야 한다. 시스템 콜 넘버마다 어떤 함수를 호출해야 하는지는 src/lib/syscall-nr.h를 참고했다. 친절하게 `/* Projects 2 and later. */` 라고 주석도 달아서, 어떤 시스템 콜 넘버를 사용해야 하는지도 알려준다. 따라서 먼저 시스템 콜 핸들러에 시스템 콜 넘버를 추가해 주자. 이때 switch문을 사용하는데, 주의할 점은 intr_frame의 esp는 void\*타입으로 선언되어 있기 때문에 역참조할 때 포인터 변환을 해줘야 한다는 것이다.
+
+```c
+static void
+syscall_handler (struct intr_frame *f UNUSED)
+{
+  switch(*(int32_t*)(f->esp)){
+    case SYS_HALT:                   /* Halt the operating system. */
+    break;
+    case SYS_EXIT:                   /* Terminate this process. */
+    break;
+    case SYS_EXEC:                   /* Start another process. */
+    break;
+    case SYS_WAIT:                   /* Wait for a child process to die. */
+    break;
+    case SYS_CREATE:                 /* Create a file. */
+    break;
+    case SYS_REMOVE:                 /* Delete a file. */
+    break;
+    case SYS_OPEN:                   /* Open a file. */
+    break;
+    case SYS_FILESIZE:               /* Obtain a file's size. */
+    break;
+    case SYS_READ:                   /* Read from a file. */
+    break;
+    case SYS_WRITE:                  /* Write to a file. */
+    break;
+    case SYS_SEEK:                   /* Change position in a file. */
+    break;
+    case SYS_TELL:                   /* Report current position in a file. */
+    break;
+    case SYS_CLOSE:                  /* Close a file. */
+    break;
+  }
+  printf ("system call! %d\n", *(int32_t*)(f->esp));
+  thread_exit ();
+}
+```
+
+이때 system call handler에서 f->esp를 출력해 보는 방식으로 `echo x`에서 호출하는 시스템 콜이 무엇인지 볼 수 있다. echo는 system call 9번, write system call을 호출한다. 우리는 이렇게 주어지는 시스템 콜 번호에 따라서 알맞은 시스템 콜을 호출하도록 구현해야 한다.
+
+## 3.1 주소 유효성 검사
+
+이때 시스템 콜을 구현하고 호출하기 전에 고려해야 할 게 있다. 시스템 콜 핸들러에 넘어온 주소가 문제가 있는 주소가 아닌지 확인하는 것이다. 그럼 문제가 있는 주소란 무엇인가? 학교에서 제공한 proj1 ppt에 보면 친절하게 설명되어 있다.
+
+![validate](./validate_ppt.PNG)
+
+따라서 먼저 특정 주소가 유효한지 판별하는 `check_address` 함수를 구현하자. 여기에 어떤 함수를 써야 하는지도 다 나와 있다. userprog/pagedir.c의 pagedir_get_page 함수와 threads/vaddr.h의 is_user_vaddr 함수를 쓴다. 그런데 pagedir_get_page 함수에는 특정 pagedir도 함께 인수로 넘겨줘야 하는데, 이는 현재 실행중인 스레드의 pagedir로 한다.
+
+종합해서 `check_address` 함수를 구현하면 다음과 같다.
+
+```c
+void check_address(void* vaddr){
+  if(vaddr==NULL){exit(-1);}
+  if(!is_user_vaddr(vaddr)){exit(-1);}
+  if(!pagedir_get_page(thread_current()->pagedir, vaddr)==NULL){exit(-1);}
+}
+```
+
+이 함수를 이용해서 시스템 콜 함수가 받는 인자의 주소, esp+4, esp+8..등에 대한 검증을 진행하면 된다.
+
+## 3.2 시스템 콜 구현
+
+이제 각 시스템 콜 함수들을 구현해 보자. 이는 핀토스 공식 매뉴얼과 프로젝트 ppt를 참고했다. 먼저 userprog/syscall.h에 시스템 콜들의 프로토타입을 선언해 주자.
 
 # 참고
+
+핀토스 공식 매뉴얼 https://web.stanford.edu/class/cs140/projects/pintos/pintos.pdf
 
 한양대학교 핀토스 ppt https://oslab.kaist.ac.kr/wp-content/uploads/esos_files/courseware/undergraduate/PINTOS/Pintos_all.pdf
 
