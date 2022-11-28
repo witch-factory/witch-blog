@@ -1,5 +1,5 @@
 ---
-title: 중간고사 대비 운영체제 정리
+title: 운영체제 공룡책 3단원 정리
 date: "2022-11-25T00:00:00Z"
 description: "운영체제 3단원 정리"
 tags: ["study", "os"]
