@@ -1,9 +1,9 @@
-```
+---
 title: git 에러 - stdin is not a tty
 date: "2022-12-03T00:00:00Z"
 description: "stdin is not a tty 해결하"
 tags: ["git"]
-```
+---
 
 # 1. 문제의 발생
 
