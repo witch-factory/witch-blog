@@ -1,9 +1,9 @@
-```
+---
 title: 모던 자바스크립트 튜토리얼 part 1.1 소개
 date: "2022-12-03T00:00:00Z"
 description: "ko.javascript.info part 1-1"
 tags: ["javascript"]
-```
+---
 
 수학 과목의 첫 강의에는 서론이 없다. 그저 묵묵히 첫 쪽부터 훈련을 시작할 뿐이다. - 선형대수와 군 1쪽
 
