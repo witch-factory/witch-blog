@@ -1,7 +1,7 @@
-```yaml
+```
 title: 모던 자바스크립트 튜토리얼 part 1.1 소개
 date: "2022-12-03T00:00:00Z"
-description: "ㅏ"
+description: "ko.javascript.info part 1-1"
 tags: ["javascript"]
 ```
 
