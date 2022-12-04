@@ -69,4 +69,22 @@ CPU 이용률과 처리량은 당연히 크면 좋고, 나머지는 작으면 �
 
 # 2. 스케줄링 알고리즘
 
-본격적으로 스케줄링 알고리즘에 대해 알아보자.
+본격적으로 스케줄링 알고리즘에 대해 알아보자. 설명의 편의를 위해 스케줄링할 처리 코어는 하나뿐이라고 가정한다. 다음과 같은 알고리즘들을 알아본다.
+
+- FCFS(First Come First Served)
+
+- SJF(Shortest Job First)
+
+- Priority Scheduling
+
+- RR(Round-Robin)
+
+- Multilevel Queue Scheduling
+
+- Multilevel Feedback Queue Scheduling
+
+## 2.1 FCFS
+
+이름답게 먼저 온 프로세스부터 먼저 실행하는 방식이다. 당연히 가장 쉽고 구현하기도 쉽다. 그냥 FIFO 큐를 이용해 구현하면 되기 때문이다. 그러나 평균 대기 시간이 길 때가 많고 시분할 시스템(각 프로세스가 규칙적으로 CPU를 얻는 게 중요)에서 특히 좋지 않다. **비선점 스케줄링이다.**
+
+여기서 참여한 각 프로세스의 시작 시간, 종료 시간을 포함해 스케줄링 결과를 표시하는 간트 차트Gantt Chart를 이용해서 알고리즘을 검토하자.
