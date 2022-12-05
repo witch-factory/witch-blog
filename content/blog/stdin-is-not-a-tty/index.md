@@ -41,8 +41,6 @@ husky의 pre-commit hook이 조금 변경되었다. 하지만 어차피 husky는
 
 # 참고
 
-tty는 무엇인가?
-
-[TTY | Introduction](https://mug896.github.io/bash-shell/tty.html)
+tty는 무엇인가? [TTY | Introduction](https://mug896.github.io/bash-shell/tty.html)
 
 husky가 뭘까? [husky 로 git hook 하자 | 가비아 라이브러리](https://library.gabia.com/contents/8492/)
