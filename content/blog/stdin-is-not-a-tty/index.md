@@ -11,7 +11,7 @@ tags: ["git"]
 
 그런데 글을 쓰고 git commit을 하려고 하니 다음과 같은 에러가 발생했다.
 
-![bug](C:\Users\soakd\witch-blog\content\blog\stdin-is-not-a-tty\bug.PNG)
+![bug](./bug.PNG)
 
 # 2. 에러 메시지 탐구
 
@@ -21,7 +21,7 @@ tty에 관한 더 자세한 설명은 밑의 참고 페이지에 있지만 지�
 
 그러면 밑의 에러 메시지는? husky 또한 찾아보았다. git hook이라고 하여 git과 관련된 어떤 이벤트 발생 시 특정 스크립트를 실행할 수 있는 기능이 있다. 이 중 커밋, 머지, 푸시가 발생하기 전 클라이언트(즉 내 컴퓨터)에서 실행하는 클라이언트 훅을 공유하게 해 주는 npm 라이브러리가 husky이다.
 
-에러 메시지도 딱 그에 어울리는 내용이다. 커밋 전에 실행되는 git hook이 어떤 오류로 인해 종료되었다는 것이다. 
+에러 메시지도 딱 그에 어울리는 내용이다. 커밋 전에 실행되는 git hook이 어떤 오류로 인해 종료되었다는 것이다.
 
 추측은 다음과 같다. husky의 pre-commit hook이 실행하는 쉘스크립트 파일에 echo를 이용하는 내용이 있었고 이는 tty를 이용한다. 그런데 내 노트북(맥os)에서 사용하는 tty와 본가의 윈도우 데스크탑에서 사용하는 tty가 달라서 일어나는 문제로 추측한다.
 
@@ -31,9 +31,9 @@ tty에 관한 더 자세한 설명은 밑의 참고 페이지에 있지만 지�
 
 방법은 간단하다. 그냥 husky를 지우고 다시 깔면 된다. `.husky` 폴더를 지운 후 `yarn` 명령으로 husky를 재설치했다.
 
-![yarn](C:\Users\soakd\witch-blog\content\blog\stdin-is-not-a-tty\yarn.PNG)
+![yarn](./yarn.PNG)
 
-husky의 pre-commit hook이 조금 변경되었다. 하지만 어차피 husky는 git에서 코드를 커밋하거나 푸시할 때마다 lint checking 등을 위해서 많이 사용된다. 나는 블로그에 새로운 글만 쓸 뿐 딱히 코드를 수정하지 않으므로 아무래도 좋다. 
+husky의 pre-commit hook이 조금 변경되었다. 하지만 어차피 husky는 git에서 코드를 커밋하거나 푸시할 때마다 lint checking 등을 위해서 많이 사용된다. 나는 블로그에 새로운 글만 쓸 뿐 딱히 코드를 수정하지 않으므로 아무래도 좋다.
 
 게다가 블로그 코드를 고치게 된다면 아마 노트북으로 작업할 텐데 본가 데스크탑의 husky폴더는 `.gitignore`가 설정되어 있어서, 내 노트북에는 기존의 `.husky`폴더가 잘 남아 있다. 따라서 괜찮다...
 
@@ -41,7 +41,7 @@ husky의 pre-commit hook이 조금 변경되었다. 하지만 어차피 husky는
 
 # 참고
 
-tty는 무엇인가? 
+tty는 무엇인가?
 
 [TTY | Introduction](https://mug896.github.io/bash-shell/tty.html)
 
