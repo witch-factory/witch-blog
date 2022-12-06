@@ -87,7 +87,7 @@ do{
 }while(1);
 ```
 
-이 코드는 상호 배제를 만족하지만 역시 progress에서 안된다. P0에서 flag[0]이 true가 되고 P0이 critical section에 진입하기 전에 P1에서 flag[1]을 true로 만들게 되면 아직 임계 구역에는 아무 프로세스도 진입하지 않았는데 P0, P1 모두 무한히 대기하게 된다.
+이 코드는 상호 배제를 만족하지만 역시 progress에서 안된다. P0에서 flag[0]이 true가 되고 P0이 critical section에 진입하기 전에 P1에서 flag[1]을 true로 만들게 되면(flag[0], flag[1] 모두 true) 아직 임계 구역에는 아무 프로세스도 진입하지 않았는데 P0, P1 모두 무한히 대기하게 된다.
 
 ![algo2](./algo2.png)
 
@@ -301,6 +301,8 @@ Pj{
   B작업
 }
 ```
+
+세마포어의 좀더 구체적인 구현은 다음 블로그에 있다. [Rebro님 블로그](https://rebro.kr/176?category=504670)
 
 # 5. 모니터
 
