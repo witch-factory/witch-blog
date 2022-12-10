@@ -95,6 +95,3 @@ modules.xml
 
 # gatsby-plugin-typegen
 **/__generated__/
-
-content/blog/pintos-4/
-content/blog/pintos-5/
