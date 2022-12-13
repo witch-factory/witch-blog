@@ -301,25 +301,6 @@ public void paint(Graphics g){
 public void fillPolygon(int[] x, int[] y, int n)
 ```
 
-## 2.15. setColor, setBackGround
-
-도형이 그려지는 색과 배경을 결정한다.
-
-```java
-public void setColor(Color c)
-public void setBackground(Color c)
-```
-
-setColor는 Graphics 클래스의 메서드이므로 `g.setColor(Color.pink)`와 같이 사용한다. setBackground는 Frame 클래스의 메서드이므로 `f.setBackground(Color.red)`와 같이 사용한다. 혹은 프레임 클래스 내부에서 `setBackground(Color.red)`와 같이 사용할 수도 있다.
-
-Color 클래스는 색을 나타내는 클래스이다. Color 클래스의 생성자는 다음과 같다.
-
-```java
-public Color(int r, int g, int b)
-```
-
-0~255 사이의 값을 갖는 r, g, b를 인자로 받아서 색을 만든다.
-
 # 3. 문자열 그리기 메서드
 
 ## 3.1. drawString
@@ -369,3 +350,247 @@ Font.BOLD+Font.ITALIC
 ```
 
 name은 위의 예시에서와 같이 "Serif", "Sans"등을 사용할 수 있다.
+
+# 4. 이미지 그리기 메서드
+
+## 4.1. getImage
+
+이미지를 가져오는 메서드이다. 파일 위치를 받아서 이미지를 가져온다. getDefaultToolkit() 을 통해 사용한다.
+
+```java
+Image img=Toolkit.getDefaultToolkit().getImage("이미지 경로");
+```
+
+## 4.2. drawImage
+
+이미지를 그리는 메서드이다.
+
+```java
+public boolean drawImage(Image img, int x, int y, ImageObserver observer)
+```
+
+흔히 observer의 자리엔 this를 사용한다. x, y는 이미지의 왼쪽 위 꼭짓점이다.
+
+혹은 다음과 같은 형식으로도 사용한다.
+
+```java
+public boolean drawImage(Image img, int x, int y, int width, int height, ImageObserver observer)
+```
+
+여기서도 observer는 this를 사용한다. width, height는 이미지의 크기이다.
+
+다음과 같이 사용할 수 있다.
+
+```java
+public void paint(Graphics g){
+  g.drawLine(50,50,200,200);
+  Image img=Toolkit.getDefaultToolkit().getImage("/Users/kimsunghyun/IdeaProjects/study/src/witch.jpeg");
+  g.drawImage(img, 50, 50, 100,100,this);
+}
+```
+
+그러면 내가 프로필로 사용하는 사진이 다음과 같이 그려진다. 선의 위치와 비교해 보면 x,y가 이미지의 왼쪽 위 꼭짓점이라는 것을 알 수 있다.
+
+![drawImage](./drawImage.png)
+
+# 5. 크기 관련 메서드
+
+## 5.1. getSize
+
+프레임의 크기를 반환한다.
+
+```java
+public Dimension getSize()
+```
+
+## 5.2. getInsets
+
+프레임의 테두리 크기를 반환한다. bottom, left, right, top의 값을 가진다.
+
+```java
+public Insets getInsets()
+```
+
+## 5.3. 사용
+
+```java
+public void paint(Graphics g){
+  Dimension d=getSize();
+  Insets in=getInsets();
+  g.drawString("d.width  : " + d.width, 10,40);
+  g.drawString("d.height : " + d.height,10,60);
+  g.drawString("in.left  : " + in.left, 10,80);
+  g.drawString("in.right : " + in.right,10,100);
+  g.drawString("in.top   : " + in.top,  10,120);
+  g.drawString("in.bottom: " + in.bottom, 10,140);
+}
+```
+
+이렇게 하면 프레임의 크기와 테두리의 크기를 알 수 있다. 내 컴퓨터의 결과는 다음과 같다.
+
+![getSize](./size.png)
+
+# 6. 색상 관련 메서드
+
+## 6.1. setColor, setBackGround
+
+도형이 그려지는 색과 배경을 결정한다.
+
+```java
+public void setColor(Color c)
+public void setBackground(Color c)
+```
+
+setColor는 Graphics 클래스의 메서드이므로 `g.setColor(Color.pink)`와 같이 사용한다. setBackground는 Frame 클래스의 메서드이므로 `f.setBackground(Color.red)`와 같이 사용한다. 혹은 프레임 클래스 내부에서 `setBackground(Color.red)`와 같이 사용할 수도 있다.
+
+Color 클래스는 색을 나타내는 클래스이다. Color 클래스의 생성자는 다음과 같다.
+
+```java
+public Color(int r, int g, int b)
+```
+
+0~255 사이의 값을 갖는 r, g, b를 인자로 받아서 색을 만든다.
+
+## 6.2. getXORMode
+
+그래픽 컨텍스트의 현재 색과 새롭게 지정된 색을 바꾸도록 한다. XOR 모드에서 픽셀은 현재 색과 새롭게 지정된 XOR 교대색의 사이를 번갈아가며 바뀐다.
+
+```java
+public void paint(Graphics g){
+  g.setColor(Color.pink);
+  g.fillRect(10,10,200,100);
+  g.setXORMode(Color.blue);
+  g.fillRect(100,50,200,100);
+}
+```
+
+## 6.3 사용 - 그림 이동시키기
+
+XORmode를 이용해서 그림을 지우고 다시 그리는 방식으로 그림을 이동시키는 예제를 만들 수 있다.
+
+그림을 특정 위치에 그리기 -> 잠시 기다리기 -> 그림을 그린 위치에 덧그리는 방식으로 그림 지우기 -> 조금 이동한 새로운 위치에 그림 그리기의 과정을 반복함으로써 그림이 오른쪽으로 이동하는 것같이 보이게 한다.
+
+```java
+public void paint(Graphics g){
+  Image img=Toolkit.getDefaultToolkit().getImage("/Users/kimsunghyun/IdeaProjects/study/src/HAEMA.GIF");
+  Dimension d=getSize();
+  int x;
+  g.setXORMode(Color.white);
+  for (x=10 ; x<d.width-100 ; x+=10) 			// move haema to right direction
+  {
+      g.drawImage(img, x,30, 100, 200, this); 	// draw haema
+      for (int j=0 ; j<30000 ; j++);
+      g.drawImage(img, x,30, 100, 200, this); 	// delete haeme drawed
+  }
+  g.drawImage(img, x,30, 100, 200, this);
+}
+```
+
+# 7. 패널
+
+프레임 안에 있는 일종의 컨테이너이다. 실제로 java.awt.Container를 상속받는다. add 메서드를 통해 컴포넌트를 추가할 수 있다. 또한 setSize, setLocation, setBackground 등의 메서드를 사용할 수 있다.
+
+그렇게 프레임을 만들고 나면 프레임의 add메서드를 통해 프레임 내에 추가될 수 있다. 다음과 같이 사용하면 핑크색 프레임 내에 노란색 패널이 추가된다.
+
+```java
+public static void main(String[] args) {
+    Frame f=new Main("my Frame");
+    Panel p=new Panel();
+    f.setSize(500, 300);
+    f.setBackground(Color.pink);
+    f.setLayout(null);
+    p.setSize(100,100);
+    p.setBackground(Color.yellow);
+    f.add(p);
+    f.addWindowListener(new WindowDestroyer());
+    f.setVisible(true);
+}
+```
+
+# 8. 레이아웃
+
+위에서 `setLayout(null);`을 사용하였는데 이 경우 레이아웃 매니저를 사용하지 않겠다는 뜻이다. 그 외에는 다음과 같은 레이아웃 매니저가 있다.
+
+## 8.1. FlowLayout
+
+컴포넌트를 왼쪽에서 오른쪽으로 배치하며 기본적으로 가운데 정렬이다. 컴포넌트의 크기가 프레임의 크기보다 크면 다음 줄로 넘어간다. 컴포넌트의 기본 선호 사이즈를 사용하며 뭔가 바꾸고 싶다면 생성자를 사용한다.
+
+```java
+f.setLayout(new FlowLayout());
+```
+
+위와 같이 사용한다. 생성자의 매개변수로는 정렬 방식을 지정할 수 있는데 FlowLayout.LEFT, FlowLayout.RIGHT, FlowLayout.CENTER가 있다.
+
+그리고 frame 메서드 중 pack이 있는데 이는 프레임이 포함하는 컴포넌트들의 크기에 맞게 프레임의 크기를 조절해준다.
+
+## 8.2. BorderLayout
+
+프레임과 다이얼로그의 기본 레이아웃이다. 프레임을 5개의 영역으로 나누어 컴포넌트를 배치한다. NORTH, SOUTH, EAST, WEST, CENTER 영역이 있다. 컴포넌트를 배치할 때는 add 메서드의 두 번째 매개변수로 배치할 영역을 지정한다.
+
+```java
+f.setLayout(new BorderLayout());
+```
+
+위와 같이 레이아웃 매니저를 지정한다. 그리고 컴포넌트 간의 간격을 조절하고 싶다면 생성자의 매개변수로 간격을 지정할 수도 있다.
+
+```java
+f.setLayout(new BorderLayout(hgap, vgap));
+```
+
+다음과 같이 프레임의 add메서드와 함께 사용한다.
+
+```java
+f.add(btn1, BorderLayout.NORTH);
+f.add(btn2, BorderLayout.SOUTH);
+f.add(btn3, BorderLayout.EAST);
+f.add(btn4, BorderLayout.WEST);
+f.add(btn5, BorderLayout.CENTER);
+```
+
+## 8.3. GridLayout
+
+프레임을 행과 열로 나누어 컴포넌트를 배치한다. 프레임을 격자로 나누어서 위에서 아래로, 왼쪽에서 오른쪽으로 차례로 배치한다고 생각하면 된다. 생성자의 매개변수로 다양한 것을 지정할 수 있다.
+
+```java
+setLayout(new GridLayout());
+setLayout(new GridLayout(rows, cols));
+setLayout(new GridLayout(rows, cols, hgap, vgap));
+```
+
+add메서드를 사용하면 알아서 컴포넌트를 배치해준다.
+
+## 8.4. CardLayout
+
+여러 화면을 슬라이드처럼 바꿔가며 보여줄 수 있다. 즉 여러 화면을 레이아웃에 추가한 후 원하는 컨테이너를 보여줄 수 있는 것이다. 순차적으로 다음 화면으로 이동한다든지.
+
+어떤 화면을 show의 매개변수로 지정하면 그 화면이 보여진다.
+
+```java
+public static void main(String[] args) {
+  Frame f=new Main("my Frame");
+  CardLayout card=new CardLayout();
+  f.setLayout(card);
+  Panel p1=new Panel();
+  p1.setBackground(Color.pink);
+  Panel p2=new Panel();
+  p2.setBackground(Color.yellow);
+  Panel p3=new Panel();
+  p3.setBackground(Color.CYAN);
+  f.add(p1, "1");
+  f.add(p2, "2");
+  f.add(p3, "3");
+
+  class Handler extends MouseAdapter{
+      public void mouseClicked(MouseEvent e){
+          card.next(f);
+      }
+  }
+  p1.addMouseListener(new Handler());
+  p2.addMouseListener(new Handler());
+  p3.addMouseListener(new Handler());
+  f.addWindowListener(new WindowDestroyer());
+  f.setSize(500,300);
+  f.setVisible(true);
+  card.show(f, "1");
+}
+```
