@@ -135,6 +135,10 @@ alert("my code")
 
 vscode와 같은 대부분의 에디터에서 지원하는 편리한 기능이니 알아두자.
 
+# 3. strict mode
+
+
+
 # 참고
 
 [MDN의 script 태그의 type 속성](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script#attr-type)
