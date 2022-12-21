@@ -64,6 +64,10 @@ const bigInt = 1234567890123456789012345678901234567890n;
 
 변수나 표현식을 `${}`로 감싸서 문자열 안에 넣으면 된다.
 
+```js
+alert(`my number is ${5 + 10}`);
+```
+
 # 참고
 
 [js에서 변수명에 쓰이는 달러 표시의 의미](https://stackoverflow.com/questions/846585/what-is-the-purpose-of-the-dollar-sign-in-javascript)
