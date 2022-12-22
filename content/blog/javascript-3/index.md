@@ -132,6 +132,118 @@ typeof 연산자는 위와 같이 하위 태그를 통해 각 값의 타입을 �
 
 그런데 널 포인터 값은 0이므로 당연히 하위 비트가 000이 되었고 따라서 typeof연산자는 null을 object로 판단하게 되었다.
 
+# 3. 브라우저와 간단한 상호작용
+
+## 3.1. alert
+
+alert 함수는 브라우저에서 경고창을 띄워주는 함수이다. 인자로 받은 문자열을 경고창에 띄워주며, 경고창은 사용자가 확인 버튼을 누르면 사라진다.
+
+```js
+alert("저는 김성현입니다.");
+```
+
+## 3.2. prompt
+
+prompt는 2개의 인수를 받아서 브라우저에 입력창을 띄운다. 첫번째 인수는 입력창에 표시될 문자열이고, 두번째 인수는 입력창에 기본으로 표시될 문자열이다. 두번째 인수는 없어도 된다.
+사용자가 입력창에 입력한 값을 반환한다.
+
+사용자가 확인을 누르면 사용자가 입력한 값이 prompt의 반환값으로 들어간다. 그리고 취소나 ESC키를 누르면 prompt의 값으로 null이 들어간다. 다음과 같은 코드를 보자.
+
+```js
+let result = prompt("입력창을 만들어 본다.", "여기에 입력하세요.");
+alert(result);
+```
+
+이 코드를 실행시키면 다음과 같은 입력창이 뜬다.
+
+![prompt](./prompt.png)
+
+여기에 `김성현`을 입력한 후 확인 버튼을 누르면 다음과 같이 김성현이라고 적힌 경고창이 뜨게 된다.
+
+![prompt_result](./prompt_result.png)
+
+만약 취소를 눌렀다면 null이 적힌 경고창이 뜨게 된다.
+
+이때 주의할 점은, IE의 경우 prompt의 두번째 인수가 없을 경우 undefined를 두번째 인수로 자동으로 넣어 주는 동작을 한다는 것이다. 그래서 IE를 고려한다면 prompt의 두번째 인수를 생략하면 안 된다. 빈 문자열이라도 넣어주자.
+
+## 3.3. confirm
+
+confirm은 인수로 받은 질문과 함꼐 사용자에게 확인 또는 취소를 묻는 창을 띄워준다. 사용자가 확인을 누르면 true, 취소를 누르면 false를 반환한다.
+
+```js
+let result = confirm("당신이 김성현인가요?");
+alert(result);
+```
+위처럼 쓸 수 있다. 컨펌 창에서 사용자의 선택에 따라 true 혹은 false가 적힌 alert창이 뜬다. 단순히 경고창에 결과를 띄워 주는 것만이 아니라 사용자의 선택에 따라 어떤 동작을 취하게 하는 데에 사용할 수 있다.
+
+## 3.4. 제약사항
+
+위 함수들은 모두 모달 창을 띄운다. 이 모달이 떠있는 동안은 스크립트 실행이 일시 중단되고 사용자가 나머지 페이지가 상호작용이 불가능하게 된다.
+
+또한 이 함수들의 모달 창 위치와 모양은 브라우저에서 알아서 결정하며 개발자는 이를 제어할 수 없다. 간결성을 위한 대가이다.
+
+# 4. 형변환
+
+원시 타입의 형변환에 대해서만 다룬다. 객체 타입의 형변환은 나중에 다룰 예정이다.
+
+## 4.1. 문자형으로의 변환
+
+String 함수를 사용하면 어떤 값을 문자형으로 변환할 수 있다.
+
+```js
+let booleanValue = true;
+console.log(typeof booleanValue);
+let StringValue = String(booleanValue);
+console.log(typeof StringValue); // 문자열로 변환되어 string을 출력한다.
+```
+
+또한 문자열 타입을 기대하는 곳에 다른 타입이 오면 자동으로 문자열로 변환된다. 예를 들어서 alert는 인수로 받은 값을 문자열로 변환하여 출력한다. 그리고 문자열과 다른 타입의 덧셈에서 다른 타입은 문자열로 변환된다.
+
+```js
+console.log(10 + "문자열"); 
+//10이 문자열로 변환되어 처리되어서 10문자열 이라고 출력된다.
+```
+
+## 4.2. 숫자형으로 변환
+
+위와 마찬가지로 숫자형으로 변환하는 방법은 Number 함수를 사용하는 것이다.`Number(target)`과 같이 사용한다.
+
+또한 숫자로의 형변환은 수학과 관련된 함수나 표현식에서 자동으로 일어난다. 숫자가 기대되는 곳에 다른 타입의 값이 오면 자동으로 숫자형으로 변환되는 것이다. 만약 숫자가 아닌 값을 숫자로 변환하려고 하면 NaN이 된다.
+
+예를 들어서 뺄셈에는 숫자만 오기 때문에 뺄셈에 문자열이 오면 자동으로 숫자형으로 변환된다.
+
+```js
+console.log(10 - "5");
+//"5"가 5로 변환되어 결과는 5가 된다.
+```
+
+단 문자열을 숫자로 변환할 때는 숫자로 변환할 수 없는 문자가 포함되어 있으면 NaN이 된다.
+
+```js
+console.log(10 - "김성현"); //NaN
+```
+
+숫자형으로 변환하는 규칙은 다음과 같다.
+
+- undefined는 NaN이 된다.
+- null은 0이 된다.
+- true나 false는 1 혹은 0이 된다.
+- 문자열은 처음과 끝 공백이 제거되고 공백 제거 후 빈 문자열이 된다면 0이 된다. 공백을 제거한 문자열이 숫자로 변환될 수 있으면 숫자로 변환한다. 그게 실패하면 NaN이 된다.
+
+## 4.3. 불린 형으로의 변환
+
+불린형을 요구하는 연산에 쓰일 때 자동으로 불린형으로 변환된다. 또는 Boolean 함수를 사용해서 불린형으로 변환할 수 있다.
+
+```js
+console.log(Boolean(0)); //false
+```
+
+규칙은 간단하다. falsy한 값이면 false로 변환되고 나머지는 true로 변환된다.
+
+falsy한 값은 숫자 0, -0, 0n, 빈 문자열, null, undefined, NaN이다.
+
+<span style="color:red">빈 배열은 falsy한 값이 아님에 주의한다.</span>
+
 # 참고
 
 [js에서 변수명에 쓰이는 달러 표시의 의미](https://stackoverflow.com/questions/846585/what-is-the-purpose-of-the-dollar-sign-in-javascript)
@@ -139,3 +251,5 @@ typeof 연산자는 위와 같이 하위 태그를 통해 각 값의 타입을 �
 [MDN 템플릿 리터럴](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Template_literals)
 
 [왜 js에서 null은 object인가?](https://stackoverflow.com/questions/18808226/why-is-typeof-null-object)와 [그 원본 글](https://2ality.com/2013/10/typeof-null.html)
+
+[JS falsy value](https://developer.mozilla.org/ko/docs/Glossary/Falsy)
