@@ -484,7 +484,37 @@ NOT 연산자 `!`은 말 그대로 피연산자를 bool로 변환한 후 그 역
 
 # 9. nullish ??
 
+??는 왼쪽 피연산자가 null이나 undefined면 오른쪽 피연산자를 반환하고 그렇지 않으면 왼쪽 피연산자를 반환한다. 그리고 왼쪽에서 오른쪽으로 평가된다.
 
+즉 피연산자 중 첫 번째로 정의된 값을 반환하는 것이다. 이것이 `||`와의 차이를 만든다. 예를 들어서 변수에 기본값을 할당하는 데에 `||`를 쓴다고 하자. 다음과 같이 말이다.
+
+```js
+let result=count || 1; 
+```
+
+만약 count가 falsy한 값이면 result에는 기본값 1이 할당될 것이다. 하지만 count가 지금 갖고 있는 어떤 물건의 개수라면 0도 충분히 의미있는 값으로 취급되어야 한다. 하지만 ||를 사용한다면 0은 falsy value로 취급되고 result에는 기본값 1이 들어가고 만다. 이럴 때 ??를 써야 한다.
+
+```js
+let count=0;
+let result=count ?? 1;
+console.log(result); // 0이 출력된다
+```
+
+`??`의 우선순위는 5로 대부분의 연산자보다 낮기 때문에 괄호와 함께 사용하는 게 좋다.
+
+왼쪽 피연산자가 null이나 undefined가 아닌 게 판명되면 오른쪽 피연산자는 평가되지 않는 short circuit도 똑같이 작동한다.
+
+그리고 주의할 점은 `??`와 `&&, ||`는 같이 쓰일 수 없다는 것이다. 만약 같이 쓰면 에러가 발생한다.
+
+```js
+true || undefined ?? "foo"; // SyntaxError 발생
+```
+
+단 괄호를 써서 우선순위를 명시적으로 나타내면 괜찮다. 
+
+```js
+true || (undefined ?? "foo") // 잘 동작하여 true 반
+```
 
 # 참고
 
@@ -497,3 +527,5 @@ NOT 연산자 `!`은 말 그대로 피연산자를 bool로 변환한 후 그 역
 [JS falsy value](https://developer.mozilla.org/ko/docs/Glossary/Falsy)
 
 [나머지 연산자](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Remainder)
+
+[Nullish coalescing operator - JavaScript | MDN](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing)
