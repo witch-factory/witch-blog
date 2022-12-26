@@ -1,9 +1,9 @@
-```yaml
+---
 title: 모던 자바스크립트 튜토리얼 part 1.2 자바스크립트 기본 - 3
 date: "2022-12-26T00:00:00Z"
 description: "ko.javascript.info part 1-2 세번째"
 tags: ["javascript"]
-```
+---
 
 # 1. 반복문
 
