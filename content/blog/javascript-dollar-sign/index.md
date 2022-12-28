@@ -117,14 +117,16 @@ undebug(function)을 통해 debug(function)으로 설정한 중단점을 제거�
 
 ```js
 let info={
-    name:"김성현", 
-    blog:"witch.work",
+  name:"김성현", 
+  blog:"witch.work",
 }
 
 console.log(keys(info)) // ["name", "blog"]
 ```
 
-속성 대신 속성에 매핑된 값들을 배열 형태로 리턴하는 함수로 `values(object)`도 있다.
+객체의 속성 대신 속성에 매핑된 값들을 배열 형태로 리턴하는 함수로 `values(object)`도 있다.
+
+![values](./values.png)
 
 ## 4.7. monitorEvents(object[, events])
 
