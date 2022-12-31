@@ -16,3 +16,13 @@ tags: ["javascript"]
 ## 1.1. 프로퍼티 다루기
 
 객체의 key-value 쌍을 프로퍼티라고 한다. 이는 `.`을 통해 조회할 수 있다.
+
+```js
+let user={
+  name:"김성현",
+  nickname:"witch",
+  age:25,
+}
+
+console.log(user.name); // "김성현" 을 출력한다.
+```
