@@ -1,7 +1,7 @@
 ---
-title: 모던 자바스크립트 튜토리얼 part 1.2 자바스크립트 기본 - 2
+title: JS의 비교 연산에 대하여
 date: "2022-12-17T00:00:00Z"
-description: "ko.javascript.info part 1-2 두번째"
+description: "서로 다른 타입의 비교는 어떻게 이루어질까?"
 tags: ["javascript"]
 ---
 
