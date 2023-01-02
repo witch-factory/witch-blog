@@ -130,7 +130,7 @@ for(let key in info){
 
 정수 형태의 프로퍼티(변형 없이 정수로 변환될 수 있어야 한다. 예를 들어 `+49`는 변형이 있어야 정수로 변할 수 있으므로 정수형태 프로퍼티가 아니다)는 자동으로 정렬되고 나머지는 추가한 순서대로 정렬된다.
 
-# 2. 객체 복사
+# 2. 객체와 참조
 
 원시 타입은 값 그대로가 저장된다. 예를 들어서 `let a=1`이라 할당하면 a에는 실제로 1이라는 값이 담긴다. 그러나 객체는 참조에 의해서 저장되고 복사된다. 따라서 다른 변수에 객체를 할당하면 그 객체에 대한 참조가 전달된다.
 
@@ -158,17 +158,86 @@ console.log(info, info2); //info, info2 모두 변경되었다.
 
 ## 2.1. 객체 비교
 
-객체를 비교할 때 `==`과 `===`는 같은 동작을 한다. 둘 다 객체의 참조를 비교하기 때문이다.
+객체를 비교할 때 `==`과 `===`는 같은 동작을 한다. 둘 다 객체의 참조를 비교하기 때문이다. 예를 들어 다음 코드에서 a,b는 완전히 똑같은 내용의 객체이지만 메모리에 있는 서로 다른 객체를 가리키고 있기 때문에 `==`과 `===` 모두 `false`를 반환한다.
 
 ```js
-      let a = {
-        name: "김성현",
-        blog: "https://www.witch.work/",
-      };
-      let b = {
-        name: "김성현",
-        blog: "https://www.witch.work/",
-      };
-      console.log(a == b);
-      console.log(a === b);
-      ```
+let a = {
+  name: "김성현",
+  blog: "https://www.witch.work/",
+};
+let b = {
+  name: "김성현",
+  blog: "https://www.witch.work/",
+};
+console.log(a == b);
+console.log(a === b);
+```
+
+## 2.2. 객체 복사
+
+그런데 객체의 참조를 복사하지 않고 객체의 내용을 복사하고 싶을 때가 있다. 일단, 만약 객체의 각 프로퍼티 value가 원시형이라면 객체를 순회하며 복제하면 된다.
+
+```js
+let a = {
+  name: "김성현",
+  blog: "https://www.witch.work/",
+};
+let b = {};
+
+for (let key in a) {
+  b[key] = a[key];
+}
+console.log(b === a); //false
+```
+
+또는 Object.assign을 사용할 수도 있다. 이 함수는 2번째 인수부터 끝 인수까지 받은 객체를 첫 번째 인수 객체에 복사한다.
+
+```js
+let a = {
+  name: "김성현",
+  blog: "https://www.witch.work/",
+};
+let b = {
+  nickname: "마녀",
+};
+
+let info = {};
+
+Object.assign(info, a, b);
+console.log(info); // a,b의 내용이 info로 복사된 상태
+```
+
+만약 첫 번째 인수 객체에 동일한 key를 갖는 프로퍼티가 있을 경우 뒤에 있는 객체의 프로퍼티가 덮어쓴다. 더 자세한 설명은 [여기](https://www.witch.work/javascript-object-assign/)로.
+
+## 2.3. 객체의 깊은 복사
+
+앞에서는 객체의 프로퍼티 value가 원시형이라면 객체를 순회하며 복제하면 된다고 했다. 
+
+하지만 프로퍼티 value가 객체라면 어떻게 해야할까? 이 경우 앞선 방식을 사용하면 문제가 발생한다. 각 value의 참조가 복제되기 때문이다. 다음 코드에서 문제를 확인할 수 있다.
+
+```js
+let info1 = {
+  name: "김성현",
+  blog: "https://www.witch.work/",
+  sizes: {
+    height: 171,
+    foot: 280,
+  },
+};
+
+let info2 = info1;
+info2.sizes.foot = 290;
+//위에서 info2의 value를 수정하는 코드 때문에 info1도 수정된다.
+console.log(info1);
+```
+
+이를 해결하기 위해서는 객체의 각 값을 검사하면서 값이 객체인 경우 그 구조도 복사해 주는 방법을 사용해야 한다. 이를 깊은 복사라고 한다.
+
+이를 구현하기 위해서는 Structured cloning algorithm을 사용하거나 lodash의 cloneDeep 함수를 사용하면 된다. 
+
+# 3. 가비지 컬렉션
+
+JS는 사용하지 않는 메모리를 가비지 컬렉션으로 관리한다. 이 가비지 컬렉터는 모든 객체를 모니터링하고 도달할 수 없는 객체는 삭제한다. 여기서 도달 가능하다는 것은 어떻게든 접근하거나 사용할 수 있는 값이라는 것이다.
+
+예를 들어서 현재 함수의 지역 변수, 매개변수, 중첩함수 체인 내에 있는 변수, 매개변수, 전역 변수 등은 삭제되지 않는다.
+
