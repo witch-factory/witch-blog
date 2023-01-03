@@ -25,6 +25,10 @@ lodash는 underscore.js로부터 시작된다. underscore.js는 2009년 JS에 �
 
 ## 2.1 당시 상황
 
+![js-past](./js-good-part.png)
+
+[이미지 출처](https://pitzcarraldo.medium.com/javascript%EB%8A%94-%EC%9E%98%EB%AA%BB%EC%9D%B4-%EC%97%86%EB%8B%A4-%EC%A0%95%EB%A7%90%EB%A1%9C-fb9b8e033b10)
+
 지금에 비하면 JS는 암흑이나 다름없었다. 이땐 JS 클래스 문법도 없었고, fetch도 없었다. ES6의 수많은 편의기능도 없었고 브라우저들은 각자의 표준으로 경쟁했기에(특히 IE) 브라우저들의 호환성도 좋지 않았다. 이렇게 부실했던 JS를 그나마 낫게 만들어준 라이브러리들이 있었다. 부트스트랩과 제이쿼리, underscorejs, prototypejs와 같은 것들이다.
 
 ES6같은 건 그저 프론트 개발자들-이때는 프론트 개발자라는 말이 잘 쓰이지도 않았지만-의 바람 중 하나였고 ES5는 널리 쓰이지도 않았다. ES3이 대세이던 시절이다. 참고로 map, filter, forEach와 같은 함수들은 ES5에 도입되었다. findIndex, fill과 같은 함수들은 ES6에 도입되었다.
