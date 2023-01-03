@@ -89,7 +89,7 @@ describe("pow", function () {
 
 이 상태로 위의 HTML 파일을 크롬에서 열면 아래와 같은 결과를 볼 수 있다. 당연하지만 테스트가 통과되지 않았다고 한다. 아직 함수를 전혀 작성하지 않았으니 당연하다.
 
-![test-1](./test-1.png)
+![test-1](./test-1.PNG)
 
 ## 1.2. 테스트 개선
 
@@ -124,7 +124,7 @@ function pow(x, n) {
 
 그리고 나서 테스트 페이지를 다시 열면 2개의 테스트를 모두 통과한 것을 볼 수 있다.
 
-![success](C:\Users\soakd\witch-blog\content\blog\javascript-6\test-success.PNG)
+![success](./test-success.PNG)
 
 하지만 이렇게 모든 테스트를 하나씩 작성하면 힘이 든다. 따라서 여러 개의 테스트를 반복문을 통해서 만드는 것도 가능하다. 예를 들어 1부터 5까지의 네제곱에 대해서 pow 함수를 테스트하는 코드를 다음과 같이 만들 수 있다.
 
