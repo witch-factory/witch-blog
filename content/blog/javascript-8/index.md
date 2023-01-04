@@ -9,3 +9,13 @@ tags: ["javascript"]
 
 객체에도 메서드가 존재할 수 있다. 객체 프로퍼티에 값을 할당할 때 함수를 값으로 할당하면 메서드가 된다.
 
+```js
+let info = {
+  name: "김성현",
+  age: 25,
+};
+
+info.sayHi = function () {
+  alert("안녕하세요");
+};
+```
