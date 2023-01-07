@@ -212,6 +212,10 @@ console.log(user?.["house address"]);
 
 ?.는 할당 연산자 왼쪽에서 사용될 수 없다는 점에 주의하자. 쓰기에는 사용할 수 없다. 단 delete와 조합하여 '이 객체가 있을 경우 이 속성을 삭제'하는 용도로 사용할 수 있다.
 
+# 4. 심볼형
+
+심볼형에 관하여는 따로 글을 작성하였다. 
+
 # 참고
 
 메서드 정의로 선언한 메서드의 차이 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions
