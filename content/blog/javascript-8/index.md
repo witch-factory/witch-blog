@@ -216,6 +216,160 @@ console.log(user?.["house address"]);
 
 심볼형에 관하여는 따로 글을 작성하였다. 
 
+# 5. 객체를 원시형으로 변환하기
+
+객체에 연산을 가하거나 alert로 출력하는 등의 동작을 하면 자동 형 변환이 일어난다. 객체가 원시값으로 변환되는 것이다. 그럼 이 변환은 어떻게 일어날까?
+
+## 5.1. 원시형으로 변환하는 경우
+
+논리형으로 변환하는 경우 객체는 무조건 true로 변환된다. 
+
+```js
+let emptyObject = {};
+console.log(Boolean(emptyObject));
+// true
+```
+
+숫자형으로 변환하는 건 객체끼리 빼는 연산을 하거나 수학 관련 함수를 적용할 때 일어난다. 
+
+예를 들어 Date 객체를 숫자로 변환시 1970년 1월 1일부터 현재 시각까지 경과한 시간을 밀리세컨드 단위로 따진 숫자로 변환되는데, 따라서 Date객체끼리 빼면 두 날짜의 시간 차이가 밀리세컨드 단위로 반환된다.
+
+문자형으로의 형변환은 alert, String 등의 함수를 적용할 때 일어난다.
+
+## 5.2. ToPrimitive
+
+ToPrimitive는 명세서의 추상 연산 중 하나이다. 이때 추상 연산이란 언어에 직접 들어가 있는 연산이 아니라 자바스크립트 엔진이 내부적으로 사용하는 연산이다.
+
+이 중 하나로 형변환을 자동으로 해주는 메서드 ToPrimitive가 있는 것이다. 이 메서드는 객체를 원시값으로 변환하는데 사용되며 목표로 하는 자료형을 뜻하는 hint에 따라 3가지로 나뉜다.
+
+### 5.2.1. hint가 "string"인 경우
+
+alert 함수에 인수로 들어가는 경우와 같이 문자열을 기대하는 연산을 수행할 땐 hint가 "string"이다. 
+
+객체를 문자열로 변환하게 되면 보통 [object Object]가 반환된다. 이는 객체의 toString 메서드를 호출한 결과이다. 이에 관해서는 다른 글에서 더 자세히 다룬다.
+
+### 5.2.2. hint가 "number"인 경우
+
+수학 연산을 적용하려 할 때 hint가 "number"가 된다. 이때 객체는 먼저 valueOf 메서드를 호출하고, 그 결과가 원시값이 아니라면 toString 메서드를 호출한다.
+
+### 5.2.3. hint가 "default"인 경우
+
+연산자가 기대하는 자료형이 확실치 않을 때 hint가 "default"가 된다. 스터디 자료에서 든 예시는 `+`인데 피연산자가 문자열일 수도 있고 숫자일 수도 있기 때문이다.
+
+또한 `==`를 사용해 비교할 때도 마찬가지다. hint가 default가 된다.
+
+그러나 대소 비교 연산자 `>,<`의 경우 피연산자에 문자열, 숫자 다 들어갈 수 있지만 hint는 "number"가 된다. 이는 명세서에 명시되어 있다.
+
+하지만 Date 객체를 제외하면 모든 내장 객체가 hint가 default인 경우와 number인 경우를 동일하게 처리하므로 이런 걸 모두 알 필요는 없다.
+
+## 5.3. 객체의 형변환 과정
+
+객체의 형변환 알고리즘은 다음과 같다.
+
+1. 객체에 `obj[Symbol.toPrimitive](hint)`메서드가 있는지 찾고, 있다면 메서드를 호출합니다.
+2. hint가 "string"이라면 `obj.toString()`과 `obj.valueOf()`를 호출합니다.
+3. hint가 "number"나 "default"라면 `obj.valueOf()`와 `obj.toString()`을 호출합니다.
+
+여기 나온 것들을 하나하나 살펴보자.
+
+### 5.3.1. Symbol.toPrimitive
+
+이는 객체의 내장 심볼 함수인데 이 심볼은 다음과 같이 힌트를 받아서 그에 따른 변환값을 반환하는 함수이다. 또한 인수로 받는 hint는 "string", "number", "default" 중 하나여야 한다.
+
+```js
+let user = {
+  name: "김성현",
+  age: 25,
+
+  [Symbol.toPrimitive](hint) {
+    console.log(hint);
+    return hint == "string" ? `{name: "${this.name}"}` : this.age;
+  },
+};
+
+console.log(user);
+// number, 25가 찍힘
+console.log(Number(user));
+// string, {name: "김성현"}이 찍힘
+console.log(String(user));
+```
+
+위와 같이 Symbol.toPrimitive를 구현하면 객체를 숫자나 문자열로 변환할 때 Symbol.toPrimitive가 호출된다.
+
+### 5.3.2. toString, valueOf
+
+객체에 Symbol.toPrimitive가 없다면 toString과 valueOf를 호출한다. 이 둘은 모두 객체의 메서드이며 각각 원시값을 반환해야 한다.
+
+만약 hint가 "string"이라면 toString이 먼저 호출되고, "number"이거나 "default"라면 valueOf가 먼저 호출된다. 그리고 보통 valueOf는 객체 자신을 반환하고 toString은 "[object Object]"를 반환한다.
+
+만약 객체에 Symbol.toPrimitive와 valueOf가 없으면, toString이 모든 형 변환을 처리합니다. 그리고 만약 Symbol.toPrimitive, toString, valueOf가 모두 원시값을 반환하지 않는다면 에러가 발생한다.
+
+그리고 만약 toString이나 valueOf가 원시값을 반환하지 않는다면 그 함수 호출로 인한 결과는 무시된다. 바로 다음 형변환으로 넘어가는 것이다.
+
+예를 들어 다음 코드의 경우 user의 toString이 객체를 반환하므로 결과가 무시된다. 그 후 valueOf가 호출되어 원시값을 반환하므로 정상적으로 형변환을 진행한다. 로그창을 보면 toString도 호출은 되는 것을 알 수 있다.
+
+```js
+let user = {
+  name: "김성현",
+  age: 30,
+
+  toString() {
+    console.log("toString");
+    return this;
+  },
+
+  valueOf() {
+    console.log("valueOf");
+    return this.name;
+  },
+};
+console.log(String(user));
+```
+
+단 위 형변환 함수들이 항상 hint에 해당하는 자료형으로의 변환을 보장하지는 않는다. 원시값만 반환하면 된다. toString이 정수를 반환한다고 해도 에러가 발생하는 건 아니다.
+
+```js
+let user = {
+  name: "김성현",
+  age: 25,
+
+  toString() {
+    return this.age;
+  },
+};
+// 둘 다 잘 동작한다.
+console.log(+user);
+console.log(String(user));
+```
+
+### 5.3.3. 추가 형변환
+
+만약 객체가 피연산자로 쓰인다면 한번 형변환 된 후 연산자에 맞게 또 형변환될 수도 있다. 만약 toString등으로 변환된 원시값이 연산자에 맞지 않을 때 일어나는 일이다.
+
+```js
+let user = {
+  toString() {
+    return "10";
+  },
+};
+console.log(user * 2);
+```
+
+위 코드는 20이 출력된다. user가 원시값 `"10"`으로 변환된 후 곱셈 연산자에 의해 또 정수로 변환되어 2와 곱해졌기 때문이다.
+
+반면 다음과 같은 경우 연산이 `"10"+2`가 되어 102가 출력된다.
+
+```js
+let user = {
+  toString() {
+    return "10";
+  },
+};
+console.log(user + 2);
+```
+
 # 참고
 
 메서드 정의로 선언한 메서드의 차이 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions
+
+ToPrimitive에 관하여 https://leesoo7595.github.io/javascript/2020/06/05/JavaScript_toPrimitive/
