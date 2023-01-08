@@ -1,6 +1,6 @@
 ---
 title: JS의 심볼, 대체 왜 있지?
-date: "2022-01-08T00:00:00Z"
+date: "2023-01-08T00:00:00Z"
 description: "JS의 심볼, 어디에 쓰이는 걸까?"
 tags: ["javascript"]
 ---
