@@ -207,4 +207,49 @@ if(word.indexOf('w')!==-1){
 
 문자열의 일부를 추출하는 메서드는 3가지가 있다.
 
-str.slice는 파이썬의 slicing과 같이 start~end인덱스의(end미포함) 문자열을 반환한다.
+str.slice는 파이썬의 slicing과 같이 start~end인덱스의(end는 미포함) 문자열을 반환한다. 만약 2번째 end 인수가 생략되면 start부터 끝까지를 반환한다.
+
+또한 음수 인수를 넘길 수도 있는데 이 경우 문자열 끝에서부터 인덱스 카운팅을 시작한다. 즉 맨 마지막 문자가 -1인덱스가 되는 것이다.
+
+```js
+let word="witch_work";
+
+console.log(word.slice(1,5)); //itch
+console.log(word.slice(5)); //_work
+console.log(word.slice(3,-4)); //ch_
+console.log(word.slice(4,3)); // 빈 문자열
+```
+
+slice는 만약 start가 end와 같거나 더 크면 빈 문자열을 반환한다.
+
+substring은 slice와 같은 기능을 하는 메서드지만 음수 인수를 허용하지 않는다. 음수 인수를 넣을 경우 0으로 처리된다. 그리고 start가 end보다 커도 s~e 사이의 문자열을 잘 추출한다.
+
+```js
+let word="witch_work";
+// witc 가 출력된다.
+// 음수 인수가 0으로 처리되어 substring(4,0)이 되고 따라서 0~4 사이의 문자열이 추출되기 때문
+console.log(word.substring(4,-1));
+```
+
+이렇게 인덱스를 이용하는 것 대신 길이를 이용하는 방식도 있다. `str.substr(start, length)`는 start인덱스부터 시작해 length개의 문자열을 추출한다. 단 이 substr은 브라우저 전용 기능이므로 브라우저 외 환경에서는 제대로 동작하지 않을 수 있다.
+
+그리고 slice가 음수 인수가 허용되어 좀더 유연하므로 slice를 쓰는 게 substring보다 일반적으로 더 좋은 선택이다.
+
+## 3.3. 문자열 비교
+
+JS에서 문자열은 모두 UTF-16으로 인코딩되고 따라서 모든 글자가 숫자 형식 코드와 매칭된다. 이 코드는 str의 특정 인덱스에 위치한 문자의 코드를 알아내는 메서드 `str.codePointAt(index)`로 알아낼 수 있다. 반대로 `String.fromCodePoint(code)`로 특정 숫자코드에 대응하는 글자를 만들어 줄 수도 있다.
+
+아무튼 JS는 문자열을 비교할 때 이 숫자 코드를 이용해서 비교한다. 각 문자열의 첫 인덱스부터 한 글자씩 비교해 가면서 숫자 코드가 더 큰 문자가 나온 문자열이 더 크다고 판단하는 것이다.
+
+따라서 단순히 문자열에 비교 연산자를 쓰면 소문자가 대문자보다 무조건 크게 나오는 등의 문제가 있다. 제대로 비교하기 위해서는 국제화 관련 표준인 ECMA-402를 통해 문자열을 비교하는 `str.localeCompare(str2)`를 써야 한다. 
+
+str이 str2보다 작으면 음수, 같으면 0, str이 str2보다 크면 양수를 반환한다.
+
+```js
+console.log("ABC".localeCompare("abb")); //1
+console.log("ABC">"abb"); //false
+```
+
+위의 결과를 보면 단순 비교를 했을 경우 대문자가 숫자코드가 작으므로 더 작다고 판단되었지만 localeCompare에서는 ABC가 abb보다 더 크다는, 일반적인 알파벳에 기반한 비교를 잘 해준 것을 볼 수 있다.
+
+# 4. 배열
