@@ -384,3 +384,60 @@ console.log(res);
 ```
 
 ### 4.4.6. reduce, reduceRight
+
+reduce는 배열의 전체 원소들을 기반으로 값을 하나 도출할 때 사용한다. 다음과 같은 형태로 사용된다.
+
+```js
+arr.reduce(function(accumulator, item, index, array) {
+  // ...
+}, [initial]);
+```
+
+reduce는 배열의 첫 번째 원소부터 마지막 원소까지 순회하면서 accumulator에 값을 누적시킨다. accumulator는 초기값으로 initial을 사용할 수도 있고, 사용하지 않을 경우 배열의 첫 번째 원소를 사용한다.
+
+reduce에 쓰이는 함수의 인수들은 다음과 같은 의미가 있다. accumulator는 이전 함수 호출의 결과인 누적 값, item은 현재 배열의 원소, index는 현재 배열의 인덱스, array는 배열 자체를 의미한다.
+
+예를 들어 reduce를 이용해 배열 요소 전체의 합을 구할 수 있다.
+
+```js
+let arr = [1, 2, 3, 4, 5];
+// initial누적값을 정하지 않았으므로 배열의 첫 번째 원소 1이 첫 누적값으로 사용된다
+let res = arr.reduce((s, current) => s + current);
+// 15
+console.log(res);
+```
+
+단 이렇게 초기값을 명시하지 않을 경우, 만약 배열이 비어 있다면 문제가 생긴다. 첫번째 원소가 없기 때문이다. 따라서 초기값을 명시해 주는 것이 안전하다. 다음과 같이 말이다.
+
+```js
+let res = arr.reduce((s, current) => s + current, 0);
+```
+
+reduceRight는 reduce와 동일한 기능을 하지만, 배열의 끝에서부터 시작한다.
+
+### 4.4.7. isArray
+
+해당 원소가 배열이면 true, 아니면 false를 반환한다.
+
+### 4.4.8. thisArg
+
+배열 메서드들은 모두 thisArg라는 인수를 받을 수 있다. thisArg는 메서드 내부에서 this로 사용할 객체를 지정한다. thisArg를 사용하지 않으면 함수 내부에서 this는 undefined가 된다(브라우저 환경에선 전역 윈도우 객체).
+
+```js
+let numberFilter = {
+  min: 18,
+  max: 99,
+  filter(value) {
+    if (value < this.min || value > this.max) {
+      return false;
+    }
+    return true;
+  },
+};
+
+let ages = [12, 18, 20, 1, 100, 90, 14];
+
+// numberFilter.filter의 this로 numberFilter 객체를 사용한다고 지정
+let filtered = ages.filter(numberFilter.filter, numberFilter);
+console.log(filtered);
+```
