@@ -253,3 +253,134 @@ console.log("ABC">"abb"); //false
 위의 결과를 보면 단순 비교를 했을 경우 대문자가 숫자코드가 작으므로 더 작다고 판단되었지만 localeCompare에서는 ABC가 abb보다 더 크다는, 일반적인 알파벳에 기반한 비교를 잘 해준 것을 볼 수 있다.
 
 # 4. 배열
+
+## 4.1. 배열 생성
+
+배열은 대괄호를 쓰거나 생성자를 사용해 만든다.
+
+```js
+let arr = new Array();
+let arr2 = [];
+```
+
+## 4.2. 배열 순회
+
+배열을 순회할 때는 for문을 쓰는 게 일반적이다. 이때 3가지 선택지가 있다. 인덱스를 사용해 순회하는 건 가장 기본적인 방법이다.
+
+```js
+let members = ["고주형", "전민지", "장소원"];
+
+for (let i=0;i<members.length;i++) {
+  console.log(members[i]);
+}
+```
+
+for-of문을 쓰는 방법도 있다. 이 방법은 배열의 요소를 순회하면서 요소를 변수에 할당해주는 방식이다. 배열의 인덱스 말고 값만이 필요할 때 사용하면 좋다.
+
+```js
+let members = ["고주형", "전민지", "장소원"];
+
+for (let member of members) {
+  console.log(member);
+}
+```
+
+for-in문을 사용할 수도 있다. 그러나 for-in문은 객체를 순회할 때 사용하는 것이 일반적이며 키가 숫자가 아닌 프로퍼티와 메서드를 가지는 유사 배열 객체의 경우 원치 않는 프로퍼티까지 순회하는 결과가 나올 수 있다. 
+
+```js
+let members = ["고주형", "전민지", "장소원"];
+members.foo = "김성현";
+// members의 foo도 순회에 포함된다
+for (let name in members) {
+  console.log(members[name]);
+}
+// members의 foo는 순회에 포함되지 않는다
+for (let name of members) {
+  console.log(name);
+}
+```
+
+게다가 for-in은 객체에 사용하는 것에 최적화되어 있어 배열에 for-of를 쓰는 것보다는 느리다.
+
+## 4.3. length
+
+배열의 length는 배열 내의 실제 요소 개수를 세는 게 아니라 배열 내의 가장 큰 인덱스에 1을 더한 값이다.
+
+```js
+let test = [];
+test[1000] = 1;
+console.log(test.length); 
+// 배열에 요소는 실제로는 하나뿐인데 length는 1001
+```
+
+또한 배열 length에는 쓰기도 가능하다. 이때 length가 줄어들면 배열의 뒤쪽 요소가 삭제된다. 기존 length보다 더 큰 length를 지정하면 배열 뒤쪽엔 빈 공간이 채워진다.
+
+```js
+let test = [1, 2, 3];
+// [1, 2, 3] 3
+console.log(test, test.length);
+test.length = 5;
+// [1, 2, 3, empty × 2] 5
+console.log(test, test.length);
+test.length = 2;
+// [1, 2] 2. 배열이 잘렸다!
+console.log(test, test.length);
+```
+
+## 4.4. 배열 메서드
+
+잘 모르고 있던 메서드만 적는다.
+
+### 4.4.1. splice
+
+splice는 배열의 요소를 삭제하거나 추가할 때 사용한다. 첫 번째 인수는 시작 인덱스, 두 번째 인수는 삭제할 요소 개수, 세 번째 인수부터는 추가할 요소를 나열한다.
+
+```js
+arr.splice(index[, deleteCount, elem1, ..., elemN])
+```
+
+이때 추가할 요소는 index번째(0-base) 원소의 앞에 추가된다. 즉, index번째 원소는 뒤로 밀려난다. `arr.splice(0, 0, 1)` 과 같은 경우 배열의 첫 번째에 삽입되어야 하는 것을 생각하면 당연하다.
+
+여기에는 음수 인덱스도 사용할 수 있다.
+
+### 4.4.2. forEach
+
+forEach는 배열의 요소를 순회하면서 각 요소에 대해 함수를 실행한다. forEach는 반환값이 없다.(정확히는 undefined를 반환한다.)
+
+```js
+let arr = [1, 2, 3, 4, 5];
+
+arr.forEach((item, index) => {
+  console.log(item, index);
+});
+```
+
+### 4.4.3. indexOf, lastIndexOf, includes
+
+문자열의 같은 메서드와 같은 기능을 한다.
+
+```js
+arr.indexOf(item, from) // from부터 item을 찾는다. 못 찾으면 -1
+arr.lastIndexOf(item, from) // from부터 item을 뒤에서부터 찾는다. 못 찾으면 -1
+arr.includes(item, from) // from부터 item이 있는지 검색. 못 찾으면 false
+```
+
+### 4.4.4. find, findIndex
+
+find는 배열의 요소를 순회하면서 조건에 맞는 첫 번째 요소를 반환한다. findIndex는 조건에 맞는 첫 번째 요소의 인덱스를 반환한다. 
+
+만약 조건에 맞는 요소가 없으면 find는 undefined, findIndex는 -1을 반환한다.
+
+### 4.4.5. map
+
+map은 배열의 요소를 순회하면서 각 요소에 대해 함수를 실행한 결과를 모아 새로운 배열을 만들어서 리턴해 준다.
+
+```js
+let arr = [1, 2, 3, 4, 5];
+
+let res = arr.map((item) => item + 10);
+// 11,12,13,14,15
+console.log(res);
+```
+
+### 4.4.6. reduce, reduceRight
