@@ -444,4 +444,100 @@ console.log(filtered);
 
 # 5. 이터러블
 
-객체를 이터러블로 만들면 어떤 객체든 for..of로 순회할 수 있다. 
+객체를 이터러블로 만들면 어떤 객체든 for..of로 순회할 수 있다. 객체에 for..of가 호출되면 다음과 같은 일이 일어나기 때문이다.
+
+1. 객체의 Symbol.iterator 메서드를 호출한다. 이때 Symbol.iterator는 next 메서드를 갖는 이터레이터 객체를 반환해야 한다.
+2. for..of는 다음 값이 필요할 때마다 이터레이터 객체의 next 메서드를 호출한다. 이때 next 메서드는 value와 done 프로퍼티를 갖는 객체를 반환해야 한다.
+3. next 메서드가 반환하는 객체의 done 프로퍼티가 true가 될 때까지 for..of는 반복한다.
+
+객체의 Symbol.iterator의 구조는 다음과 같이 이루어진다.
+
+```js
+객체[Symbol.iterator] = function(){
+  return {
+    // next 메서드가 구현되어 있는 객체
+    next(){
+      if(순회할 값이 더 있으면){
+        return {done: false, value: 순회할 다음 값}
+      } else {
+        return {done: true}
+      }
+    }
+  }
+}
+```
+
+혹은 next 메서드를 아예 객체 자체에 구현해 놓은 다음 Symbol.iterator에서는 객체 자신을 반환해 주도록 하는 것도 가능하다.
+
+```js
+let obj={
+  [Symbol.iterator]: function(){
+    // for..of가 시작돨 때의 초기 조건 설정
+    return this;
+  },
+  next(){
+    if(순회할 값이 더 있으면){
+      return {done: false, value: 순회할 다음 값}
+    } else {
+      return {done: true}
+    }
+  }
+}
+```
+
+단 위와 같은 방식의 단점은 2개의 for..of 반복문을 동시에 쓸 수 없다는 점이다. 이터레이터가 객체 자신 그 하나뿐이므로 반복의 진행 상태를 공유하기 때문이다.
+
+이터러블을 만들면 관심사의 분리가 가능해진다. next메서드는 이터레이터 객체에 맡기고 반복하는 객체는 반복의 메커니즘에는 신경쓸 필요가 없어진다.
+
+## 5.1. 이터러블 직접 호출
+
+이터레이터를 직접 호출하는 것도 가능하다. 단 잘 쓰이는 것은 아니다.
+
+```js
+let it=obj[Symbol.iterator]();
+
+while(1){
+  let result=it.next();
+  if(result.done) break;
+  console.log(result.value);
+}
+```
+
+## 5.2. 이터러블과 배열
+
+이터러블은 `Symbol.iterator` 메서드를 가져서 반복 가능한 객체이다. 유사 배열 객체와는 다르다. 유사 배열 객체는 인덱스와 length 프로퍼티를 가지고 있는 객체이다.
+
+인덱스와 length가 있지만 Symbol.iterator가 없는 유사 배열 객체도 있다.
+
+```js
+// 인덱스, length 프로퍼티가 있지만 Symbol.iterator가 없어서 이터러블은 아닌 유사 배열 객체
+let arrayLike={
+  0: 'hello',
+  1: 'world',
+  length: 2
+}
+```
+
+## 5.3. Array.from
+
+Array.from 메서드는 이터러블이나 유사 배열을 진짜 배열로 바꿔서 반환해 준다. 이러면 배열 메서드도 쓸 수 있게 된다.
+
+```js
+let arr = {
+  0: "witch",
+  1: "work",
+  length: 2,
+};
+
+let arr2 = Array.from(arr);
+arr2.pop();
+console.log(arr2); // ['witch']
+```
+
+Array.from은 넘겨받은 객체가 이터러블이나 유사 배열이면 이를 배열로 변환해 준다. 그리고 이 함수는 선택적인 인수가 있다. 
+
+```js
+Array.from(obj, [mapFn, thisArg])
+```
+
+mapFn 함수를 지정하면 변환한 배열을 추가하기 전에 각 요소에 mapFn을 적용한다. 그리고 thisArg를 지정하면 mapFn을 호출할 때 this로 사용할 객체를 지정할 수 있다.
