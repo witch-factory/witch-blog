@@ -75,6 +75,40 @@ for..of, forEach도 지원한다.
 - weakSet.delete(value)
 - weakSet.has(value)
 
-
 이런 위크맵, 위크셋은 외부 코드에 속한 객체에 대해 어떤 속성을 부여해 줘야 할 때 쓰일 수 있다. 외부 객체가 사라질 때 자동으로 거기 연관된 속성도 사라지는 것이다.
 
+# 2. keys, values, entries
+
+keys(), values(), entries() 메서드는 맵, 셋, 배열 객체에 사용될 수 있다. 일반 객체를 위한 비슷한 기능은 다음과 같다.
+
+- Object.keys(obj) : 객체의 키를 배열로 반환한다.
+- Object.values(obj) : 객체의 값들을 배열로 반환한다.
+- Object.entries(obj) : 객체의 [키, 값] 쌍을 배열로 반환한다.
+
+이때 맵, 셋, 배열 객체의 keys와 같은 메서드는 배열과는 다른 이터러블 객체를 반환하지만 일반 객체의 Object.keys는 진짜 배열을 반환한다. 따라서 Object.xxx 메서드의 반환값에는 for..of를 쓸 수 있다. 여기서 위 메서드들은 객체의 프로퍼티 중 심볼형 키를 무시한다는 점에 주의하자.
+
+js에선 복잡한 구조들이 모두 객체에 기반하다 보니 객체에 따로 keys, values, entries 메서드들이 만들어질 수 있다. 따라서 일반 객체를 위한 방법으로 Object.keys, Object.values, Object.entries를 만든 것이다.
+
+## 2.1. 객체에 배열 메서드 쓰기
+
+배열 전용인 map, filter와 같은 메서드는 객체에 사용할 수 없다. 사용하기 위해서는 다음과 같이 한다.
+
+```js
+let prices = {
+  apple: 0.67,
+  orange: 1.49,
+  banana: 0.39,
+  grape: 2.79,
+  pear: 1.29,
+};
+
+// Object.entries를 써서 키-값을 요소로 갖는 배열을 만들고 filter 적용
+let overOneBill = Object.entries(prices).filter(
+  ([key, value]) => value > 1.0
+);
+// Object.fromEntries를 써서 키-값을 요소로 갖는 배열을 다시 객체로 만듦
+overOneBill = Object.fromEntries(overOneBill);
+console.log(overOneBill);
+```
+
+# 3. 구조 분해 할당
