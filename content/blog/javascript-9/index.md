@@ -441,3 +441,7 @@ let ages = [12, 18, 20, 1, 100, 90, 14];
 let filtered = ages.filter(numberFilter.filter, numberFilter);
 console.log(filtered);
 ```
+
+# 5. 이터러블
+
+객체를 이터러블로 만들면 어떤 객체든 for..of로 순회할 수 있다. 
