@@ -75,7 +75,15 @@ x가 null, y가 undefined라면 true를 반환한다. 반대의 경우도 마찬
 
 만약 x가 객체이고 x가 `[[isHTMLDDA]]` 내부 슬롯을 가지고 있고 y가 null혹은 undefined라면 true를 반환한다. 반대의 경우도 마찬가지이다.
 
-참고로 이 `[[isHTMLDDA]]` 내부 슬롯은 
+참고로 이 `[[isHTMLDDA]]` 내부 슬롯은 host-defined 즉 non-native 객체에만 존재한다. 이걸 가진 객체는 ToBoolean, IsLooselyEqual 등에서 undefined와 같이 취급된다고 한다. document.all이 이에 해당한다.
+
+그래서 실제로 `document.all == undefined`는 true를 반환한다.
+
+### 1.2.4. 문자열과 숫자
+
+x가 문자열이고 y가 숫자, 혹은 x가 숫자이고 y가 문자열인 경우이다. 이럴 경우 잘 알려져 있다시피 문자열을 숫자로 변환한 후 비교한다.
+
+더 구체적으로는 예를 들어 x가 숫자이고 y가 문자열인 경우 `IsLooselyEqual(x,ToNumber(y))`를 호출한다. 반대의 경우도 마찬가지이다.
 
 # 참고
 
@@ -86,3 +94,5 @@ https://tc39.es/ecma262/#sec-abstract-operations
 https://tc39.es/ecma262/#sec-samevaluenonnumber
 
 https://developer.mozilla.org/ko/docs/Glossary/Falsy
+
+https://tc39.es/ecma262/#sec-IsHTMLDDA-internal-slot
