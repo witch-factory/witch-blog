@@ -113,4 +113,123 @@ console.log(overOneBill);
 
 # 3. 구조 분해 할당
 
-구조 분해 할당은 객체 혹은 배열을 변수로 분해해서 할당하거나 함수에 전달하게 해 준다. 
+## 3.1. 배열 구조 분해 할당
+
+구조 분해 할당은 객체 혹은 배열을 변수로 분해해서 할당하거나 함수에 전달하게 해 준다. `[]`를 쓰면 된다.
+
+```js
+let blog = ["witch", "work"];
+let [first, second] = blog;
+console.log(first, second); //witch work
+```
+
+이때 필요 없는 요소를 버리기 위해서 쉼표를 사용해 요소를 무시할 수 있다.
+
+```js
+let myName = ["김", "성", "현"];
+let [first, , third] = myName; //2번째 원소는 생략되었다
+console.log(first, third);
+```
+
+또한 할당 연산자 우측에는 for..of로 반복 가능한 모든 객체가 올 수 있다. 그리고 좌측에는 할당할 수 있는 거라면 뭐든지 올 수 있다. 객체 프로퍼티도 가능하다.
+
+예를 들어서 문자열도 반복 가능한 객체이므로 구조 분해 할당 가능하다.
+
+```js
+let [first, second] = "hi";
+console.log(first, second); //h i
+```
+
+구조 분해 할당은 반복에서도 사용할 수 있다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 26,
+  hobby: "코딩",
+};
+
+// me의 프로퍼티들이 [키, 값] 형태로 담긴 배열이 반환됨
+console.log(Object.entries(me));
+// Object.entries(me)의 결과를 순회하며 각각의 키와 값을 출력함
+for (let [k, v] of Object.entries(me)) {
+  console.log(k, v);
+}
+```
+
+이때 만약 할당하려는 변수 개수가 배열의 길이보다 크더라도 에러는 발생하지 않는다. 단 넘치는 변수에는 undefined가 할당된다. 다만 이를 방지하기 위해 `=`를 이용해 기본값을 설정해 줄 수 있다. 
+
+구조 분해 할당에서 변수에 할당해줄 값이 없는 경우 기본값이 할당된다. 할당해줄 값이 있으면 기본값은 할당되지 않는다.
+
+```js
+let arr = ["김성현"];
+
+let [first = "1", second = "2"] = arr;
+// 김성현 2
+console.log(first, second);
+```
+
+## 3.2. 객체 구조 분해 할당
+
+객체를 구조 분해 할당할 땐 `{}`를 쓴다. 우측엔 분해하려는 객체를, 좌측엔 해당하는 객체 프로퍼티의 패턴을 넣는다. 다음과 같이 쓰는 것이다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 26,
+  hobby: "코딩",
+};
+/* 해당하는 이름의 키를 갖는 프로퍼티가 할당되므로 순서는 상관없다.
+let {age, name, hobby} 로 써도 결과는 같음 */
+let { name, age, hobby } = me;
+// 김성현 26 코딩
+console.log(name, age, hobby);
+```
+
+그런데 객체의 프로퍼티 값을 저장하고자 하는 변수 이름이 프로퍼티 키와 다를 수도 있다. 그럴 경우 `:`를 쓰면 된다. `프로퍼티 키: 변수 이름` 형태로 쓰면 된다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 26,
+  hobby: "코딩",
+};
+
+let { age: myAge, name: myName, hobby: myHobby } = me;
+// 김성현 26 코딩
+console.log(myName, myAge, myHobby);
+```
+
+`=`를 쓰면 기본값을 설정할 수 있는 것은 배열 구조 분해 할당과 같다. 그리고 rest 연산자도 마찬가지로 사용할 수 있다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 26,
+  hobby: "코딩",
+};
+
+let { age: myAge, ...rest } = me;
+// 26, {name: "김성현", hobby: "코딩"}
+console.log(myAge, rest);
+```
+
+구조 분해 할당은 기존 변수에도 할 수 있다. 그러나 `{}`를 표현식 안에서 쓰지 않고 주요 코드 흐름상에 배치하면 코드 블록으로 인식된다. 따라서 기존 변수에 구조 분해 할당을 하려면 할당문을 괄호로 감싸 주어야 한다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 26,
+  hobby: "코딩",
+};
+
+let age, name, hobby;
+// 괄호로 할당문을 감싸서 코드블록이 아닌 것을 표현
+({ age: myAge, ...rest } = me);
+// 26, {name: "김성현", hobby: "코딩"}
+console.log(myAge, rest);
+```
+
+좀 더 복잡한 객체도 구조만 맞춰 준다면 구조 분해 할당을 할 수 있다.
+
+# 4. Date 객체
