@@ -233,3 +233,54 @@ console.log(myAge, rest);
 좀 더 복잡한 객체도 구조만 맞춰 준다면 구조 분해 할당을 할 수 있다.
 
 # 4. Date 객체
+
+Date 객체는 날짜와 시간을 다루는 데 사용하며 `new Date()`로 생성할 수 있다. 생성자에 인수를 넣지 않으면 현재 시간을 나타내는 Date 객체를 생성한다. 이것을 활용하는 방법들을 알아보자.
+
+## 4.1. 특정 날짜 객체 생성
+
+`new Date(ms)`는 1970/1/1 0시 0분 0초에서 ms만큼의 밀리초가 지난 시점이 저장된 Date객체를 생성해 반환한다.
+
+만약 1970/1/1 이전의 시간을 생성하고 싶다면 ms에 음수를 넣으면 된다.
+
+```js
+let date = new Date(0);
+// 1970-01-01T00:00:00.000Z
+console.log(date);
+```
+
+`new Date(dateString)`의 dateString에 문자열 인수를 넣으면 자동으로 구문 분석되어 해당 시간이 저장된 Date 객체를 생성해 반환한다.
+
+```js
+let date = new Date("2020-01-01");
+// 2020-01-01T00:00:00.000Z
+console.log(date);
+```
+
+`new Date(year, month, date, hours, minutes, seconds, ms)`의 인수로 연, 월, 일, 시, 분, 초, 밀리초를 넣으면 해당 시간이 저장된 Date 객체를 생성해 반환한다. 이를 사용하는 주의사항은 다음과 같다.
+
+  - year는 반드시 4자리 숫자여야 한다.
+  - 월은 0부터 시작한다. 0은 1월, 1은 2월, 11은 12월을 나타낸다.
+  - 일은 1부터 시작한다. 기본값은 1이다.
+  - 시, 분, 초, 밀리초는 생략 가능하다. 생략하면 0으로 간주한다.
+
+## 4.2. 날짜 객체 메서드
+
+Date 객체에서 정보를 가져오는 다음과 같은 메서드가 있다.
+
+  - `getFullYear()` : 연도를 반환한다. getYear()는 사용하지 않는다.
+  - `getMonth()` : 월을 반환한다. 0부터 시작해서 11까지 있다.
+  - `getDate()` : 일을 반환한다. 1~31이다.
+  - `getDay()` : 요일을 반환한다. 0부터 시작한다. 0은 일요일, 1은 월요일, 6은 토요일을 나타낸다.
+  - `getHours()` : 시를 반환한다.
+  - `getMinutes()` : 분을 반환한다.
+  - `getSeconds()` : 초를 반환한다.
+  - `getMilliseconds()` : 밀리초를 반환한다.
+  - `getTime()` : 1970/1/1 0시 0분 0초에서 현재까지의 밀리초를 반환한다.
+
+또한 get 대신 set을 쓰면 Date 객체의 정보를 설정할 수 있는 메서드가 된다.
+
+- setFullYear(year, month, date)
+- setMonth(month, date)
+- setDate(date)
+- setHours(hour, [min, sec, ms])
+- setMinutes(min, [sec, ms])
