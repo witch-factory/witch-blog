@@ -284,3 +284,48 @@ Date 객체에서 정보를 가져오는 다음과 같은 메서드가 있다.
 - setDate(date)
 - setHours(hour, [min, sec, ms])
 - setMinutes(min, [sec, ms])
+- setSeconds(sec, [ms])
+- setMilliseconds(ms)
+- setTime(milliseconds)
+
+그리고 Date 객체는 자동 고침 기능을 지원한다. 예를 들어 1월 32일 같은 값은 없다. 그런 값으로 Date 객체를 생성하려고 하면 자동으로 2월 1일로 수정된다. 초과된 시간이 알아서 다른 구성요소에 배분되는 것이다.
+
+```js
+let now = new Date(2020, 01, 50);
+// 01은 2월로 취급되므로 결과는 2020년 3월 21일이다
+console.log(now);
+```
+
+이런 자동 고침 기능은 일정 시간이나 날짜를 더하거나 빼는 연산에도 적용된다.
+
+```js
+let now = new Date();
+now.setHours(now.getHours() + 3); 
+//3시간이 지난 후의 시간
+console.log(now);
+// 일은 1부터 시작하는데 0으로 설정하면 이전 달의 마지막 날이 된다
+now.setDate(0);
+console.log(now);
+```
+
+## 4.3. 형변환
+
+Date객체는 숫자형으로 변환하면 1970/1/1 0시 0분 0초에서 현재까지 경과를 밀리초를 반환한다. getTime 메서드를 사용하는 것과 똑같다.
+
+```js
+let now = new Date();
+console.log(+now);
+```
+
+이렇게 현재 시간을 밀리초로 변환한 결과는 Date 객체를 만들지 않고도 가능하다. Date.now()를 사용하면 된다. 이는 중간에 Date 객체를 만들지 않으므로 getTime보다 빠르고 가비지 컬렉션이 필요없다.
+
+## 4.4. Date.parse
+
+Date.parse는 문자열을 Date 객체로 변환한다. 이때 문자열은 `YYYY-MM-DDTHH:mm:ss.sssZ` 형식이어야 한다. ss.sss는 초와 밀리초를 나타낸다. 그리고 Z는 UTC+0 시간대임을 나타낸다. 만약 이를 `+HH:mm`이나 `-HH:mm` 형식으로 바꾸면 UTC+0 시간대가 아닌 다른 시간대를 나타낼 수 있다.
+
+그리고 YYYY, YYYY-MM, YYYY-MM-DD 형식도 지원한다. 이때는 시간은 0시 0분 0초로 설정된다.
+
+이런 형식에 맞는 문자열을 대상으로 Date.parse를 호출하면 그 시간까지의 타임스탬프를 반환한다. 형식에 맞지 않는 문자열일 경우 NaN을 반환한다.
+
+그걸 기반으로 Date 객체를 만들려면 `new Date(Date.parse(str))` 형태로 사용하면 된다.
+
