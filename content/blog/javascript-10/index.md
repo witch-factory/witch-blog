@@ -329,3 +329,229 @@ Date.parse는 문자열을 Date 객체로 변환한다. 이때 문자열은 `YYY
 
 그걸 기반으로 Date 객체를 만들려면 `new Date(Date.parse(str))` 형태로 사용하면 된다.
 
+# 5. JSON
+
+JSON은 JavaScript Object Notation의 약자로 자바스크립트의 값이나 객체를 나타내는 표기법이다. 그러나 JSON을 다른 언어에서도 사용할 수 있다. 그런 기능을 지원하는 라이브러리를 사용하면 된다.
+
+하지만 JS에선 기본적으로 JSON을 다루는 메서드를 지원한다. `JSON.stringify`와 `JSON.parse`이다. 각각 객체를 JSON으로, JSON을 객체로 변환한다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 25,
+  hobby: "코딩",
+};
+
+let meJSON = JSON.stringify(me);
+// 객체가 문자열로 변환된 결과
+console.log(meJSON);
+```
+
+`JSON.stringify`로 변환된 문자열은 JSON으로 인코딩되고, 직렬화 처리되고, 문자열로 변환된, 그리고 결집된 객체이다. 이렇게 문자열로 변환된 객체는 네트워크를 통해 전송하거나 저장소에 저장 가능하다.
+
+## 5.1. 객체 인코딩
+
+`JSON.stringify`로 인코딩된 객체는 다음과 같은 특징을 갖는다.
+
+1. 문자열은 큰따옴표로 감싸진다. 작은따옴표나 백틱은 안된다.
+2. 객체 프로퍼티 이름은 큰따옴표로 감싸진다. "age":30과 같이 표현된다.
+
+또한 객체, 배열도 인코딩할 수 있으며 문자형, 숫자형, 불린형, null도 인코딩 가능하다. 이때 문자열을 인코딩할 시 무조건 큰따옴표로 감싸진다.
+
+이때 JSON은 언어에 종속되지 않는 포맷이므로 `JSON.stringify`의 인코딩에서 JS 특유의 프로퍼티는 무시된다.
+
+즉 함수 프로퍼티, 키가 심볼인 프로퍼티, 값이 undefined인 프로퍼티는 인코딩에서 제외된다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 25,
+  hobby: "코딩",
+  // 이 아래는 무시됨
+  sayHi: function () {
+    console.log(`안녕하세요 ${this.name}입니다.`);
+  },
+  [Symbol("id")]: 12345,
+  temp: undefined,
+};
+
+let meJSON = JSON.stringify(me);
+// 객체가 문자열로 변환된 결과
+console.log(meJSON);
+```
+
+또한 객체의 프로퍼티 값으로 객체가 있을 경우, 그 객체도 인코딩된다. 즉 중첩 객체도 잘 인코딩된다. 단 주의할 점은 순환 참조가 있을 때는 인코딩이 제대로 안된다는 것이다.
+
+```js
+let room = {
+  number: 105,
+};
+
+let me = {
+  name: "김성현",
+  age: 25,
+  hobby: "코딩",
+};
+
+me.address = room;
+room.owner = me;
+// Uncaught TypeError: Converting circular structure to JSON 즉 순환참조 오류
+let meJSON = JSON.stringify(me);
+console.log(meJSON);
+```
+
+## 5.2. replacer
+
+`JSON.stringify`의 전체 형태는 다음과 같다.
+
+```js
+let json = JSON.stringify(value[, replacer, space]);
+```
+
+value는 앞에서 보았듯 인코딩하고자 하는 값이다. 그리고 replacer는 인코딩할 때 어떤 프로퍼티를 인코딩할지가 담긴 배열이나 매핑 함수이다. space는 서식 변경 목적으로 사용할 공백의 개수이다.
+
+보통 `JSON.stringify`에는 인수를 하나만 넘기지만 순환 참조를 다룰 경우 2번째 인수를 사용한다. 
+
+예를 들어 위의 코드에서는 me 객체의 address프로퍼티가 room 객체를 참조하고 room 객체의 owner 프로퍼티가 me 객체를 참조하므로 순환 참조가 발생하였다. 이를 해결하기 위해선 replacer 인수에 "address"를 뺀 키값들이 담겨 있는 배열을 넘겨주면 그 프로퍼티들만 인코딩된다.
+
+```js
+let room = {
+  number: 105,
+};
+
+let me = {
+  name: "김성현",
+  age: 25,
+  hobby: "코딩",
+  friend: [{ name: "김기동" }, { name: "김형식" }],
+};
+
+me.address = room;
+room.owner = me;
+let meJSON = JSON.stringify(me, ["name", "age", "hobby", "friend"]);
+/* {"name":"김성현","age":25,"hobby":"코딩","friend":[{"name":"김기동"},{"name":"김형식"}]}
+address를 인코딩에서 제외 */
+console.log(meJSON);
+```
+
+또한 replacer 인수에는 매핑 함수를 넘겨줄 수도 있다. 매핑 함수는 인코딩할 프로퍼티의 키와 값을 매개변수로 받는다. 이 함수는 반환값을 가지는데, 반환값이 undefined이면 해당 프로퍼티는 인코딩에서 제외된다.
+
+따라서 위와 같은 코드의 경우 key가 "address"일 때 undefined를 반환하는 함수를 replacer로 전달하면 address 프로퍼티는 인코딩에서 제외된다.
+
+```js
+let room = {
+  number: 105,
+};
+
+let me = {
+  name: "김성현",
+  age: 25,
+  hobby: "코딩",
+  friend: [{ name: "김기동" }, { name: "김형식" }],
+};
+
+me.address = room;
+room.owner = me;
+let meJSON = JSON.stringify(me, function replacer(key, value) {
+  if (key === "address") {
+    return undefined;
+  }
+  console.log(key, value);
+  return value;
+});
+console.log(meJSON);
+```
+이때 replacer 함수에 key, value를 로그로 찍는 기능을 추가해 보면, replacer 함수가 중첩 객체와 배열 요소까지 포함해서 모든 키-값 쌍을 처리한다는 걸 알 수 있다. 재귀적으로 처리하는 것이다.
+
+또한 맨 처음에 이 함수가 호출될 땐 `{"":me}` 형태의 래퍼 객체가 만들어지기 때문에 맨 처음에는 인코딩되는 객체 자신이 replacer 함수의 value로 들어가게 된다.
+
+위 코드의 로그 결과는 다음과 같다.
+
+![stringify](./stringifyLog.png)
+
+이런 식으로 replacer 인수를 이용해 원하는 프로퍼티만 인코딩할 수 있다.
+
+## 5.3. space
+
+`JSON.stringify`의 3번째 인수 space는 가독성을 높이기 위해 중간에 삽입할 공백문자 수를 나타낸다. space 수에 따라 들여쓰기가 되고 중첩 객체는 별도의 줄에 출력된다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 25,
+  hobby: "코딩",
+};
+
+let meJSON = JSON.stringify(me, null, 4);
+/*
+{
+    "name": "김성현",
+    "age": 25,
+    "hobby": "코딩"
+}
+*/
+console.log(meJSON);
+```
+
+## 5.4. toJSON
+
+객체에 toJSON 메서드가 있으면 `JSON.stringify`는 toJSON 메서드를 호출해서 반환값을 인코딩한다. 따라서 toJSON 메서드를 구현하면 `JSON.stringify`가 반환하는 문자열을 조작할 수 있다.
+
+```js
+let me = {
+  name: "김성현",
+  age: 25,
+  hobby: "코딩",
+  toJSON: function () {
+    return this.age;
+  },
+};
+
+// writer는 me 객체를 참조하고 있으므로 me.toJSON()이 호출된다.
+// 그러면 me.age가 반환되고 이 값이 인코딩된다.
+let profile = {
+  title: "안녕하세요",
+  content: "저는 김성현입니다.",
+  writer: me,
+};
+
+let meJSON = JSON.stringify(profile);
+console.log(meJSON);
+```
+
+## 5.5. JSON.parse
+
+`JSON.parse`는 JSON 문자열을 파싱해서 자바스크립트 객체로 반환한다. `JSON.parse`는 2개의 인수를 받는데, 첫 번째 인수는 파싱할 JSON 문자열이고 두 번째 인수는 reviver 함수다.
+
+```js
+let value=JSON.parse(str, [reviver])
+```
+
+이 함수는 디버깅을 위해 JSON을 직접 만들고 디코딩할 때도 많이 쓰인다. 그런데 이렇게 JSON을 직접 만들 때는 JSON 문자열이 유효한지 검사하지 않는다. 따라서 유효하지 않은 JSON 문자열을 파싱하면 에러가 발생한다.
+
+그러니 다음과 같은 점을 주의해서 JSON 문자열을 만들어야 한다.
+
+1. 프로퍼티 키와 문자열 값은 큰따옴표로 감싸야 한다. 작은따옴표나 백틱은 안된다.
+2. new같은 걸 사용하면 안된다. 순수한 값만 사용해야 한다.
+
+그리고 두번째 인수인 reviver 함수는 모든 (key, value) 쌍 대상으로 호출된다. 이 함수는 반환값을 반환하면 그 값을 사용하고 반환값이 없으면 value를 그대로 사용한다.
+
+예를 들어서 key가 date인 경우 value를 Date 객체로 변환하고 싶다면 다음과 같이 reviver 함수를 구현하면 된다.
+
+```js
+let json = `{
+    "name": "김성현",
+    "age": 25,
+    "hobby": "코딩",
+    "date": "2021-01-01"
+}`;
+
+let obj = JSON.parse(json, (key, value) => {
+  if (key === "date") {
+    return new Date(value);
+  }
+  return value;
+});
+
+console.log(obj.date.getFullYear());
+```
