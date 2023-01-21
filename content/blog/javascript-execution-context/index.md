@@ -51,3 +51,14 @@ function factorial(n) {
 
 # 3. 실행 컨텍스트의 정보
 
+# 참고
+
+https://coding-groot.tistory.com/189
+
+https://roseline.oopy.io/dev/javascript-back-to-the-basic/execution-context
+
+https://velog.io/@sehyunny/what-is-realm-in-js
+
+https://blog.bitsrc.io/understanding-execution-context-and-execution-stack-in-javascript-1c9ea8642dd0
+
+https://stackoverflow.com/questions/55140096/is-call-stack-the-same-as-execution-context-stack-in-javascript
