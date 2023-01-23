@@ -43,3 +43,35 @@ JS는 함수 지향 언어이고 함수 또한 객체로 취급한다. 따라서
 
 참고로 여기서는 let, const에 대해서만 다룬다. var에 대해서는 추후에 다룰 것이라고 한다.
 
+## 3.1 코드 블록
+
+코드 블록은 중괄호로 묶인 부분을 말한다. 이런 블록은 특정 작업을 수행하는 코드를 한데 묶어두는 용도로 사용되며 변수 스코프로도 사용된다.
+
+이때 let의 경우는 블록 레벨 스코프를 사용하므로 동일한 스코프에 let으로 변수를 여러 번 선언하면 에러가 발생한다.
+
+```js
+let msg = "hello";
+console.log(msg);
+// Identifier 'msg' has already been declared
+let msg = "hello";
+```
+
+## 3.2. 렉시컬 환경
+
+JS에서 함수는 객체이므로 당연히 함수에서 반환될 수도 있다. 이런 걸 이용할 수도 있다. 예를 들어서 다음과 같이 활용 가능하다.
+
+```js
+function addNumber(n) {
+  return function (x) {
+    return x + n;
+  };
+}
+
+let add3 = addNumber(3);
+console.log(add3(5)); // 8
+```
+
+그런데 만약 `addNumber`를 통해 함수를 여러 개 만들었을 때 이 함수들은 서로 다른 객체일까? 만약 addNumber 내에 어떤 변수가 있었다면 이 변수는 `addNumber`가 리턴하는 함수들 내에서 어떤 값을 가질 것인가? 이런 질문에 대한 답은 렉시컬 환경에 있다고 한다.
+
+
+
