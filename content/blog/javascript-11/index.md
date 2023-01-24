@@ -152,4 +152,37 @@ function foo() {
 
 ### 3.2.3. 함수 생성과 렉시컬 환경
 
-위에서 본, 함수를 생성하는 함수를 조금 변경해 보자.
+함수를 생성하는 함수를 보자. 좀더 간소화하였다.
+
+```js
+function foo() {
+    let t = 0;
+
+    return function () {
+        return t++;
+    }
+}
+```
+
+`foo()`를 호출하면 호출시마다 새로운 렉시컬 환경이 만들어진다. 함수 호출시마다 실행 컨텍스트가 콜스택에 쌓이고 거기에는 렉시컬 환경이 포함되어 있는 것을 생각해 볼 때 당연한 이야기이다.
+
+그럼 `foo`가 리턴하는 중첩 함수의 렉시컬 환경은 어떻게 될까? 모든 함수는 함수가 생성된 곳의 렉시컬 환경 참조를 숨김 프로퍼티인 `[[Environment]]`로 갖는다. 이는 함수가 생성될 때 딱 한 번 값이 변경되고 영원히 변하지 않는다.
+
+```js
+function foo() {
+    let t = 0;
+
+    return function () {
+        return t++;
+    }
+}
+
+let t1 = foo();
+let t2 = foo();
+// 0 1 2 0 1 출력. t1이 가진 Environment와 t2가 가진 Environment가 독립임을 확인 가능하다
+console.log(t1());
+console.log(t1());
+console.log(t1());
+console.log(t2());
+console.log(t2());
+```
