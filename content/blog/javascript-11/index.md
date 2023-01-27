@@ -193,5 +193,171 @@ console.log(t2());
 
 이렇게 외부 변수를 기억하고 접근할 수 있는 함수를 클로저라고 하는데, js는 모든 함수에 Environment 숨김 프로퍼티가 있으므로 모든 함수가 클로저다.
 
+이를 보여주는 또 하나의 예제는 다음과 같다.
+
+```js
+function print() {
+  let a = "김성현";
+  return function () {
+    console.log(a); // 김성현
+  };
+}
+
+let a = "김성현2";
+
+let p = print();
+p();
+```
+
+p의 생성시에 기억된, p 생성 당시의 렉시컬 환경에서 a를 먼저 찾기 때문에 이런 일이 발생하는 것이다.
+
 ## 3.3. 메모리 GC와 클로저
+
+함수 호출이 끝나면 해당 함수 호출로 생성된 렉시컬 환경은 메모리에서 제거된다. 더 이상 그 환경에 도달할 수 없기 때문이다.
+
+하지만 호출된 함수 내에서 함수를 만들어서 리턴한다면, 리턴된 함수의 `[[Environment]]`가 호출된 함수의 렉시컬 환경을 참조하고 있을 것이다. 따라서 함수 호출이 종료되어도 렉시컬 환경이 메모리에서 제거되지 않는다. 
+
+이렇게 렉시컬 환경이 메모리에서 제거되지 않음으로 인해 메모리 누수가 발생할 수 있다.
+
+예를 들어서 다음 코드를 보자.
+
+```js
+function addNumber(n) {
+  return function (x) {
+    return x + n;
+  };
+}
+// addOne, addTwo, addThree는
+// 모두 그 생성된 렉시컬 환경을 독립적으로 기억한다
+let addOne = addNumber(1);
+let addTwo = addNumber(2);
+let addThree = addNumber(3);
+
+console.log(addOne(1)); // 2
+console.log(addTwo(1)); // 3
+console.log(addThree(1)); // 4
+```
+
+위 코드에서 `addNumber`함수의 호출이 끝난 이후에도 `addOne`, `addTwo`, `addThree`가 내부 Environment 프로퍼티에서 각각의 렉시컬 환경을 기억하고 있기 때문에 `addNumber`가 호출되면서 만들어진 렉시컬 환경들은 메모리에서 제거되지 않는다. 
+
+물론 addOne, addTwo 등의 함수가 메모리에서 제거되면 그게 생성될 때 기억되었던 addNumber의 렉시컬 환경도 제거될 것이다.
+
+### 3.3.1. V8의 메모리 최적화
+
+그런데 V8엔진 같은 경우 변수 사용을 분석하고 외부 변수가 사용되지 않는다고 판단되면 이를 메모리에서 제거하는 최적화 프로세스가 있다.
+
+```js
+let val = "global";
+
+function f() {
+  let val = "local";
+  function g() {
+    debugger;
+    /* 이때 실행이 멈춘 상태에서 val 변수는
+    V8에 의해 최적화된다. 그런데 val은 아무데서도 사용되지
+    않았음로 삭제되어 val을 콘솔에서 출력하려는 시도는 실패한다 */
+  }
+  return g;
+}
+
+let foo = f();
+foo();
+```
+
+## 3.4. 클로저 예시
+
+### 3.4.1. 카운터
+
+```js
+function Counter() {
+  this.count = 0;
+
+  this.increment = function () {
+    return ++this.count;
+  };
+
+  this.decrement = function () {
+    return --this.count;
+  };
+}
+
+let counter = new Counter();
+// 1 2 3 2
+console.log(counter.increment());
+console.log(counter.increment());
+console.log(counter.increment());
+console.log(counter.decrement());
+```
+
+이 예제의 increment, decrement 함수는 모두 카운터를 잘 작동시킨다. 두 함수 모두 동일한 렉시컬 환경을 가지고 같은 count변수를 공유하기 때문이다.
+
+### 3.4.2. 보이는 변수
+
+```js
+let x = 1;
+
+function func() {
+  console.log(x);
+  let x = 2;
+}
+
+func();
+```
+
+다음 코드에서 x에 접근하려는 시도는 에러를 발생시킨다.
+
+```
+Uncaught ReferenceError: Cannot access 'x' before initialization
+```
+
+`func`함수가 호출될 때 새로운 렉시컬 환경이 만들어진다. 그리고 이 환경이 처음 만들어질 때 스크립트 중에 지역변수 `x`가 선언된 것을 엔진이 감지하고 x를 `<uninitialized>`로 초기화한다.
+
+그리고 `console.log(x)`가 실행되면서 `x`에 접근하려는 시도가 이뤄지는데, 이때 `x`는 uninitialized 상태이기 때문에 let 이전에 접근할 수 없다. 따라서 위 코드는 에러가 발생하는 게 당연하다.
+
+### 3.4.3. 반복문으로 함수 만들기
+
+```js
+function makeFunction() {
+  let funcs = [];
+
+  let i = 0;
+  while (i < 3) {
+    funcs[i] = function () {
+      console.log(i);
+    };
+    i++;
+  }
+  return funcs;
+}
+
+let funcs = makeFunction();
+// 모두 3이 나온다
+funcs[0]();
+funcs[1]();
+funcs[2]();
+```
+
+의도한 것과 달리 왜 모두 3이 나오는 걸까? `funcs[i]` 함수가 만들어질 때 외부 렉시컬 환경에 대한 참조가 기억된다. 그리고 이 함수가 호출될 때 i에 접근하게 된다. 그런데 이 함수 내부에는 i라는 지역 변수가 없으므로 외부 렉시컬 환경에 접근하게 된다. 
+
+그런데 이때 외부 렉시컬 환경은 `makeFunction` 함수의 렉시컬 환경이다. 그리고 `makeFunction`이 끝나는 시점에서 이 렉시컬 환경에 i는 3으로 저장되어 있다. 따라서 funcs 배열의 어떤 함수를 호출해도 3이 나오는 것이다.
+
+이를 해결하기 위해서는 funcs[i] 함수가 만들어질 때 i의 값을 복사해서 function[i]의 외부 렉시컬 환경에 저장해두면 된다. 
+
+```js
+function makeFunction() {
+  let funcs = [];
+
+  let i = 0;
+  while (i < 3) {
+    let j = i;
+    funcs[i] = function () {
+      console.log(j);
+    };
+    i++;
+  }
+  return funcs;
+}
+```
+
+그러면 이제는 0, 1, 2가 나오는 것을 확인할 수 있다. funcs[i]가 생성될 때 저장되는 렉시컬 환경에 j가 따로따로 저장되기 때문이다.
 
