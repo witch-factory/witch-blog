@@ -103,7 +103,38 @@ IIFE는 Immediately Invoked Function Expression의 약자로, 함수를 선언�
 // hello world
 ```
 
-이런 걸 이용해서 private 멤버를 흉내낼 수 있다.
+이런 걸 이용해서 private 멤버를 흉내낼 수 있다. var밖에 없던 시절 쓰이던 트릭이다.
+
+```js
+var User = (function () {
+    var name = "김성현";
+
+    return function () {
+        this.getName = function () {
+            return name;
+        }
+
+        this.setName = function (newName) {
+            name = newName;
+        }
+    }
+})();
+
+var user1 = new User();
+console.log(user1.name); //undefined
+console.log(user1.getName()); //김성현
+user1.name = "다른 이름";
+console.log(user1.getName()); //김성현
+user1.setName("다른 이름");
+console.log(user1.getName()); //다른 이름
+```
+
+위 예시를 보면 User 함수는 쓰이는 즉시 호출된다. 그리고 호출이 끝남과 함께 함수 내부의 지역변수 name은 (원래는)사라진다. 또한 일반적인 방법으론 접근할 수 없다. 
+
+하지만 즉시 실행 함수가 리턴한 함수의 내부 숨김 프로퍼티 `[[Environment]]`에는 그 렉시컬 환경이 남아 있으므로 그 함수들(여기선 getName, setName)은 즉시 실행 함수의 렉시컬 환경에 접근하여 name에 접근 가능하다. 따라서 위와 같이 private를 흉내낼 수 있는 것이다.
+
+# 2. 전역 객체
+
 
 # 참고
 
