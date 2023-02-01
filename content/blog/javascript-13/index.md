@@ -168,3 +168,64 @@ console.log("b");
 
 위 코드에서 b가 먼저 출력된다. 현재 스크립트인 b 출력을 먼저 처리한 직후 setTimeout에 넘긴 함수가 실행되는 것이다.
 
+그리고 setTimeout간의 순서는 딱히 보장되지 않는다.
+
+```js
+setTimeout(() => {
+  console.log("A");
+});
+setTimeout(() => {
+  console.log("B");
+});
+setTimeout(() => {
+  console.log("C");
+});
+```
+
+위 코드에서 A,B,C의 출력 순서는 보장되지 않는다는 것이다. 만약 이 순서를 보장하고 싶다면 중첩 setTimeout을 사용해야 한다.
+
+# 3. call, apply, 데코레이터
+
+## 3.1. 데코레이터
+
+데코레이터는 인수로 받은 함수의 행동을 변경시켜 주는 함수를 말한다. 데코레이터는 함수를 인수로 받아서 특정한 행동을 하고 래퍼 함수를 반환한다. 이 래퍼 함수는 원래 함수를 호출하는 것과 같은 행동을 하면서 추가적인 기능을 수행한다.
+
+예를 들어 함수에 캐싱 기능을 추가해 주는 데코레이터를 만들어 보자.
+
+먼저 간단하게 피보나치 함수를 만들자. 재귀 호출이 엄청나게 일어나는 코드이다.
+
+```js
+function fibonacci(n) {
+  if (n <= 1) return 1;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+```
+
+`fibonacci(100)`만 해도 연산이 끝나질 않는다. 이 함수를 데코레이터를 사용해 캐싱 기능을 추가해 보자.
+
+```js
+function fibonacci(n) {
+  if (n <= 1) return 1;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+function cachingDecorator(func) {
+  let cache = new Map();
+  return function (x) {
+    if (cache.has(x)) {
+      return cache.get(x);
+    }
+    let result = func(x);
+    cache.set(x, result);
+    return result;
+  };
+}
+
+fibonacci = cachingDecorator(fibonacci);
+console.log(fibonacci(100));
+```
+
+아주 빠른 시간에 답이 나오는 것을 볼 수 있다. 이 데코레이터는 내부적으로 Map을 만든 후 다음과 같은 함수를 만들어 반환한다. 
+
+함수를 호출할 때마다 Map에 없는 인수라면 Map에 인수와 결과를 저장한다. 그리고 다음에 같은 인수로 함수를 호출하면 Map에서 값을 꺼내서 반환한다.
+
