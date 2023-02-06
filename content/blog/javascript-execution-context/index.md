@@ -51,6 +51,26 @@ function factorial(n) {
 
 # 3. 실행 컨텍스트의 정보
 
+현재 실행하고 있는 코드에는 콜스택의 맨 위에 있는 실행 컨텍스트가 관여하고 있다. 여기엔 다음과 같은 정보들이 담긴다. 다만 여기에 개발자가 직접 접근할 순 없다.
+
+VariableEnvironment, LexicalEnvironment, ThisBinding. 이제 이 각각에 대해 알아보자.
+
+## 3.1. LexicalEnvironment
+
+LexicalEnvironment에는 컨텍스트를 구성하는 환경 정보들을 백과사전처럼 모아 놓은 것이다. 그런데 여기에는 두 가지가 있다. environmentRecord와 outerEnvironmentReference이다. 각각은 무엇일까?
+
+### 3.1.1. environmentRecord
+
+
+
+## 3.2. VariableEnvironment
+
+VariableEnvironment에 담기는 정보는 LexicalEnvironment와 같다. 그러나 함수의 최초 실행 시의 스냅샷을 담고 있다. 즉 실행 컨텍스트 생성 시 VariableEnvironment에 각종 정보를 담고 복사해서 LexicalEnvironment에 저장한다. 
+
+그리고 이후에는 LexicalEnvironment만 변경되고 VariableEnvironment는 변경되지 않는다.
+
+
+
 # 참고
 
 https://coding-groot.tistory.com/189
@@ -62,3 +82,5 @@ https://velog.io/@sehyunny/what-is-realm-in-js
 https://blog.bitsrc.io/understanding-execution-context-and-execution-stack-in-javascript-1c9ea8642dd0
 
 https://stackoverflow.com/questions/55140096/is-call-stack-the-same-as-execution-context-stack-in-javascript
+
+코어 자바스크립트 2장
