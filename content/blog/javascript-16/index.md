@@ -74,4 +74,68 @@ for..in 반복문은 상속받은 프로퍼티도 순회한다. 단 obj.hasOwnPr
 
 obj.hasOwnProperty(key)는 key가 obj가 상속받은 게 아니라 obj에 직접 구현된 프로퍼티일 때 true를 반환한다. 그리고 Object.keys나 Object.values 또한 상속 프로퍼티를 제외하고 동작한다.
 
-그리고 JS의 객체는 모두 Object.prototype을 상속받는데 이는 
+그리고 JS의 객체는 모두 Object.prototype을 상속받는데 for..in으로 객체를 순회하면 Object.prototype의 프로퍼티는 나오지 않는다. 이는 객체의 기본 메서드들의 enumerable설명자가 false이고 for..in은 열거 가능한 프로퍼티만 순회하기 때문이다.
+
+# 2. 함수의 prototype 프로퍼티
+
+생성자 함수로도 새로운 객체를 만들 수 있다. 그러면 그때 객체의 프로토타입은 어떻게 동작할까? 생성자 함수의 프로토타입이 객체인 경우, 이를 이용해 만든 객체는 생성자 함수와 같은 프로토타입을 가진다. 다음과 같이 생성자 함수에 `prototype`속성을 지정해 주면 된다.
+
+```js
+let animal = {
+  eats: true,
+};
+
+function Dog(name) {
+  this.name = name;
+}
+// 생성자 함수의 프로토타입 지정
+Dog.prototype = animal;
+// dog의 [[Prototype]]은 animal이 된다
+let dog = new Dog("Happy");
+console.log(dog.eats);
+```
+
+생성자 함수의 프로토타입이 런타임에 바뀌면 그 순간부터 해당 생성자 함수로 만든 객체는 새로운 프로토타입을 가진다. 그리고 이전 프로토타입은 더 이상 사용되지 않는다.
+
+## 2.1. 디폴트 프로퍼티
+
+모든 함수는 기본적으로 `prototype`프로퍼티를 가지고 있다. 이는 기본적으로 constructor 하나만 있는 객체를 가리키고, 그 constructor는 함수 자기 자신을 기리킨다.
+
+```js
+function func() {}
+console.log(func.prototype.constructor === func); // true
+```
+
+따라서 특별한 조작을 가하지 않아도 `new`를 통해서 만든 객체 모두에서 constructor 프로퍼티를 사용할 수 있다. 다음 코드를 보자.
+
+```js
+function Animal() {}
+
+let animal = new Animal();
+console.log(animal.constructor === Animal); // true
+```
+
+`animal`객체에는 constructor가 없다. 따라서 prototype 참조를 따라가서 constructor를 검색하게 된다. 그런데 `animal`은 생성자 함수인 `Animal`과 같은 프로토타입을 가진다. 
+
+그런데 Animal 함수는 기본적으로 constructor프로퍼티를 갖는 prototype을 갖고 있고 그것은 함수 자기 자신(여기서는 `Animal`)을 가리킨다. 따라서 `animal.constructor`는 `Animal`을 가리킨다.
+
+## 2.2. constructor 프로퍼티
+
+constructor는 기존에 있던 객체의 것을 사용할 수도 있다. 이는 객체가 있는데 그 생성자를 명확히 알 수 없을 때 사용할 수 있다.
+
+```js
+function Animal(name) {
+  this.name = name;
+}
+
+let dog = new Animal("dog");
+console.log(dog.name); //dog
+let cat = new dog.constructor("cat");
+console.log(cat.name); //cat
+```
+
+dog를 통해서 Animal 생성자를 불러와 보았다. 이러면 Animal을 모르더라도 dog -> Animal -> Animal.constructor에 접근하여 Animal을 찾아낼 수 있다.
+
+함수에는 기본적으로 prototype 프로퍼티가 있고 여기에는 constructor가 들어 있다. 그런데 JS에서는 함수에 기본적으로 prototype 값이 설정된다는 것을 보장할 뿐, 여기에 constructor가 들어 있는 것을 보장하지는 않는다.
+
+다음과 같이 함수 prototype을 덮어써 보자.
