@@ -37,6 +37,32 @@ console.log(obj.toString());
 // [object Object]
 ```
 
+왜 저렇게 변환되는지는 아래의 추가 내용으로 정리하고, 여기서는 객체들이 Object.prototype을 프로토타입으로 가지는 것만 알고 넘어가자.
+
+또한 배열의 Array.prototype이나 함수의 Function.prototype과 같이 다른 내장 객체들의 프로토타입도 있는데 이들 모두 Object.prototype을 최상위 프로토타입으로 가진다.
+
+또한 각 내장 객체 프로토타입들은 중복 메서드를 가질 수 있다. 예를 들어서 `Object.prototype.toString`과 `Array.prototype.toString`은 다른 동작을 한다.
+
+```js
+let a = [1, 2, 3];
+// [object Array]
+console.log(Object.prototype.toString.call(a));
+// 1,2,3
+console.log(Array.prototype.toString.call(a));
+```
+
+console.dir을 이용해 객체 상속 관계도 확인 가능하다.
+
+## 1.2. 프로토타입 조작하기
+
+기본 프로토타입도 조작할 수 있다. 예를 들어 문자열의 프로토타입에 메서드를 추가할 수 있다. 
+
+```js
+String.prototype.show = function () {
+  alert(this);
+};
+```
+
 # 추가 내용 - [object Object]가 나오는 이유
 
 그런데 이렇게 toString을 사용했을 때 나오는 `[object Object]`가 왜 나오는지는 잘 모르겠다. 오히려 `JSON.stringify`의 결과물이 훨씬 더 그럴듯하다.
