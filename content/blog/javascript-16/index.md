@@ -138,4 +138,64 @@ dog를 통해서 Animal 생성자를 불러와 보았다. 이러면 Animal을 �
 
 함수에는 기본적으로 prototype 프로퍼티가 있고 여기에는 constructor가 들어 있다. 그런데 JS에서는 함수에 기본적으로 prototype 값이 설정된다는 것을 보장할 뿐, 여기에 constructor가 들어 있는 것을 보장하지는 않는다.
 
-다음과 같이 함수 prototype을 덮어써 보자.
+다음과 같이 생성자 함수 prototype을 덮어써 보자. 그러면 새 constructor가 기존 생성자 함수의 constructor와 다른 것을 가리키고 있는 것을 알 수 있다. 그냥 일반 객체의 생성자를 가리킨다. 즉 생성자 함수의 constructor가 생성자 함수인 것은 보장되지 않는다.
+
+```js
+function Animal(name) {
+  this.name = name;
+}
+
+let animal1 = new Animal("Animal");
+// true
+console.log(animal1.constructor === Animal);
+
+Animal.prototype = {
+  eats: true,
+};
+let animal2 = new Animal("Animal");
+// false
+console.log(animal2.constructor === Animal);
+//true
+console.log(animal2.constructor === Object.prototype.constructor);
+```
+
+따라서 생성자 함수의 prototype에 뭔가를 하고 싶을 땐 prototype 자체에 할당하지 말고 기본 prototype에 추가적으로 프로퍼티를 만들자.
+
+```js
+function Animal(name) {
+  this.name = name;
+}
+
+Animal.prototype.say = function () {
+  console.log(this.name);
+};
+```
+
+또한 prototype을 실수로 덮어썼더라도 다시 만들어 주면 된다.
+
+```js
+Animal.prototype.constructor=Animal;
+```
+
+## 2.3. 추가 정보
+
+다음 코드를 보자. 다음 코드는 true를 출력한다. 왜일까?
+
+```js
+function Animal(name) {
+  this.name = name;
+}
+Animal.prototype.eats = true;
+
+let dog = new Animal("Dog");
+delete dog.eats;
+console.log(dog.eats);
+```
+
+delete 연산은 객체의 프로퍼티를 삭제한다. 그러나 프로토타입 체인을 따라가면서 프로퍼티를 찾는 것이 아니라 오로지 자기 자신의 것만 삭제한다.
+
+위의 경우에도 dog의 eats속성은 자신의 것이 아니라 생성자 함수인 Animal의 프로토타입에서 eats를 가져온 것이다. 따라서 dog의 eat를 제거하려는 시도를 하면 dog에 직접 속한 eats가 없으므로 아무 일도 일어나지 않는다.
+
+# 참고
+
+https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/delete
