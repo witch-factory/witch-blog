@@ -1,95 +1,20 @@
 ---
-title: 모던 자바스크립트 튜토리얼 part 1.8 프로토타입
-date: "2023-02-08T05:00:00Z"
-description: "ko.javascript.info part 1-8 두번째"
+title: JS의 프로토타입 탐구 1 - [object Object]가 나오는 이유
+date: "2023-02-09T05:00:00Z"
+description: "객체의 문자열 변환시 [object Object]가 나오는 이유 탐구"
 tags: ["javascript"]
 ---
 
-# 1. 내장 객체의 프로토타입
+# 1. 시작
 
-함수에는 기본적으로 prototype이라는 프로퍼티가 있으며, 이는 함수 자기 자신을 가리키는 constructor 프로퍼티 하나만 가지는 객체이다. 그리고 이는 함수가 new와 함께 쓰여 생성자 함수로 이용될 때 새로운 객체의 prototype이 된다.
-
-내장 생성자 함수에도 prototype이 있다. 그럼 이는 어떻게 사용되는가?
-
-## 1.1. Object.prototype
-
-JS를 하는 사람이라면 다음과 같은 코드에서 나오는 `[object Object]`를 한번쯤 본 기억이 있다. 이는 어떻게 만들어지는 걸까?
+JS를 하다 보면 `[object Object]`라는 결과물을 종종 보게 된다. 가령 다음과 같이 객체가 문자열로 변환되는 경우에 보인다.
 
 ```js
-let obj = {
-  a: 1,
-  b: 2,
-};
+let obj = { a: 1, b: 2 };
 alert(obj);
-// [object Object]
 ```
 
-프로토타입을 따로 지정하지 않은 모든 객체는 Object.prototype을 프로토타입으로 가진다. 즉 위의 obj 객체의 `[[Prototype]]`은 Object.prototype이다. 이때 Object.prototype의 프로토타입은 없다.
-
-이 Object.prototype에는 toString과 같은 다양한 메소드가 구현되어 있다. 그래서 기본적으로 모든 객체는 toString을 사용할 수 있고 위의 obj도 마찬가지다. 그리고 그 결과물은 `[object Object]`이다.
-
-```js
-let obj = {
-  a: 1,
-  b: 2,
-};
-console.log(obj.toString());
-// [object Object]
-```
-
-왜 저렇게 변환되는지는 아래의 추가 내용으로 정리하고, 여기서는 객체들이 Object.prototype을 프로토타입으로 가지는 것만 알고 넘어가자.
-
-또한 배열의 Array.prototype이나 함수의 Function.prototype과 같이 다른 내장 객체들의 프로토타입도 있는데 이들 모두 Object.prototype을 최상위 프로토타입으로 가진다.
-
-또한 각 내장 객체 프로토타입들은 중복 메서드를 가질 수 있다. 예를 들어서 `Object.prototype.toString`과 `Array.prototype.toString`은 다른 동작을 한다.
-
-```js
-let a = [1, 2, 3];
-// [object Array]
-console.log(Object.prototype.toString.call(a));
-// 1,2,3
-console.log(Array.prototype.toString.call(a));
-```
-
-console.dir을 이용해 객체 상속 관계도 확인 가능하다.
-
-## 1.2. 프로토타입 조작하기
-
-문자열, 숫자와 같은 원시값은 객체가 아닌데, 우리가 알다시피 이런 값들에도 메서드나 몇몇 프로퍼티를 사용할 수 있다. 이는 래퍼 객체를 통해 가능한 것이다.
-
-그리고 명세서를 보면 이런 각 자료형에 해당하는 래퍼 객체 메서드를 prototype을 통해 구현한다. 예를 들어 String.prototype에는 문자열 전용 메서드가 구현되어 있다.
-
-이를 이용하면 원시값의 프로토타입도 조작할 수 있다. 예를 들어 문자열의 프로토타입에 메서드를 추가할 수 있다. 
-
-```js
-String.prototype.show = function () {
-  alert(this);
-};
-
-let myName = "김성현";
-myName.show();
-```
-
-그러나 이는 전역으로 영향을 미치기 때문에 추천할 만한 방식은 아니다. 폴리필을 만들 때나 사용할 만 하다.
-
-# 2. 프로토타입 메서드와 __proto__없는 객체
-
-`__proto__`를 통해서 객체의 프로토타입을 설정할 수 있다. 그러나 이는 낡은 방법이기 때문에 사용이 권장되지 않는다. 대신 다음과 같은 메서드들이 제공된다.
-
-## 2.1. Object.create
-
-`Object.create(proto)`는 객체를 생성하는데 사용된다. 이 메서드는 프로토타입을 인수로 받고 설명자를 선택적 인수로 받아서 빈 객체를 만든다.
-
-이를 이용해서 상속을 구현할 수 있다. 
-
-## 2.2. Object.getPrototypeOf, Object.setPrototypeOf
-
-`Object.getPrototypeOf`는 객체의 프로토타입을 반환한다. `Object.setPrototypeOf`는 객체의 프로토타입을 설정한다.
-
-
-# 추가 내용 - [object Object]가 나오는 이유
-
-그런데 이렇게 toString을 사용했을 때 나오는 `[object Object]`가 왜 나오는지는 잘 모르겠다. 오히려 `JSON.stringify`의 결과물이 훨씬 더 그럴듯하다.
+그런데 이렇게 toString을 사용했을 때 나오는 `[object Object]`는 그렇게 좋아 보이지 않는다. 객체가 왜 저런 문자열이 되어야 하는가? 오히려 `JSON.stringify`의 결과물이 훨씬 더 그럴듯하다.
 
 ```js
 let obj = {
@@ -100,15 +25,21 @@ console.log(JSON.stringify(obj));
 // {"a":1,"b":2}
 ```
 
-그럼 왜 `[object Object]`가 나오는 걸까? 이는 `Object.prototype.toString`의 작동 방식 때문이다.
+그럼 왜 객체의 문자열 변환 결과물은 `[object Object]`가 나오는 걸까? 이는 `Object.prototype.toString`의 작동 방식 때문이다.
 
-## Object.prototype.toString은?
+# 2. Object.prototype.toString 호출 이유
+
+프로토타입을 따로 지정하지 않은 모든 객체는 Object.prototype을 프로토타입으로 가진다. 즉 위의 obj 객체의 `[[Prototype]]`은 Object.prototype이다. 이때 Object.prototype의 프로토타입은 없다.
+
+이 Object.prototype에는 toString과 같은 다양한 메소드가 구현되어 있다. 그래서 기본적으로 모든 객체는 문자열 변환 시 toString을 사용하게 되고 위의 obj도 마찬가지다. 그리고 그 메서드의 결과물은 `[object Object]`이다.
+
+## 2.1. Object.prototype.toString은?
 
 이 메서드는 인자로 넘겨준 객체의 클래스 이름을 반환하는 메서드이며 `alert`의 인자로 쓰이는 등 문자열 값이 기대되는 곳에 쓰일 때 호출된다.
 
 그리고 JS가 가진 불린, null, undefined, 숫자, 문자열, 심볼, BigInt, 객체의 모든 타입 중 null, undefined를 빼면 모두 Object의 인스턴스이다. 따라서 프로토타입 체이닝을 통해 Object.prototype의 메서드를 쓸 수 있다.
 
-## Object.prototype.toString의 작동방식
+# 3. Object.prototype.toString의 작동방식
 
 이 메서드는 인자로 들어온 값의 클래스 타입을 검사해서 알려준다. 그리고 [ECMAscript 명세서](https://262.ecma-international.org/6.0/#sec-object.prototype.tostring)에서는 toString 동작 방식을 다음과 같이 서술한다.
 
@@ -160,7 +91,7 @@ test(/a-z/); // [object RegExp]
 test({}); // [object Object]
 ```
 
-## 별첨 해석
+# 4. Object.prototype.toString 별첨 해석
 
 그리고 위 명세에는 별첨도 붙어 있다. 이를 해석해 보자.
 
@@ -178,7 +109,7 @@ Historically, this function was occasionally used to access the String value of 
 
 하지만 이 방식은 레거시 코드를 위한 것이므로 다른 빌트인 객체나 사용자 정의 객체에 대한 신뢰성 있는 타입 검사를 제공해 주지 않는다. 또한, `@@toStringTag`를 사용하는 프로그램들은 이러한 레거시 타입 테스트의 신뢰성을 무효화할 수 있다.
 
-## toString 커스터마이징
+# 5. toString 커스터마이징
 
 위의 별첨에서 추측할 수 있다시피 `@@toStringTag`를 사용하면 toString을 커스터마이징할 수 있다.
 
@@ -241,9 +172,9 @@ console.log(button[Symbol.toStringTag]); // HTMLDivElement
 
 typeof 연산자는 [명세](https://262.ecma-international.org/6.0/#sec-typeof-operator)에 따르면 기본적으로 `undefined`, `boolean`, `string`, `number`, `symbol`, `bigint`, `function`, `object`를 반환한다. 하지만 toString은 기본적으로 훨씬 더 많은 종류의 객체를 감지하고, 커스터마이징도 가능하다. 따라서 많은 타입 체크가 필요하다면 toString을 사용하는 것도 생각해 볼 수 있을 것 같다.
 
-## 결론
+# 6. 결론
 
-결국 원래대로 돌아간다면, 일반적인 객체를 문자열로 변환할 때 `[object Object]`같은 못생긴 문자열이 반환되는 이유는 그것이 Object.prototype.toString의 동작이기 때문이다...
+결국 원래대로 돌아간다면, 일반적인 객체를 문자열로 변환할 때 `[object Object]`같은 못생긴 문자열이 반환되는 이유는 그것이 Object.prototype.toString의 동작이기 때문이다.
 
 # 참고
 
