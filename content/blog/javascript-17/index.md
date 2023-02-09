@@ -107,14 +107,83 @@ Rectangle.prototype.constructor = Rectangle;
 
 let rect = new Rectangle();
 rect.move(1, 1); // Shape moved to (1, 1).
+
+console.log(rect.__proto__.__proto__ === Shape.prototype); // true
 ```
 
 위의 예시 코드의 상속 구조를 다음과 같이 생각할 수 있다. [이 사이트](https://excalidraw.com/)로 그림을 그려보았다.
 
 ![heritage](./heritage.png)
 
+2번째 인수로는 설명자를 지정할 수 있는데 이는 Object.defineProperties의 두 번째 인수와 같은 역할을 한다. 이 말은 즉 writable, enumerable, configurable이 기본적으로 false로 설정되어 있다는 것도 있다.
+
+```js
+let obj = Object.create(Object.prototype, {
+  foo: { value: "foo-1", writable: true, enumerable: true, configurable: true },
+  bar: { value: "bar-1", writable: true, configurable: true },
+});
+// bar의 enumerable 속성이 디폴트인 false이므로 for-in 루프에서 제외된다.
+for (let key in obj) {
+  console.log(key, obj[key]); // foo foo-1
+}
+```
+
+또한 Object.create를 써서 효과적으로 프로퍼티 전부를 `얕은 복사`할 수 있다. 열거 가능/불가능 프로퍼티, getter, setter, 데이터 프로퍼티 등 모두가 복사된다.
+
+```js
+// obj의 완벽한 복사본을 리턴
+Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));
+```
+
 ## 2.2. Object.getPrototypeOf, Object.setPrototypeOf
 
-`Object.getPrototypeOf`는 객체의 프로토타입을 반환한다. `Object.setPrototypeOf`는 객체의 프로토타입을 설정한다.
+`Object.getPrototypeOf(obj)`는 객체의 프로토타입을 반환한다. `Object.setPrototypeOf(obj, proto)`는 객체의 프로토타입을 설정한다.
 
+## 2.3. 단순한 객체
 
+객체는 키-값 쌍이 있는 연관 배열로 사용할 수 있다. 그런데 `__proto__`문자열은 키로 제대로 사용할 수 없다. `__proto__`는 객체의 프로토타입을 나타내는 내부 프로퍼티(표준은 아니지만 사실상 표준인)이고 객체 혹은 null이 되어야 하는 것이다.
+
+물론 객체 대신 Map을 쓰면 된다. 하지만 객체에서도 이를 해결할 수 있다.
+
+먼저 `__proto__`는 객체의 데이터 프로퍼티가 아니라 Object.prototype의 getter, setter로 설정된 접근자 프로퍼티이다. 즉 `__proto__`를 키로 사용하면 객체의 프로토타입인 Object.prototype의 접근자 프로퍼티에 접근하는 것이다.
+
+이를 해결하기 위해서는 프로토타입이 없는 빈 객체를 만들면 된다. Object.create로 만들 수 있다. 그러면 `__proto__`에 접근할 때 Object.prototype을 검색할 수 없으므로 자유로워진(?) `__proto__`를 키로 사용할 수 있다.
+
+```js
+let simpleObj = Object.create(null);
+simpleObj.__proto__ = "hi";
+console.log(simpleObj.__proto__);
+// hi
+```
+
+이런 객체를 아주 단순한(very plain) 객체라고 부른다. 단 프로토타입이 없으므로 객체의 기본 메서드를 사용할 수 없다.
+
+```js
+let simpleObj = Object.create(null);
+simpleObj.__proto__ = "hi";
+console.log(simpleObj.toString());
+// toString이 없으므로 에러
+```
+
+## 2.4. 객체 메서드
+
+객체에는 Object.keys, Object.values와 같이 프로퍼티를 반환하는 다양한 메서드들이 있다. 그러나 이들은 객체가 직접 소유한 프로퍼티만 반환한다. 상속 프로퍼티는 제외된다.
+
+```js
+let proto = {
+  foo: "hello",
+};
+
+let obj = {
+  bar: "world",
+};
+
+Object.setPrototypeOf(obj, proto);
+console.log(obj.foo); // foo에 접근 가능. "hello"
+console.log(Object.keys(obj));
+// 프로토타입의 프로퍼티는 제외되어 ["bar"]만 있다.
+```
+
+# 참고
+
+Object.create MDN문서 https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/create
