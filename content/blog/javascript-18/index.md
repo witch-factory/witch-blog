@@ -147,6 +147,8 @@ console.log(inst1.value, inst2.value); //2 1
 
 위 코드를 통해 각 클래스 인스턴스에 저장된 클래스 필드는 별개라는 것을 알 수 있다.
 
+## 1.6. 클래스 필드 활용
+
 그럼 이는 어떻게 쓸 수 있을까? 클래스 필드를 이용해서 바인딩된 메서드를 만들 수 있다.
 
 JS에서 this는 동적으로 결정된다. 따라서 다른 컨텍스트에서 객체 메서드를 호출하게 되면 this가 제대로 동작하지 않을 수 있다.
@@ -208,3 +210,38 @@ const myClass = new MyClass();
 console.log(myClass.myMethod()); //1
 console.log(func(myClass.myMethod)); // 1
 ```
+
+## 1.7. 클래스 필드 화살표 함수 사용의 단점
+
+스터디 자료에 달린 댓글에 있는 내용이다. 클래스 필드에 화살표 함수를 사용하는 위의 방법은 단점도 있다.
+
+먼저 화살표 함수는 클래스의 메서드가 아니라 클래스 필드에 함수 객체를 넣은 것이다. 따라서 클래스이름.prototype에 저장되어 있지 않다.
+
+```js
+class MyClass {
+  constructor() {}
+  myFunc() {
+    return 1;
+  }
+}
+
+console.log(MyClass.prototype.myFunc()); //1
+
+class MyClass2 {
+  constructor() {}
+  myFunc = () => {
+    return 1;
+  };
+}
+
+console.log(MyClass2.prototype.myFunc()); // 에러
+```
+
+따라서 테스트 케이스 작성 시 문제가 있다고 한다.
+
+그리고 상속이 안 된다고 하는데 이는 이제 해결된 듯 하다.
+
+# 2. 클래스 상속
+
+extends 키워드로 클래스를 상속할 수 있다. 이때 이 상속은 프로토타입을 사용한다.
+
