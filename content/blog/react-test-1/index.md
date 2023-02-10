@@ -81,6 +81,41 @@ render는 인자로 받은 컴포넌트를 DOM에 렌더링해주는 함수다. 
 
 waitFor을 쓰면 일정 시간 동안 테스트 통과를 기다릴 수도 있다.
 
+# 4. ESlint 설치
+
+코드 작성할 때 문법 오류를 잡고 스타일을 맞추기 위해 eslint, prettier를 설치하자.
+
+먼저 CRA로 앱을 만들 때 자동으로 설정된 eslint config가 package.json에 있다. 이를 삭제하자.
+
+```json
+// 이 부분 삭제
+"eslintConfig": {
+  "extends": [
+    "react-app",
+    "react-app/jest"
+  ]
+},
+```
+
+그리고 루트에 `.eslintrc.json` 파일을 만들고 testing플러그인 설치
+
+```
+npm install eslint-plugin-testing-library eslint-plugin-jest-dom --save-dev
+```
+
+플러그인 깔아 준 것에 맞게 eslintrc 변경
+
+```json
+{
+  "plugins": ["testing-library", "jest-dom"],
+  "extends": [
+    "react-app",
+    "react-app/jest",
+    "plugin:testing-library/react",
+    "plugin:jest-dom/recommended"
+  ]
+}
+```
 
 # 참고
 
