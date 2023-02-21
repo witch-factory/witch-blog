@@ -245,3 +245,4 @@ console.log(MyClass2.prototype.myFunc()); // 에러
 
 extends 키워드로 클래스를 상속할 수 있다. 이때 이 상속은 프로토타입을 사용한다.
 
+기존 클래
