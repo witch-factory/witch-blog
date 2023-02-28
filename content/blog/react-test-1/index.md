@@ -1,7 +1,7 @@
 ---
 title: React Testing - Jest 1
 date: "2023-02-04T03:00:00Z"
-description: "프론트에 테스트 도입을 위한 공부"
+description: "프론트에 테스트 도입을 위한 공부, 기초"
 tags: ["javascript"]
 ---
 
@@ -122,3 +122,5 @@ npm install eslint-plugin-testing-library eslint-plugin-jest-dom --save-dev
 https://www.daleseo.com/react-testing-library/
 
 https://leehyungi0622.github.io/2021/05/05/202105/210505-React-unit-test-questions/
+
+https://testing-library.com/docs/queries/about
