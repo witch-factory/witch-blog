@@ -127,7 +127,13 @@ input, textarea, select 등에서 현재 보여지고 있는 value를 통해서 
 ## 3.2. 시맨틱 쿼리 함수
 
 
+# 4. 쿼리함수 사용하기
 
+Testing Library의 쿼리 함수는 첫 번째 인수로 container를 전달해야 한다. 그런데 React Testing Library를 포함한 대부분의 Testing Library는 container를 알아서 찾아준다. 
+
+특히 RTL의 경우 screen 객체를 사용할 시 container를 알아서 찾아준다. 따라서 screen.getByRole('button')과 같이 사용할 수 있다.
+
+쿼리가 요소를 찾을 때 쓰이는 인수는 문자열, 정규 표현식 혹은 함수가 될 수 있다.
 
 
 # 4. 이벤트 발생시키기
