@@ -145,6 +145,8 @@ test("plus button 100 times", async () => {
 
 npm test로 확인해 보면 카운터가 반복적인 클릭에도 잘 작동함을 확인할 수 있다. 카운터 감소 버튼에도 비슷하게 테스트를 작성할 수 있을 것이다.
 
+CSS같은 건 설정하지 않아서 볼품없지만 일단은 테스트와 함께 카운터를 작성해 보았다.
+
 # 참고
 
 https://jbee.io/react/testing-2-react-testing/

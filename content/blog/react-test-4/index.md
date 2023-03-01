@@ -1,7 +1,7 @@
 ---
-title: React Testing - Jest 3
-date: "2023-02-19T03:00:00Z"
-description: "프론트에 테스트 도입을 위한 공부, 간단한 페이지 만들기"
+title: React Testing - Jest 4
+date: "2023-03-02T00:00:00Z"
+description: "프론트에 테스트 도입을 위한 공부, 간단한 페이지 만들기 2"
 tags: ["javascript"]
 ---
 
