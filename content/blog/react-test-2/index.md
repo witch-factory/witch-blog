@@ -298,6 +298,8 @@ function App() {
 
 ## 6.1. userEvent api
 
+pointer, keyboard, clipboard, click/dblClick/tripleClick 등 많은 사용자 이벤트가 있지만 좀 써보고 정리 예정
+
 # 참고
 
 https://testing-library.com/docs/queries/about
