@@ -85,9 +85,13 @@ findBy 쿼리 함수들은 getBy와 waitFor의 조합과 같다. 이 함수들�
 
 위에서 분류한 분류 각각이 수많은 쿼리 함수들을 가지고 있다. 이중에 위에서는 getByTestId를 사용했다. 그런데 screen.getByTestId를 사용해서 엘리먼트에 접근하는 건 권장되는 방식이 아니다. 그럼 어떤 쿼리를 사용해야 할까?
 
-기본적인 원칙은 유저가 내 페이지와 상호작용하는 방식을 닮아야 한다. 
+기본적인 원칙은 유저가 내 페이지와 상호작용하는 방식을 닮아야 한다. 그리고 모두가 접근할 수 있는 쿼리 함수들을 우선적으로 사용해야 한다.
 
-따라서 모두가 접근할 수 있는 쿼리 함수들을 우선적으로 사용해야 한다.
+따라서 getByRole, getByLabelText, getByText, getByDisplayValue 등을 사용하는 것이 좋다. 이 쿼리 함수들은 마우스나 시각을 사용하는 사람뿐 아니라 스크린 리더를 사용하는 등 다양한 상황에서도 잘 동작한다.
+
+그 다음이 getByAltText, getByTitle 등의 시맨틱 쿼리다. 그 다음이 우리가 썼던 getByTestId인데, 이게 우선순위가 가장 낮다. 이는 TestId가 개발자에게만 의미가 있고, 사용자에게는 의미가 없기 때문이다.
+
+그럼 먼저 Testing Library에 들어가서 제공되는 쿼리 함수들을 알아보았다.
 
 # 3.1. Accessible to Everyone
 
@@ -117,14 +121,19 @@ placeholder를 통해서 요소를 찾는다. 그러나 [placeholder 자체가 �
 
 input, textarea, select 등에서 현재 보여지고 있는 value를 통해서 요소를 찾는다. 
 
-
-따라서 getByRole, getByLabelText, getByText, getByDisplayValue 등을 사용하는 것이 좋다. 이 쿼리 함수들은 마우스나 시각을 사용하는 사람뿐 아니라 스크린 리더를 사용하는 등 다양한 상황에서도 잘 동작한다.
-
-그 다음이 getByAltText, getByTitle 등의 시맨틱 쿼리다. 그 다음이 우리가 썼던 getByTestId인데, 이게 우선순위가 가장 낮다. 이는 TestId가 개발자에게만 의미가 있고, 사용자에게는 의미가 없기 때문이다.
-
-그럼 먼저 Testing Library에 들어가서 제공되는 쿼리 함수들을 알아보았다.
-
 ## 3.2. 시맨틱 쿼리 함수
+
+### 3.2.1. getByAltText
+
+alt text를 지원하는 img, area, input과 같은 태그로 이루어진 요소라면 이 함수를 통해 요소를 불러올 수 있다.
+
+### 3.2.2. getByTitle
+
+title 속성으로 요소를 불러오지만 이는 스크린 리더에 잘 읽히지도 않고 기본적으로는 보이지 않는다는 단점이 있다.
+
+## 3.3. getByTestId
+
+testid 속성으로 요소를 불러온다. 그러나 이는 사용자에게 보이지 않는 속성이기 때문에 role이나 text로 요소를 매칭시킬 수 없을 때 사용한다. text가 동적으로 변한다든지 하는 상황.
 
 
 # 4. 쿼리함수 사용하기
