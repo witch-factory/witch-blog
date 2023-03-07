@@ -1,9 +1,22 @@
 ---
 title: React Testing - Jest 4
-date: "2023-03-02T00:00:00Z"
+date: "2023-03-03T00:00:00Z"
 description: "프론트에 테스트 도입을 위한 공부, 간단한 페이지 만들기 2"
 tags: ["javascript"]
 ---
+
+인프런의 '따라하며 배우는 리액트 테스트'를 참고하였습니다.
+
+# 1. 프로젝트 생성
+
+create-react-app으로 프로젝트를 생성한다.
+
+```bash
+npx create-react-app react-test-app
+```
+
+그리고 테스트 1번 글에서 본 것과 같이 eslint, prettier 설정을 해준다. vscode를 그
+
 
 # 1. Mock Service Worker
 
