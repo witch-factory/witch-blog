@@ -1,7 +1,7 @@
 ---
 title: 프론트 지식 익히기 HTML - 1
 date: "2023-02-27T00:00:00Z"
-description: "HTML 제대로 익히기"
+description: "HTML 제대로 익히기 - HTML 기본"
 tags: ["web", "study", "front", "HTML"]
 ---
 

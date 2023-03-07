@@ -1,7 +1,7 @@
 ---
-title: 프론트 지식 익히기 HTML - Doctype
-date: "2023-03-07T00:00:00Z"
-description: "HTML 문서 상단의 DOCTYPE은 무엇일까?"
+title: 프론트 지식 익히기 HTML - 1
+date: "2023-03-07T01:00:00Z"
+description: "MDN HTML 학습지"
 tags: ["web", "study", "front", "HTML"]
 ---
 
