@@ -27,18 +27,22 @@ React-query에서는 Mutation을 통해 서버 데이터를 변형하는 것을 
 
 간단한 todoList 정도를 만들까 한다.
 
-# 3. 시작하기
-
-CRA로 생성한 어플리케이션에 SWR을 깔자.
+먼저 CRA로 생성한 어플리케이션에 SWR을 깔자. 여기서는 typescript를 사용했다.
 
 ```bash
 npm i swr
 ```
 
+# 3. 서버 모킹
+
 그리고 간단하게 서버를 모킹하기 위해서 json-server를 사용하였다. msw를 이용할 수도 있겠지만 이는 json-server보다 러닝커브가 좀 더 높다고 생각되어 나중에 테스트를 공부하면서 해볼 예정이다.
 
+먼저 폴더를 생성한 후 json-server를 설치하자.
+
 ```bash
-npm install json-server --save-dev
+mkdir json-server-test && cd json-server-test
+npm init -y
+npm install json-server
 ```
 
 그리고 프로젝트 루트에 db.json 파일을 생성하자. 내용은 다음과 같이 간단한 todo리스트 파일을 작성하였다.
@@ -65,8 +69,119 @@ npm install json-server --save-dev
 }
 ```
 
+그리고 json-server-test폴더의 package.json의 스크립트에 다음과 같은 내용을 추가하자. json-server를 포트 5000으로 실행하도록 하는 것이다.
+
+```json
+"scripts": {
+  "start": "json-server --watch db.json --port 5000",
+  "test": "echo \"Error: no test specified\" && exit 1"
+},
+```
+
+`npm start`명령으로 실행하면 다음과 같이 서버가 열린다.
+
+![json-server-open](./json-server-open.png)
+
+# 4. 기초적인 SWR 사용
+
+서버에 요청을 보낼 때는 axios를 사용할 것이다. 따라서 todolist 폴더로 돌아와서 이를 설치하자.
+
+```bash
+npm i axios
+```
+
+URL에서 데이터를 가져오는 fetcher 함수를 만들어 보자.
+
+```jsx
+import axios from 'axios';
+const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+```
+
+그리고 TodoList의 todo 항목들을 나타낼 요소를 간단하게 만든다. 완료 표시와 같은 것들도 만들어야 하겠지만 일단 리스트 요소만 표시하였다.
+
+```tsx
+interface Todo {
+  id: number;
+  content: string;
+  done: boolean;
+}
+
+function TodoListItem({ todo }: { todo: Todo }) {
+  return (
+    <li>
+      <span>{todo.content}</span>
+    </li>
+  );
+}
+```
+
+그리고 useSWR 함수를 사용한다. 이따가 더 자세히 알아보겠지만 가장 간단하게 fetch할 주소와 fetcher 함수를 가져오는 방식으로 사용하겠다.
+
+```tsx
+function TodoListPage() {
+  const { data, error } = useSWR("http://localhost:5000/todos", fetcher);
+
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+
+  return (
+    <ul>
+      {data
+        ? data.map((todo: Todo) => <TodoListItem key={todo.id} todo={todo} />)
+        : null}
+    </ul>
+  );
+}
+```
+
+이러면 데이터를 잘 가져오는 것을 확인할 수 있다.
+
+![useswr](./useswr-res.png)
+
+아니면 isLoading을 사용하여 다음과 같이 짤 수도 있다.
+
+```tsx
+function TodoListPage() {
+  const { data, error, isLoading } = useSWR(
+    "http://localhost:5000/todos",
+    fetcher
+  );
+
+  if (error) {
+    return <div>failed to load!</div>;
+  }
+  if (isLoading) {
+    return <div>loading TodoList...</div>;
+  }
+
+  return (
+    <ul>
+      {data
+        ? data.map((todo: Todo) => <TodoListItem key={todo.id} todo={todo} />)
+        : null}
+    </ul>
+  );
+}
+```
+
+# 5. useSWR
+
+useSWR은 다음과 같이 사용한다. 이때 key 외에는 모두 선택 인자라서 없어도 된다. 그런데 fetcher가 없어도 된다고? 
+
+알고 보니 fetcher를 전역으로 제공할 수 있는 방법이 있고 이럴 경우에 생략이 가능하다는 것이었다. 이렇게 전역 설정을 하는 법은 조금 뒤에 정리할 것이다.
+
+```tsx
+const { data, error, isLoading, isValidating, mutate } = useSWR(key, fetcher, options)
+```
+
+위에서 보았듯이 key는 요청할 URL이다. 함수, 배열, null도 전달할 수 있다. fetcher는 데이터를 가져오기 위한 함수를 반환하는 Promise이고 options는 옵션들을 담은 객체이다.
+
+
 
 # 참고
+
+공식 문서 https://swr.vercel.app/ko
 
 https://fe-developers.kakaoent.com/2022/220224-data-fetching-libs/
 
