@@ -467,6 +467,48 @@ mutate((key) => key.startsWith('/api/user'), undefined, { revalidate: true })
 mutate(() => true, undefined, { revalidate: false })
 ```
 
+### 10.3.2. data
+
+이 인수를 이용해서 클라이언트 캐시를 업데이트하거나 클라이언트에서 서버로 데이터를 보내서 서버의 데이터를 업데이트할 수 있다.
+
+서버에 데이터를 변경하는 작업을 시키기 위한 비동기 함수를 전달하는 것이다.
+
+### 10.3.3. options
+
+options 인수는 다음과 같은 옵션을 가진다.
+
+optimisticData, revalidate, populateCache, rollbackOnError, throwOnError
+
+revalidate는 비동기 업데이트를 완료한 후 캐시 유효성을 다시 검사할지를 결정한다. 기본은 true
+
+rollbackOnError는 mutate가 실패했을 때 캐시를 이전 상태로 되돌릴지를 결정한다. 기본은 true
+
+throwOnError는 mutate가 실패했을 때 에러를 throw할지를 결정한다. 기본은 true
+
+### 10.3.4. mutate의 반환값
+
+mutate 함수는 data 매개변수의 해결 결과를 반환한다. 해당 캐시값을 업데이트하는 데에 사용되는 업데이트된 데이터를 반환하는 것이다.
+
+에러도 try-catch로 적절히 처리 가능하다.
+
+```tsx
+try {
+  // update는 비동기 함수
+  const data = await mutate('/api/user', update(newData))
+} catch (error) {
+  // ...
+}
+```
+
+## 10.4. useSWRMutation
+
+remote mutation을 위한 훅으로 useSWRMutation이 있다. 이는 자동으로 트리거되는 useSWR과 달리 수동으로만 트리거된다. 또한 다른 useSWRMutation과 상태를 공유하지 않는다.
+
+```tsx
+const { data, error, trigger, reset, isMutating } = useSWRMutation(key, fetcher, options)
+```
+
+key와 fetcher, options를 제공하면 remote mutation을 제공하는 trigger 함수를 반환한다. 그리고 trigger가 호출되기 전까지 요청을 시작하지 않기 때문에, 필요할 때까지 데이터 로딩을 지연시킬 수 있다.
 
 # 참고
 
