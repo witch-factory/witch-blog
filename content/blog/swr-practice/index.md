@@ -1,6 +1,6 @@
 ---
-title: 데이터 fetch library SWR 익히기 - 간단한 예제
-date: "2023-03-20T00:00:00Z"
+title: 데이터 fetch library SWR 익히기 - 간단한 todoList 만들기
+date: "2023-03-21T00:00:00Z"
 description: "SWR 라이브러리 학습기록 - 실제로 해보기"
 tags: ["web", "study", "front", "project"]
 ---
@@ -178,18 +178,18 @@ function TodoListForm({ addTodo }: { addTodo: (todo: Todo) => void }) {
     done: false,
   });
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    addTodo(newTodo);
+    setNewTodo({
+      id: newTodo.id + 1,
+      content: "",
+      done: false,
+    });
+  };
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        addTodo(newTodo);
-        setNewTodo({
-          id: newTodo.id + 1,
-          content: "",
-          done: false,
-        });
-      }}
-    >
+    <form onSubmit={handleSubmit}>
       <input
         type="text"
         value={newTodo.content}
@@ -328,6 +328,231 @@ function TodoListItem({
 
 이 코드에는 현재 문제가 있기는 하다. 보통 TodoList에서 항목 수정이 완료되는 시점은 수정 완료(여기서는 Done)버튼을 누르는 시점이어야 한다. 하지만 여기서는 수정 버튼을 누른 후 수정하는 그대로 todo항목의 내용이 바뀌어 버린다. 하지만 여기서는 수정하다가 이를 물릴 수 있는 방법이 없으므로 그냥 넘어가고, 이따 서버와 통신할 때 이를 따지기로 한다.
 
+# 3. SWR과 사용하기
+
+이제 서버와 통신을 해보자. 서버와 통신을 하기 위해서는 앞서 설치한 axios를 사용할 것이다.
+
+json-server의 데이터는 앞에서 구축했다. npm start로 서버를 실행하면 http://localhost:5000/todos 에 서버가 실행된다. 이제 이 서버와 통신을 해보자.
+
+## 3.1. 서버에서 데이터 받아오기
+
+간단하다. axios로 fetcher를 만들고 useSWR 훅을 사용하면 된다.
+
+axios로 정의한 fetcher 함수
+
+```tsx
+const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+```
+
+useSWR 훅을 사용해서 서버에서 데이터를 받아오는 시험을 하는 TodoListPage 코드
+
+```tsx
+function TodoListPage() {
+  const [todos, setTodos] = useState<Todo[]>([
+    {
+      id: 1,
+      content: "Learn React",
+      done: false,
+    },
+    {
+      id: 2,
+      content: "Learn Redux",
+      done: false,
+    },
+    {
+      id: 3,
+      content: "Learn React Native",
+      done: false,
+    },
+  ]);
+
+  const { data } = useSWR("http://localhost:5000/todos", fetcher);
+
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+
+  return (
+    <main>
+      <h1>Todo List</h1>
+      <TodoList todos={todos} setTodos={setTodos} />
+      <TodoListForm addTodo={(todo) => setTodos([...todos, todo])} />
+    </main>
+  );
+}
+```
+
+이렇게 하면 처음에는 undefined이던 data가 서버에서 받아온 데이터로 바뀌는 것을 콘솔 출력으로 확인할 수 있다.
+
+## 3.2. 서버 데이터로 TodoList 보여주기
+
+먼저 Todo를 좀 수정하자. json-server에서 auto increment id를 처리해 주기는 쉽지 않고 여기서는 그것을 다루는 게 목적이 아니기 때문에 todo 항목 생성 시 id를 랜덤으로 생성해 주도록 하자.
+
+먼저 Todo 타입을 수정하고, Todo의 추가 시점에 id를 생성해서 넣어주도록 하자.
+
+```tsx
+interface Todo {
+  id: string;
+  content: string;
+  done: boolean;
+}
+```
+
+그리고 랜덤 id 생성을 위한 uuid 라이브러리 설치
+
+```bash
+npm i uuid
+```
+
+id를 랜덤으로 생성해 주게 되면 새로운 todo 항목을 추가할 때 필요한 건 content 뿐이다. TodoListForm 컴포넌트를 수정하자.
+
+그리고 원래는 todo 항목의 편집 함수들을 최상위의 TodoListPage 컴포넌트에서 관리하였는데 지금은 서버에 요청을 보내 편집하면 되기 때문에 굳이 props drilling을 할 필요 없다. 따라서 서버 데이터를 받아오는 건 TodoListPage 컴포넌트에서 관리하되 편집 함수들은 각각의 담당 컴포넌트에서 하도록 하자.
+
+따라서 TodoListPage 컴포넌트는 다음과 같이 간소해진다.
+
+
+```tsx
+function TodoListPage() {
+  const { data, error, isLoading } = useSWR(
+    "http://localhost:5000/todos",
+    fetcher
+  );
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error</div>;
+  }
+
+  return (
+    <main>
+      <h1>Todo List</h1>
+      <TodoList todos={data} />
+      <TodoListForm />
+    </main>
+  );
+}
+```
+
+그리고 Todo 항목을 추가하는 TodoListForm 컴포넌트를 다음과 같이 수정한다. 서버에 직접 요청을 보낼 수 있으므로 addTodo 함수를 props로 받을 필요가 없다. 대신 handleSubmit 함수를 만들어서 서버에 요청을 보낸 후 mutate를 통해 데이터를 갱신해 주도록 한다.
+
+```tsx
+function TodoListForm() {
+  const [newTodo, setNewTodo] = useState<string>("");
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:5000/todos", {
+        id: uuidv4(),
+        content: newTodo,
+        done: false,
+      })
+      .then(() => {
+        setNewTodo("");
+        mutate("http://localhost:5000/todos");
+      });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={newTodo}
+        onChange={(e) => {
+          setNewTodo(e.target.value);
+        }}
+      />
+      <button type="submit">Add</button>
+    </form>
+  );
+}
+```
+
+그리고 TodoList 함수는 그저 todos를 받아서 TodoItem 컴포넌트를 렌더링해 주는 역할만 하도록 수정한다. setTodos가 props에서 사라진 것을 알 수 있다.
+
+```tsx
+function TodoList({ todos }: { todos: Todo[] }) {
+  return (
+    <ul>
+      {todos.map((todo) => (
+        <TodoListItem key={todo.id} todo={todo} />
+      ))}
+    </ul>
+  );
+}
+```
+
+가장 많이 수정된 TodoListItem 컴포넌트는 다음과 같다. 이 컴포넌트에서는 todo가 수정되거나 삭제됨에 따라 서버에 요청을 보내고 mutate를 통해 데이터를 갱신해 주도록 하였다.
+
+```tsx
+function TodoListItem({ todo }: { todo: Todo }) {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editTodoContent, setEditTodoContent] = useState<string>("");
+
+  const completeTodo = () => {
+    axios
+      .patch(`http://localhost:5000/todos/${todo.id}`, {
+        done: !todo.done,
+      })
+      .then(() => {
+        mutate("http://localhost:5000/todos");
+      });
+  };
+
+  const editTodo = () => {
+    setIsEditing(true);
+    setEditTodoContent(todo.content);
+  };
+
+  const saveTodo = () => {
+    axios
+      .patch(`http://localhost:5000/todos/${todo.id}`, {
+        content: editTodoContent,
+      })
+      .then(() => {
+        setIsEditing(false);
+        setEditTodoContent("");
+        mutate("http://localhost:5000/todos");
+      });
+  };
+
+  const deleteTodo = () => {
+    axios.delete(`http://localhost:5000/todos/${todo.id}`).then(() => {
+      mutate("http://localhost:5000/todos");
+    });
+  };
+
+  return (
+    <li>
+      <input type="checkbox" checked={todo.done} onChange={completeTodo} />
+      {isEditing ? (
+        <input
+          type="text"
+          value={editTodoContent}
+          onChange={(e) => {
+            setEditTodoContent(e.target.value);
+          }}
+        />
+      ) : (
+        <span>{todo.content}</span>
+      )}
+      <button onClick={isEditing ? saveTodo : editTodo}>
+        {isEditing ? "Done" : "Edit"}
+      </button>
+      <button onClick={deleteTodo}>Delete</button>
+    </li>
+  );
+}
+```
+
+이제 json-server를 실행하고 todoList를 업데이트해 보면 todoList의 모든 기능이 잘 작동하는 것을 확인할 수 있다. 그리고 새로고침을 해도 데이터가 유지되며 편집한 내용이 json-server에 저장되는 것을 확인할 수 있다.
+
 # 참고
 
 https://maliethy.github.io/posts/swr/
+
+https://velog.io/@soryeongk/SWRBasic
+
+json server 사용하기 https://redux-advanced.vlpt.us/3/01.html
