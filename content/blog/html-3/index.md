@@ -289,10 +289,9 @@ hr은 수평선을 나타낸다. hr은 빈 요소이며 시각적으로 수평�
 
 [HTML 유효성 검사 사이트](https://validator.w3.org/#validate_by_upload)를 통해 HTML 문서를 검사하고 디버깅할 수 있다. 웹페이지 주소를 올리거나 파일을 올리거나 HTML 코드를 직접 올리는 등의 방법을 사용할 수 있다.
 
-
-
-
 # 참고
+
+https://discourse.mozilla.org/t/marking-up-a-letter-assessment/24676
 
 각종 MDN 문서들
 
