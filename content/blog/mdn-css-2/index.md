@@ -232,10 +232,172 @@ CSS의 모든 요소는 박스로 표현된다. 이 박스를 잘 이해하는 �
 
 ## 4.2. 디스플레이 유형
 
-위의 블록 박스와 인라인 박스는 CSS의 display 속성으로 조절할 수 있다. 그런데 이 디스플레이 유형은 외부와 내부로 나누어진다. 내부 디스플레이 유형은 flex나 grid로, 박스 내부의 요소가 배치되는 방법을 나타낸다.
+위의 블록 박스와 인라인 박스는 CSS의 display 속성으로 조절할 수 있다. 그런데 이 디스플레이 유형은 외부와 내부로 나누어진다. 내부 디스플레이 유형은 flex나 grid로, 박스 내부의 요소가 배치되는 방법을 나타낸다. 이러한 내부 디스플레이 유형은 이후에 레이아웃에 대해 배울 때 다룰 것이다.
+
+지금은 외부 디스플레이 유형에 대해서만 다룰 것이다. 이는 앞서 말했듯 css display 속성을 사용해서 변경할 수 있다. 요소가 블럭인지 인라인인지를 정할 수 있다는 것이다.
+
+```css
+display: block;
+display: inline;
+```
+
+## 4.3. CSS 박스 모델
+
+CSS 박스 모델은 블록 박스에 완전히 적용되며 인라인 박스의 경우 박스 모델의 일부 동작만 사용한다.
+
+블록 박스는 기본적으로 다음과 같이 구성된다.
+
+![box-model](./box-model.png)
+
+margin은 border의 바깥쪽, padding은 border 안쪽의 여백을 나타낸다.
+
+콘텐츠 박스는 width와 height로, 패딩 박스는 padding으로, 테두리 박스는 border로, 마진 박스는 margin으로 크기를 조절할 수 있다.
+
+그리고 박스가 점유하는 전체 크기는 콘텐츠 박스 너비+패딩+테두리 로 계산된다. 즉, margin은 박스의 크기를 결정하지 않는다. 다음과 같은 CSS가 있다고 하자.
+
+```css
+.box{
+  width: 100px;
+  height: 100px;
+  padding: 10px;
+  border: 5px solid black;
+  margin: 10px;
+}
+```
+
+그러면 박스가 차지하는 너비는 130px이다. 그리고 이 중 실제 콘텐츠가 표시되는 너비는 100px(width)이다.
+
+```
+width 100px + padding 10*2px + border 5*2px = 130px
+```
+
+### 4.3.1. 대체 박스 모델
+
+이는 표준 박스 모델의 경우이다. 대체 박스 모델도 존재한다. 이 모델에서는 우리가 설정한 width가 콘텐츠 박스 너비 + 패딩 박스 너비 + 테두리 박스 너비가 된다.
+
+예를 들어 위의 CSS를 다시 보자.
+
+```css
+.box{
+  width: 100px;
+  height: 100px;
+  padding: 10px;
+  border: 5px solid black;
+  margin: 10px;
+}
+```
+
+이 경우 실제 콘텐츠 박스의 너비는 70px가 된다. 100px에서 패딩 박스 20px와 테두리 박스 10px를 뺀 값이다.
+
+대체 박스 모델은 다음과 같이 설정할 수 있다.
+
+```css
+.box{
+  box-sizing: border-box;
+}
+```
+
+반대로 표준 박스 모델은 `box-sizing:content-box`로 설정한다.
+
+만약 모든 요소가 대체 박스 모델을 사용하길 원한다면 다음과 같이 설정하자.
+
+```css
+html {
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+```
+
+### 4.3.2. 대체 박스 모델 선언에 대하여
+
+위의 대체 박스 모델 선언에 의문이 들 수 있다. 왜 그냥 `*`를 쓰지 않을까? 다음과 같이 써도 되지 않은가?
+
+```css
+* {
+  box-sizing: border-box;
+}
+```
+
+그러나 이렇게 하면 의도치 않은 동작이 발생할 수 있다. 위와 같이 대체 박스 모델을 설정했는데 어떤 하나의 요소에 대해서 표준 박스 모델을 사용하고 싶다고 해보자. 그럼 우리는 다음과 같이 할 것이다.
+
+```css
+.my-box{
+  box-sizing: content-box;
+}
+```
+
+이 목적은 보통 my-box 클래스를 가진 요소 내에서는 표준 박스 모델을 사용하려는 것이다. 하지만 이렇게 하고 `my-box` 클래스를 가진 요소를 만들면 내부 요소는 여전히 대체 박스 모델을 사용한다.
+
+```html
+<div class="my-box">
+  <header> <!-- 여전히 대체 박스 모델이 사용되고 있다. -->
+    ...여러 요소들...
+  </header>
+</div>
+```
+
+따라서 최상단 요소인 html에 대체 박스 모델을 설정하고 `*`에 대해서는 box-sizing을 상속받도록 설정한다. 그것이 바로 다음 CSS이다.
+
+```css
+html {
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+```
+
+## 4.4. 마진/패딩
+
+### 4.4.1. 마진
+
+마진은 박스 주변에 여백을 만든다. 이때 margin은 양수뿐 아니라 음수가 될 수도 있다. 만약 마진이 음수이면 박스가 그쪽으로 밀려나게 된다.
+
+마진 상쇄도 주의해야 한다. 마진이 서로 맞닿아 있는 2개의 요소가 있다면 그 여백들은 그 중 가장 큰 여백의 크기로 합쳐진다.
+
+다음과 같이 2개의 박스를 만들고 css를 설정했다고 하자.
+
+```html
+<div class="box1">box 1</div>
+<div class="box2">box 2</div>
+```
+
+```css
+.box1 {
+  margin-bottom: 20px;
+}
+
+.box2 {
+  margin-top: 10px;
+}
+```
+
+그러면 box1과 box2의 아래, 위 마진은 합쳐져서 둘 중에 큰 20px짜리 마진이 된다.
+
+단 이런 마진 상쇄도 플로팅 요소, 절대 위치(`position:absolute`)를 지정한 요소에 대해서는 일어나지 않는다. 다음과 같은 3가지 상황에 일어난다.
+
+- 두 개의 인접한 형제 요소의 맞닿은 margin 상쇄
+- 부모 요소와 자식 요소를 분리하는 콘텐츠(테두리, 패딩, 콘텐츠, 자식의 height등)가 없을 경우 부모와 자손의 margin 상쇄
+- 테두리, 패딩, 콘텐츠, height, min-height, max-height가 없는 빈 블록의 margin-top과 margin-bottom 상쇄
+
+### 4.4.2. 패딩
+
+패딩은 테두리와 콘텐츠 사이에 위치한다. 마진과 달리 음수 값을 가질 수 없다. 
+
+## 4.5. 인라인 블록 디스플레이
+
+display 항목 중 `inline-block`은 인라인 요소처럼 다른 요소와 같은 줄에 배치되지만(즉 줄바꿈 안 함), 블록 요소처럼 너비와 높이를 가질 수 있다. 공간을 차지하여 다른 요소가 박스에서 밀려나므로 겹침 현상도 피할 수 있다.
+
+또한 이렇게 inline-block으로 설정된 요소는 크기를 갖춘 하나의 박스로서 기능하게 되므로 다른 블록의 패딩도 존중하게 된다.
+
+어떤 문서에 링크 텍스트가 들어 있는데 이 텍스트를 줄바꿈 없이 배치하면서도 텍스트가 차지하는 영역을 확대하고 싶다면 이 `inline-block`을 사용하면 된다. a 태그는 원래는 인라인 요소이다.
 
 # 참고
 
 https://poiemaweb.com/css3-inheritance-cascading
 
 https://stackoverflow.com/questions/6749569/css-which-takes-precedence-inline-or-the-class
+
+https://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/
