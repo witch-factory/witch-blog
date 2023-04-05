@@ -125,3 +125,123 @@ border-radius 속성을 통해 모서리 둥글기를 설정할 수 있다. 각�
 }
 ```
 
+# 2. 텍스트 표시 방향
+
+아랍어는 오른쪽에서 왼쪽으로 쓰고, 일본어는 위에서 아래로 쓴다. 이런 쓰기 모드를 변경하기 위해서는 `writing-mode` 속성을 사용한다.
+
+## 2.1. 표시 방향의 영향
+
+이 표시 방향은 어디에 영향을 미칠까? 요소의 배치와 텍스트의 흐름 방향이 바뀐다.
+
+예를 들어서 다음과 같이 요소들을 배치했다고 하자.
+
+```html
+<div class="blue-box">Blue</div>
+<div class="aqua-box">Aqua</div>
+```
+
+그러면 Blue Box가 Aqua Box 위에 위치하게 된다. 즉 위->아래 방향으로 블록이 쌓인다.
+
+그럼 표시 방향을 바꾸면?
+
+```css
+body {
+  writing-mode: vertical-lr;
+}
+```
+
+body 내의 블록 요소가 왼쪽에서 오른쪽으로 쌓인다.
+
+![dir-result](./writing-mode.png)
+
+`vertical-rl`로 설정하면 블록이 오른쪽에서 왼쪽 방향으로 쌓인다.
+
+즉 읽기 모드를 바꾸면 사람들이 페이지를 읽어야 하는 방향을 바꿀 수 있다.
+
+블록 요소는 `-`뒤에 있는 방향을 따른다. 예를 들어서 `vertical-rl`이면 블록 요소는 오른쪽에서 왼쪽으로 쌓인다. 그리고 인라인 요소는 `-`앞에 있는 방향을 따른다. `vertical-rl`이면 인라인 요소는 위에서 아래로 쌓인다.
+
+## 2.2. 텍스트 흐름 방향
+
+앞서 아랍어처럼 오른쪽에서 왼쪽으로 쓰이는 언어에 대해서 말했다. 이런 언어는 텍스트 흐름 방향이 오른쪽에서 왼쪽이다.
+
+웹은 왼쪽에서 오른쪽으로 읽히는 언어만 쓰이는 게 아니므로 최신 CSS는 방향을 참조하지 않는다. 대신 인라인과 블록이라는 아이디어와 함께 시작, 끝을 다룬다. 이는 나중에 다시 이야기할 날이 있을 것이다.
+
+## 2.3. 텍스트 방향과 너비, 높이
+
+`writing-mode: vertical-rl`로 설정하면 블록 요소의 방향이 바뀐다. 그럴 때 너비와 높이를 설정하면 어떻게 될까?
+
+먼저 writing-mode가 없을 때 기본적인 너비와 높이를 설정해보자.
+
+```css
+.box {
+  width: 500px;
+  height: 150px;
+  border: 1px solid black;
+}
+```
+
+그리고 여기에 맞게 로렘 입숨 텍스트를 넣어보자.
+
+```html
+<div class="box">
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+  velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+  cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+  est laborum.
+</div>
+```
+
+그럼 다음과 같이 박스가 표시될 것이다.
+
+![lorem-horizontal](./lorem-horizontal.png)
+
+그런데 writing-mode를 vertical-rl로 설정하면 어떻게 될까? 그러면 다음과 같이 표시된다.
+
+![lorem-vertical](./lorem-vertical.png)
+
+우리는 페이지의 흐름을 세로로 바꾸었는데 높이와 너비가 본질적으로 바뀌지 않았다.
+
+이를 위해서 CSS는 `block-size`와 `inline-size`라는 속성을 제공한다. 이 속성은 writing-mode에 따라 너비와 높이를 바꿔준다.
+
+width는 inline-size에, height는 block-size에 대응한다. 위의 CSS를 다음과 같이 바꿔보자.
+
+```css
+.box {
+  inline-size: 500px;
+  block-size: 150px;
+  border: 1px solid black;
+}
+```
+
+그러면 이제 writing-mode가 vertical-rl이어도 본질적인 너비와 높이가 바뀌지 않는다.
+
+![lorem-fit](./lorem-fit.png)
+
+## 2.4. 텍스트 방향과 margin, padding
+
+방향에 따라 다르게 줄 수 있는 속성은 또 있다. 지난번에 본 마진과 패딩이다. 가령 `margin-top`같은 속성이 있다.
+
+이 또한 위에서 너비와 높이에 그랬던 것과 같이 writing-mode에 따라 다른 방향을 가리키게 만들 수 있다. 즉 논리적 방향을 가리키게 만들 수 있다. `margin-block-start`와 같은 속성을 쓰면 된다.
+
+블럭의 방향 상에서 위와 아래에 마진을 주고 싶다면 `margin-block`를 쓰면 되고 좌우에 마진을 주고 싶다면 `margin-inline`를 쓰면 된다. 그리고 start, end를 붙이면 해당 방향의 시작과 끝에 마진을 줄 수 있다.
+
+가령 margin-left는 margin-inline-start와 같다. padding도 같은 어미를 쓴다.
+
+- top -> block-start
+- bottom -> block-end
+- left -> inline-start
+- right -> inline-end
+
+다만 이런 논리적 속성값은 top, bottom과 같은 물리적 속성보다 최신이기 때문에 브라우저에 따라 지원이 안 될 수도 있다.
+
+따라서 여러 쓰기 방향을 사용하지 않는 경우 물리적 속성을 사용하는 것이 아직은 좋다. 다만 flex, grid 같은 레이아웃 방법을 다루기 시작하면 많은 의미가 생기기 때문에 논리적 속성이 더 많이 쓰이게 될 것이다.
+
+
+
+그런데 진짜 너는 꽤나 내 현실적인 이상형에 맞는 사람이야. 사귀어 '준다'고까지 생각하지는 않지만, 함께해 줘서 고마워. 오래 봤으면 좋겠어
+
+
+
