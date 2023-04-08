@@ -152,3 +152,7 @@ textarea {
 ```
 
 # 4. 표 스타일링
+
+앞에서 HTML로 표를 만드는 방법에 대해서 배웠었다. table, caption, tr, th, td, thead, tbody 등의 태그를 사용한다.
+
+```html
