@@ -156,3 +156,40 @@ textarea {
 앞에서 HTML로 표를 만드는 방법에 대해서 배웠었다. table, caption, tr, th, td, thead, tbody 등의 태그를 사용한다.
 
 ```html
+<table>
+  <caption>
+    table 태그를 사용해서 만들어진 표
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">이름</th>
+      <th scope="col">나이</th>
+      <th scope="col">성별</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>홍길동</td>
+      <td>20</td>
+      <td>남</td>
+    </tr>
+    <tr>
+      <td>김철수</td>
+      <td>25</td>
+      <td>남</td>
+    </tr>
+    <tr>
+      <td>이영희</td>
+      <td>30</td>
+      <td>여</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+이를 브라우저에 렌더링하면 다음과 같이 표시된다.
+
+![table_no_style](./table-no-style.png)
+
+표를 위한 표준 태그들을 사용했기 때문에 시맨틱하게 짜여졌고 접근성도 좋다. 하지만 실제로 렌더링된 표는 읽기 힘들고 볼품없다. 이를 CSS를 써서 꾸밀 수 있다.
+
