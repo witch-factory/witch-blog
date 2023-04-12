@@ -10,6 +10,15 @@ interface FeedSerializeProps {
 }
 
 export const plugins = [
+  {
+    resolve: "gatsby-plugin-google-analytics",
+    options: {
+      trackingId: siteMetadata.googleAnalytics,
+      head: true,
+      anonymize: true,
+      defer: true,
+    },
+  },
   "gatsby-plugin-image",
   {
     resolve: "gatsby-plugin-module-resolver",
@@ -72,15 +81,6 @@ export const plugins = [
   },
   "gatsby-transformer-sharp",
   "gatsby-plugin-sharp",
-  {
-    resolve: "gatsby-plugin-google-analytics",
-    options: {
-      trackingId: siteMetadata.googleAnalytics,
-      head: true,
-      anonymize: true,
-      defer: true,
-    },
-  },
   {
     resolve: "gatsby-plugin-feed",
     options: {
