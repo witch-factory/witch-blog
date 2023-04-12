@@ -3,7 +3,7 @@ import { styled } from '~/stitches.config';
 export const Container = styled('div', {
   display: 'grid',
   gridTemplateColumns: '70px auto',
-  marginBottom: '2rem',
+  marginBottom: '1rem',
   padding: '1rem',
   borderRadius: '1rem',
 

@@ -35,12 +35,6 @@ const AboutPage = ({ data, location }: PageProps<GatsbyTypes.AboutPageQuery>) =>
         meta={meta}
         noSiteName
       />
-      <div>
-  사이트 조회수: <span id = 'busuanzi_value_site_pv'></span>
-      </div>
-      <div>
-  사이트 방문자수: <span id = 'busuanzi_value_site_uv'></span> 
-      </div>
       <Profile />
       <h1>I am</h1>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla neque lectus, varius in vehicula id, viverra eu diam. Duis pellentesque rutrum tincidunt. Nullam bibendum gravida blandit. Maecenas quis enim justo. Sed malesuada lectus mi, sit amet hendrerit nisl consequat sed. Proin semper ex nec nisi egestas gravida. Cras mattis feugiat tempor. Donec sollicitudin est metus, nec posuere mauris dictum at. Praesent laoreet massa pulvinar laoreet dapibus. Sed efficitur lacus eu ligula fermentum, ut sodales justo sagittis. Mauris sit amet vehicula enim.</p>

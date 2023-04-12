@@ -45,7 +45,11 @@ const BlogPostTemplate = ({ data, location }: PageProps<GatsbyTypes.BlogPostBySl
           <Metadata>
             <span>{date}</span>
             <Tags tags={tags as string[]} />
+            <div id='busuanzi_container_page_pv' style={{'marginLeft':'20px'}}> 
+              조회수 <span id='busuanzi_value_page_pv'></span> 회 
+            </div>
           </Metadata>
+
         </Header>
         <TableOfContents
           dangerouslySetInnerHTML={{ __html: post.tableOfContents ?? '' }}

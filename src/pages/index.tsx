@@ -58,6 +58,10 @@ const BlogIndex = ({ data, location }: PageProps<GatsbyTypes.BlogIndexQuery>) =>
         noSiteName
       />
       <Profile />
+      <section style={{height:'20px'}}>
+        조회수 <span id = 'busuanzi_value_site_pv' ></span> 회 <br />
+        방문자 <span id = 'busuanzi_value_site_uv' ></span> 명
+      </section>
       <ArticleFilter
         tags={tags}
         titleFilter={titleFilter}

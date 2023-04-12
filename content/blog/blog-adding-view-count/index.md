@@ -1,11 +1,67 @@
 ---
-title: 블로그에 조회수 추가하기 - 미뤄짐
-date: "2021-04-12T00:00:00Z"
+title: 블로그에 조회수 추가하기
+date: "2023-04-12T00:00:00Z"
 description: "조회수를 블로그에 표시해 보기"
 tags: ["blog", "web"]
 ---
 
-블로그 조회수가 적게 나오는 것 같지는 않다. cloudflare의 분석에 의하면 하루 평균적으로 100명 정도는 오는 것 같았다. 그래서 한번 블로그에 조회수 카운터를 만들어 보기로 했다. 구글 애널리틱스를 사용했다.
+# 1. 서론
+
+블로그 조회수가 적게 나오는 것 같지는 않다. cloudflare의 분석에 의하면 하루 평균적으로 100명 정도는 오는 것 같았다. 그래서 한번 블로그에 조회수 카운터를 만들어 보기로 했다.
+
+수많은 삽질이 있었다. [fienestar](https://github.com/fienestar)님의 도움으로 결국 간단한 방법으로 조회수를 추가할 수 있었는데 그 방법을 먼저 쓴 후 삽질의 기록을 뒤에 쓰도록 하겠다.
+
+busuanzi라는 중국 서비스가 있는데 이를 이용하면 페이지와 블로그 조회수를 쉽게 추가할 수 있다.
+
+# 2. busuanzi 사용
+
+[fienestar님의 가이드](https://fienestar.github.io/blog/2020/05/24/busuanzi%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC-%EC%A0%95%EC%A0%81%EC%9D%B8-%ED%8E%98%EC%9D%B4%EC%A7%80%EC%97%90-%EC%8A%A4%ED%83%80%EC%9D%BC-%EB%B3%80%EA%B2%BD%EC%9D%B4-%EA%B0%80%EB%8A%A5%ED%95%9C-%EC%A1%B0%ED%9A%8C%EC%88%98-%EC%B6%94%EA%B0%80%ED%95%98%EA%B8%B0/)를 따라하면 된다. 단 내 블로그에 맞게 하기 위한 몇 가지 수정이 필요하다.
+
+먼저 다음 코드를 사이트의 head 혹은 body에 추가해야 한다.
+
+```html
+<script async src = "//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+```
+
+내 블로그에는 `Seo`라는 컴포넌트가 있고 이는 블로그의 모든 페이지에 삽입된다. 그리고 이 `Seo` 컴포넌트는 react-helmet의 Helmet 컴포넌트로 이루어져 있는데 이 Helmet 컴포넌트는 head 태그에 들어가는 내용을 관리한다.
+
+따라서 Helmet 컴포넌트 사이에 저 코드를 추가해 주면 된다.
+
+```tsx
+<Helmet
+// SEO를 위한 메타 정보들이 들어가 있다.
+// 여기서는 중요하지 않으므로 생략
+>
+  <script async src = '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script>
+</Helmet>
+```
+
+## 2.1. 사이트 조회수와 방문자 수
+
+사이트 조회수와 방문자 수는 다음 코드를 통해 추가할 수 있다. span에 붙은 id가 중요하다.
+
+```html
+<section style={{height:'20px'}}>
+  조회수 <span id = 'busuanzi_value_site_pv' ></span> 회 <br />
+  방문자 <span id = 'busuanzi_value_site_uv' ></span> 명
+</section>
+```
+
+위 코드를 블로그의 페이지에 추가하면 된다. 내 블로그의 경우 메인 페이지를 나타내는 BlogIndex 컴포넌트에서 내 프로필 바로 아래에 추가했다.
+
+이 조회수 표시를 위한 삽질을 하면서 블로그를 재구성해야겠다는 생각을 많이 했기 때문에 지금 굳이 스타일링을 하지는 않았다.
+
+## 2.2. 페이지 조회수
+
+단일 페이지의 조회수는 다음 코드로 추가한다.
+
+```html
+<span id="busuanzi_value_page_pv"></span>
+```
+
+이를 글 제목 아래에 적당히 추가하였다.
+
+
 
 # 1. 블로그를 구글 애널리틱스에 추가
 
