@@ -24,8 +24,11 @@
   "dependencies": {
     "@stitches/react": "^0.2.3",
     "disqus-react": "^1.1.1",
+    "dotenv": "^16.0.3",
+    "firebase": "^9.19.1",
     "gatsby": "^3.10.2",
     "gatsby-plugin-feed": "^3.10.0",
+    "gatsby-plugin-firebase": "^0.2.0-beta.4",
     "gatsby-plugin-gatsby-cloud": "^2.10.0",
     "gatsby-plugin-google-gtag": "^3.15.0",
     "gatsby-plugin-image": "^1.10.1",
