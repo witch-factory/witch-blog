@@ -73,15 +73,12 @@ export const plugins = [
   "gatsby-transformer-sharp",
   "gatsby-plugin-sharp",
   {
-    resolve: "gatsby-plugin-google-gtag",
+    resolve: "gatsby-plugin-google-analytics",
     options: {
-      trackingIds: [siteMetadata.googleAnalytics],
-      gtagConfig: {
-        anonymize_ip: true,
-      },
-      pluginConfig: {
-        head: true,
-      },
+      trackingId: siteMetadata.googleAnalytics,
+      head: true,
+      anonymize: true,
+      defer: true,
     },
   },
   {

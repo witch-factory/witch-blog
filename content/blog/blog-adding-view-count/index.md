@@ -72,7 +72,29 @@ gatsby-plugin-google-gtag의 옛날 버전이다. 그러나 우리는 이를 gta
 
 그리고 아까 데이터 스트림을 추가하고 얻은 측정 ID를 `siteMetadata`에 추가한다. 나 같은 경우 blog-config에 있었다. 그런데 이런 siteMetadata를 사용하지 않는다면 그냥 문자열로 추가해도 된다.
 
+![node-version](./node-version-error.png)
 
+하지만 문제가 발생했다. `gatsby-plugin-google-gtag` 는 node 18 이상을 요구한다. cloudflare는 node 17까지밖에 지원을 안 한다. [node 18을 cloudflare에서 쓰는 걸 베타테스트 중](https://community.cloudflare.com/t/support-node-18-in-pages-or-allow-config/414797/4)이라고 하는데 어떻게 될지 모르겠다..
+
+어쩔 수 없이, analytics.js가 2023년 9월까지는 지원한다고 하니 울며 겨자먹기로 이걸 쓰기로 했다. 다시 gatsby-config.ts를 원래대로 돌리자..
+
+```ts
+{
+  resolve: 'gatsby-plugin-google-analytics',
+  options: {
+    trackingId: siteMetadata.googleAnalytics,
+    head: true,
+    anonymize: true,
+    defer: true,
+  },
+},
+```
+
+그리고 빌드에 오류를 발생시키는 `gatsby-plugin-google-gtag`를 삭제하자.
+
+```
+yarn remove gatsby-plugin-google-gtag
+```
 
 
 
