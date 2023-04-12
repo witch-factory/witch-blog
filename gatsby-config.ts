@@ -1,88 +1,91 @@
-import siteMetadata from './blog-config';
+import siteMetadata from "./blog-config";
 
 interface FeedSerializeProps {
   query: {
-    site: GatsbyTypes.Site,
+    site: GatsbyTypes.Site;
     allMarkdownRemark: {
-      nodes: GatsbyTypes.MarkdownRemark[],
-    }
-  }
+      nodes: GatsbyTypes.MarkdownRemark[];
+    };
+  };
 }
 
 export const plugins = [
-  'gatsby-plugin-image',
+  "gatsby-plugin-image",
   {
-    resolve: 'gatsby-plugin-module-resolver',
+    resolve: "gatsby-plugin-module-resolver",
     options: {
-      root: './src',
+      root: "./src",
       aliases: {
-        '~': './',
+        "~": "./",
       },
     },
   },
   {
-    resolve: 'gatsby-source-filesystem',
+    resolve: "gatsby-source-filesystem",
     options: {
       path: `${__dirname}/content/blog`,
-      name: 'blog',
+      name: "blog",
     },
   },
   {
-    resolve: 'gatsby-source-filesystem',
+    resolve: "gatsby-source-filesystem",
     options: {
-      name: 'images',
+      name: "images",
       path: `${__dirname}/src/images`,
     },
   },
   {
-    resolve: 'gatsby-transformer-remark',
+    resolve: "gatsby-transformer-remark",
     options: {
       plugins: [
         {
-          resolve: 'gatsby-remark-images',
+          resolve: "gatsby-remark-images",
           options: {
             maxWidth: 630,
           },
         },
         {
-          resolve: 'gatsby-remark-responsive-iframe',
+          resolve: "gatsby-remark-responsive-iframe",
           options: {
-            wrapperStyle: 'margin-bottom: 1.0725rem',
+            wrapperStyle: "margin-bottom: 1.0725rem",
           },
         },
         {
-          resolve: 'gatsby-remark-autolink-headers',
+          resolve: "gatsby-remark-autolink-headers",
           options: {
-            className: 'heading-anchor',
+            className: "heading-anchor",
             isIconAfterHeader: true,
-          }
+          },
         },
         {
-          resolve: 'gatsby-remark-katex',
+          resolve: "gatsby-remark-katex",
           options: {
-            strict: 'ignore',
-          }
+            strict: "ignore",
+          },
         },
-        'gatsby-remark-external-links',
-        'gatsby-remark-prismjs',
-        'gatsby-remark-copy-linked-files',
-        'gatsby-remark-smartypants',
+        "gatsby-remark-external-links",
+        "gatsby-remark-prismjs",
+        "gatsby-remark-copy-linked-files",
+        "gatsby-remark-smartypants",
       ],
     },
   },
-  'gatsby-transformer-sharp',
-  'gatsby-plugin-sharp',
+  "gatsby-transformer-sharp",
+  "gatsby-plugin-sharp",
   {
-    resolve: 'gatsby-plugin-google-analytics',
+    resolve: "gatsby-plugin-google-gtag",
     options: {
-      trackingId: siteMetadata.googleAnalytics,
-      head: true,
-      anonymize: true,
-      defer: true,
+      trackingIds: [siteMetadata.googleAnalytics],
+      gtagConfig: {
+        anonymize_ip: true,
+      },
+      pluginConfig: {
+        head: true,
+      },
     },
   },
   {
-    resolve: 'gatsby-plugin-feed',
+    resolve: "gatsby-plugin-feed",
     options: {
       query: `
         {
@@ -98,17 +101,22 @@ export const plugins = [
       `,
       feeds: [
         {
-          serialize: ({ query: { site, allMarkdownRemark } }: FeedSerializeProps) => allMarkdownRemark.nodes.map((node) => {
-            const url = `${site.siteMetadata?.siteUrl ?? ''}${node.fields?.slug ?? ''}`;
-            return {
-              ...node.frontmatter,
-              url,
-              description: node.excerpt,
-              date: node.frontmatter?.date,
-              guid: url,
-              custom_elements: [{ 'content:encoded': node.html }],
-            };
-          }),
+          serialize: ({
+            query: { site, allMarkdownRemark },
+          }: FeedSerializeProps) =>
+            allMarkdownRemark.nodes.map((node) => {
+              const url = `${site.siteMetadata?.siteUrl ?? ""}${
+                node.fields?.slug ?? ""
+              }`;
+              return {
+                ...node.frontmatter,
+                url,
+                description: node.excerpt,
+                date: node.frontmatter?.date,
+                guid: url,
+                custom_elements: [{ "content:encoded": node.html }],
+              };
+            }),
           query: `
             {
               allMarkdownRemark(
@@ -128,26 +136,26 @@ export const plugins = [
               }
             }
           `,
-          output: '/rss.xml',
+          output: "/rss.xml",
         },
       ],
     },
   },
   {
-    resolve: 'gatsby-plugin-manifest',
+    resolve: "gatsby-plugin-manifest",
     options: {
       name: siteMetadata.title,
       short_name: siteMetadata.title,
-      start_url: '/',
-      background_color: '#ffffff',
-      theme_color: '#663399',
-      display: 'minimal-ui',
+      start_url: "/",
+      background_color: "#ffffff",
+      theme_color: "#663399",
+      display: "minimal-ui",
       icon: siteMetadata.icon,
     },
   },
-  'gatsby-plugin-react-helmet',
-  'gatsby-plugin-offline',
-  'gatsby-plugin-typegen'
+  "gatsby-plugin-react-helmet",
+  "gatsby-plugin-offline",
+  "gatsby-plugin-typegen",
 ];
 
 export { siteMetadata };

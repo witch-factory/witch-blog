@@ -1101,6 +1101,13 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@babel/runtime@^7.20.13":
+  version "7.21.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.21.0.tgz#5b55c9d394e5fcf304909a8b00c07dc217b56673"
+  integrity sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==
+  dependencies:
+    regenerator-runtime "^0.13.11"
+
 "@babel/standalone@^7.15.5":
   version "7.18.12"
   resolved "https://registry.yarnpkg.com/@babel/standalone/-/standalone-7.18.12.tgz#4c0abdf1b5213394e73a0ba5500dcc287194a20d"
@@ -5928,6 +5935,14 @@ gatsby-plugin-google-analytics@^3.10.0:
     "@babel/runtime" "^7.15.4"
     minimatch "3.0.4"
     web-vitals "^1.1.2"
+
+gatsby-plugin-google-gtag@^5.8.0:
+  version "5.8.0"
+  resolved "https://registry.yarnpkg.com/gatsby-plugin-google-gtag/-/gatsby-plugin-google-gtag-5.8.0.tgz#651169bcea35810c4c7784c0c6a765c1919c66fc"
+  integrity sha512-ClvmFTkia/NWNUYbO3VGCstch/hUjIxVuFR9/qtByAm4fO9cW7xnqsguqM2GM++FXXwzuGwdySVkdAtfDlYVWQ==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    minimatch "^3.1.2"
 
 gatsby-plugin-image@^1.10.1:
   version "1.14.2"
@@ -10821,6 +10836,11 @@ regenerator-runtime@^0.11.0:
   version "0.11.1"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
   integrity sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==
+
+regenerator-runtime@^0.13.11:
+  version "0.13.11"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz#f6dca3e7ceec20590d07ada785636a90cdca17f9"
+  integrity sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==
 
 regenerator-runtime@^0.13.3, regenerator-runtime@^0.13.4:
   version "0.13.9"
