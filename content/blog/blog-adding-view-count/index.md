@@ -5,7 +5,79 @@ description: "조회수를 블로그에 표시해 보기"
 tags: ["blog", "web"]
 ---
 
-블로그 조회수가 적게 나오는 것 같지는 않아서, 한번 블로그에 조회수 카운터를 만들어 보기로 했다.
+블로그 조회수가 적게 나오는 것 같지는 않다. cloudflare에 의하면 하루 평균적으로 100명 정도는 오는 것 같았다. 그래서 한번 블로그에 조회수 카운터를 만들어 보기로 했다.
+
+구글 애널리틱스를 써보려 했지만 구글 애널리틱스를 사용할 경우 애드블럭 등의 이유로 약 [10% 정도의 조회수가 누락된다고 한다.](https://leerob.io/blog/real-time-post-views) 특히 기술 관련 블로그일 경우 더 그렇다고 한다. 아마 기술적인 내용을 읽는 사람들은 대부분 애드블럭을 써서 그런 듯 하다.
+
+따라서 firebase의 DB를 이용하는 방법이 있어서 이를 사용해 보았다. [이 글](https://leerob.io/blog/real-time-post-views)을 보고 따라하려 했으나 이 글은 Nextjs를 사용하며 api route 환경을 필요로 한다. 
+
+그래서 더 조사하던 중 누군가가 [gatsby에서, 클라이언트 조작만으로 조회수를 얻는 법](https://dev.to/flashblaze/displaying-real-time-views-using-react-gatsby-and-firebase-283f)에 관한 글을 써주어서 이를 사용하였다.
+
+# 1. firebase 세팅
+
+## 1.1. firebase 프로젝트 생성
+
+firebase에 로그인하고 콘솔로 이동한다. 나는 구글 계정으로 로그인했다. 그리고 상단 메뉴에 '콘솔로 이동'을 눌러 콘솔로 이동한다.
+
+그러면 프로젝트를 만들 수 있는 화면이 나오는데 당연히 프로젝트를 만들러 이동하자.
+
+![create-project](./create-firebase-project1.png)
+
+난 `witch-work-views`라는 프로젝트를 만들었다. 그리고 구글 애널리틱스를 달 수도 있는데 나는 이전에 만들어 둔 계정이 있어서 그냥 달았다.
+
+## 1.2. DB 설정
+
+이제 조회수를 관리할 DB를 만들자. 좌측 메뉴에서 빌드 > Realtime Database를 클릭한다.
+
+![realtime-database-menu](./realtime-database-menu.png)
+
+데이터베이스 만들기 클릭. 위치는 그냥 미국으로 하자. 그리고 보안 규칙은 테스트 모드에서 시작하기를 선택한다.
+
+![db-test-mode](./db-test-mode.png)
+
+그러면 실시간 데이터베이스가 만들어진다.
+
+그 다음 왼쪽 메뉴의 톱니바퀴를 누르고 '프로젝트 설정'을 선택한다.
+
+![project-settingmenu](./project-setting-menu.png)
+
+그리고 스크롤을 좀 아래로 내리면 '내 앱'이라는 메뉴가 있고 프로젝트에 앱이 없다는 말이 써 있다. 플랫폼을 선택해서 프로젝트를 새로 만들 수 있는데 웹앱을 선택하자. HTML 태그처럼 보이는 걸 택하면 된다.
+
+![create-web-app](./create-web-app.png)
+
+그러면 앱을 만드는 창이 뜨는데 이름을 입력하자. 그리고 firebase 호스팅 설정은 체크하지 않고 넘어가자. 나는 앱 이름을 `witch-work-views-app`으로 했다.
+
+아래와 같은 상태에서 '앱 등록'을 누른다.
+
+![create-app-name](./create-app-name.png)
+
+그 다음 Firebase SDK 추가 단계는 뭐 건드리지 말고 그냥 '콘솔로 이동'을 선택했다.
+
+그리고 다시 아까 만들었던 Realtime Database로 돌아가서 '규칙' 메뉴를 선택한다. 현재는 다음과 같이 되어 있다. read, write 둘 다 2023년 5월 12일 전까지 true로 설정되어 있는 것이다.
+
+![prev-db-rule](./previous-db-rule.png)
+
+이 rule을 다음과 같이 변경한다.
+
+```json
+{
+  "rules": {
+        "views": {
+          "$page": {
+                ".read": true,
+                ".write": true,
+                ".validate": "newData.isNumber()"
+        }
+      }
+   }
+}
+```
+
+이렇게 하면 모든 사용자가 `views`라는 DB의 모든 페이지에 대한 조회수를 읽고 쓸 수 있게 된다.
+
+
+
+
 
 # 1. 블로그를 구글 애널리틱스에 추가
 
@@ -72,6 +144,8 @@ gatsby-plugin-google-gtag의 옛날 버전이다. 그러나 우리는 이를 gta
 
 그리고 아까 데이터 스트림을 추가하고 얻은 측정 ID를 `siteMetadata`에 추가한다. 나 같은 경우 blog-config에 있었다. 그런데 이런 siteMetadata를 사용하지 않는다면 그냥 문자열로 추가해도 된다.
 
+## 1.3. 삽질
+
 ![node-version](./node-version-error.png)
 
 하지만 문제가 발생했다. `gatsby-plugin-google-gtag` 는 node 18 이상을 요구한다. cloudflare는 node 17까지밖에 지원을 안 한다. [node 18을 cloudflare에서 쓰는 걸 베타테스트 중](https://community.cloudflare.com/t/support-node-18-in-pages-or-allow-config/414797/4)이라고 하는데 어떻게 될지 모르겠다..
@@ -96,6 +170,16 @@ gatsby-plugin-google-gtag의 옛날 버전이다. 그러나 우리는 이를 gta
 yarn remove gatsby-plugin-google-gtag
 ```
 
+하지만 여전히 잘 되지 않는다. 왜일까? 찾아보니 확실한지는 모르겠지만 GA4 이후로 새로 만든 계정이라면 gtag를 써야만 구글 애널리틱스에 등록이 된다고 한다. node 18 이상은 애초에 cloudflare를 사용하지 않는데..
+
+그런데 내가 본 글들은 다 `gatsby-plugin-google-gtag`를 잘 사용했다. 뭐지? 생각해 보니 gtag가 언제나 node 18을 사용하지는 않았을 것이다. 저 사람들이 사용할 때는 node의 더 낮은 버전을 요구했을 것이다. 그럼 나는 `gatsby-plugin-google-gtag`의 더 낮은 버전을 사용하면 되는 것이다!
+
+## 1.4. 다시, Google Analytics 태그 추가
+
+`gatsby-plugin-google-gtag`의 이전 버전을 설치해 보자. 찾아보니 `gatsby-plugin-google-gtag`의 최신 버전은 5.8.0이고 지난 7일간 4708회 다운로드되었다. 그런데 4.25.0버전이 지난 일주일간 7054회 다운로드되어, 최신 버전의 약 2배 다운수를 기록하고 있었다. 나와 똑같은 고민을 겪은 사람들이 이전 버전을 다운로드받았나 보다.. 당장 저 버전을 다운받자.
+
+
+
 
 
 # 참고
@@ -103,3 +187,7 @@ yarn remove gatsby-plugin-google-gtag
 https://www.gatsbyjs.com/plugins/gatsby-plugin-google-gtag/
 
 https://ha-young.github.io/2020/gatsby/Add-Google-Analytics/
+
+https://leerob.io/blog/real-time-post-views
+
+https://dev.to/flashblaze/displaying-real-time-views-using-react-gatsby-and-firebase-283f
