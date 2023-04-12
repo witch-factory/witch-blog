@@ -11,12 +11,15 @@ interface FeedSerializeProps {
 
 export const plugins = [
   {
-    resolve: "gatsby-plugin-google-analytics",
+    resolve: "gatsby-plugin-google-gtag",
     options: {
-      trackingId: siteMetadata.googleAnalytics,
-      head: true,
-      anonymize: true,
-      defer: true,
+      trackingIds: [siteMetadata.googleAnalytics],
+      gtagConfig: {
+        anonymize_ip: true,
+      },
+      pluginConfig: {
+        head: true,
+      },
     },
   },
   "gatsby-plugin-image",

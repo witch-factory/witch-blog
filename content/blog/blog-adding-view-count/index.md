@@ -176,11 +176,34 @@ yarn remove gatsby-plugin-google-gtag
 
 ## 1.4. 다시, Google Analytics 태그 추가
 
-`gatsby-plugin-google-gtag`의 이전 버전을 설치해 보자. 찾아보니 `gatsby-plugin-google-gtag`의 최신 버전은 5.8.0이고 지난 7일간 4708회 다운로드되었다. 그런데 4.25.0버전이 지난 일주일간 7054회 다운로드되어, 최신 버전의 약 2배 다운수를 기록하고 있었다. 나와 똑같은 고민을 겪은 사람들이 이전 버전을 다운로드받았나 보다.. 당장 저 버전을 다운받자.
+`gatsby-plugin-google-gtag`의 이전 버전을 설치해 보자. 찾아보니 `gatsby-plugin-google-gtag`의 최신 버전은 5.8.0인데 4.25.0과 3.15.0도 다운로드 수가 만만치 않았다. 안전하게 제일 예전 버전으로 다운받자 싶어서 3.15.0을 받기로 했다.
 
+```
+npm install gatsby-plugin-google-gtag@3.15.0
+```
 
+그리고 기존에 있던 낡은 라이브러리는 삭제하자.
 
+```
+npm uninstall gatsby-plugin-google-analytics
+```
 
+그리고 gatsby-config.ts에 다음과 같이 추가하자.
+
+```ts
+{
+  resolve: "gatsby-plugin-google-gtag",
+  options: {
+    trackingIds: [siteMetadata.googleAnalytics],
+    gtagConfig: {
+      anonymize_ip: true,
+    },
+    pluginConfig: {
+      head: true,
+    },
+  },
+},
+```
 
 # 참고
 
