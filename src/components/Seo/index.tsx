@@ -62,7 +62,9 @@ const Seo = ({ description, lang, meta = [], title, noSiteName = false}: Props) 
           content: metaDescription,
         },
       ].concat(meta)}
-    />
+    >
+      <script async src = '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script>
+    </Helmet>
   );
 };
 
