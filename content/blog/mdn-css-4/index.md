@@ -151,7 +151,7 @@ textarea {
 }
 ```
 
-# 4. 표 스타일링
+# 4. 표 스타일링 CSS 정보
 
 앞에서 HTML로 표를 만드는 방법에 대해서 배웠었다. table, caption, tr, th, td, thead, tbody 등의 태그를 사용한다.
 
@@ -193,3 +193,109 @@ textarea {
 
 표를 위한 표준 태그들을 사용했기 때문에 시맨틱하게 짜여졌고 접근성도 좋다. 하지만 실제로 렌더링된 표는 읽기 힘들고 볼품없다. 이를 CSS를 써서 꾸밀 수 있다.
 
+CSS 파일을 만들고 link 태그를 이용해서 HTML 파일과 연결하자.
+
+```html
+<link href="index.css" rel="stylesheet" type="text/css" />
+```
+
+그리고 우리가 바꿀 몇 가지 CSS 속성들을 알아보자.
+
+## 4.1. table-layout
+
+테이블 각 셀의 너비를 어떻게 결정할지를 지정한다. auto와 fixed로 지정할 수 있다.
+
+auto로 지정할 시 브라우저에 테이블 레이아웃 지정을 맡긴다. 이 경우 테이블과 각 셀의 너비는 셀에 담겨 있는 내용들에 fit하게 결정된다.
+
+fixed로 지정할 시 table, col 요소의 width 속성을 통해 표와 각 열의 너비를 지정한다. 이렇게 fixed 레이아웃 하에서 셀 너비를 지정할 시 그대로 지정된다. 그런 너비가 없다면 첫 행에 있는 셀들의 너비로 표와 각 열의 너비를 결정한다.
+
+fixed를 사용할 경우 auto보다 렌더링을 더 빠르게 할 수 있다. 표의 첫 행만 브라우저가 인식하고 나면 전체 표를 바로 렌더링할 수 있기 때문이다. 이렇 첫 행의 셀들의 너비로 열의 너비를 결정하면 아래 행에 있는 셀들에서는 내용이 넘칠 수 있다. 이는 이전에 배운 overflow로 제어한다.
+
+## 4.2. border-collapse
+
+표 테두리가 겹칠 때 어떻게 처리할지에 관한 속성이다.
+
+collapse로 지정할 시 테두리가 겹치는 부분을 하나로 합쳐서 처리한다. 이 경우 테두리의 두께는 가장 두꺼운 테두리의 두께로 결정된다.
+
+다음과 같이 CSS를 지정해 보자.
+
+```css
+table{
+  table-layout: fixed;
+  width:100%;
+  border-collapse: collapse;
+  border: 1px solid #000;
+}
+
+
+th{
+  border: 3px solid #7048e8;
+}
+
+td{
+  border: 5px solid #74c0fc;
+}
+```
+
+그러면 다음과 같이 겹치는 테두리 두께는 가장 두꺼운 두께로 결정되는 것을 볼 수 있다. 또한 더 두꺼운 두께의 테두리가 더 우선적으로 표시되는 걸 볼 수 있다.
+
+![collapse](./collapse-table.png)
+
+separate로 지정할 시 테두리가 겹치는 부분을 각각 처리한다. 이 경우 모든 테두리는 분리되어 표시되며 테두리간 간격은 `border-spacing`에 지정된 값으로 처리된다. 내 브라우저에서 기본값은 2px로 설정되어 있었다.
+
+위의 CSS에서 border-collapse만 separate로 설정해서 표를 렌더링하면 다음과 같아진다.
+
+![separate](./separate-border-table.png)
+
+## 4.3. font-family
+
+글꼴을 지정한다. 값은 `,`로 구분되어 대체될 수 있음을 나타낸다. 브라우저는 이렇게 구분된 글꼴들을 앞에서부터 보면서 컴퓨터에 설치되어 있거나 `@font-face`로 다운받을 수 있는 폰트 중 가장 첫번째 폰트를 선택해서 사용한다.
+
+이때 지정한 폰트가 모두 있다는 것을 보장할 수 없기 때문에 마지막에는 반드시 `sans-serif`나 `serif`와 같은 generic family를 지정해야 한다.
+
+이런 generic family는 serif, sans-serif, cursive, monospace, fantasy, system-ui가 있다.
+
+## 4.4. nth-child를 이용한 스타일링
+
+nth-child를 이용하면 특정 행이나 열에 스타일을 적용할 수 있다. 각 행에서 두 가지 색깔이 번갈아가며 나타나게 해보자.
+
+```css
+tbody tr:nth-child(odd) {
+  background-color: #63e6be;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #c0eb75;
+}
+```
+
+odd, even 키워드를 선택하여 홀수번째, 짝수번째 자식을 선택할 수 있다.
+
+![stripe-table](./stripe-table.png)
+
+## 4.5. caption-side
+
+caption 요소의 위치를 지정한다. top과 bottom이 있다. 만약 bottom으로 지정하면 캡션이 표의 아래에 표시된다.
+
+```css
+caption{
+  caption-side:bottom;
+}
+```
+
+![bottom](./bottom-caption-table.png)
+
+그리고 이 속성은 표의 writing-mode 즉 논리적인 위치를 기준으로 한다. 따라서 논리적인 위/아래 값도 사용할 수 있다.
+
+```css
+caption-side: block-start;
+caption-side: block-end;
+caption-side: inline-start;
+caption-side: inline-end;
+```
+
+## 4.6. 표 스타일링할 때 요점
+
+- table-layout:fixed를 써서 레이아웃을 예측 가능하게 한다.
+- border-collapse를 써서 테두리가 겹치는 부분을 처리한다.
+- text-align으로 텍스트를 적절한 방향으로 정렬.
