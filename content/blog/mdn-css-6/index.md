@@ -160,7 +160,123 @@ pre로 설정하면 HTML 문서의 연속된 공백들을 그대로 유지한다
 
 keep-all은 CJK 텍스트를 위한 속성인데 지금 볼 필요는 없을 듯 하다.
 
-# 3. 
+# 3. 목록 스타일링
+
+`<ul>`과 `<ol>`태그는 각각 순서 없는 목록, 순서 있는 목록을 만드는 태그인데 페이지를 만들다 보면 매우 자주 사용하게 된다. 이에 연관된 CSS 속성들을 간단히 정리한다.
+
+## 3.1. list-style-type
+
+목록에 쓰이는 기호를 설정한다. 예를 들어서 `list-style-type: circle;`와 같이 설정하면 순서 없는 목록에 원형 기호가 쓰이게 된다. 또는 `list-style-type: upper-roman;`과 같이 설정하면 순서 있는 목록의 순서를 나타낼 때 대문자 로마 숫자가 쓰이게 된다.
+
+```css
+ol {
+  list-style-type: upper-roman;
+}
+```
+
+## 3.2. list-style-position
+
+목록은 특별히 설정하지 않으면 각 요소의 시작에 기호가 붙게 된다. 이 기호를 각 목록 요소의 어떤 상대적 위치에 붙일 것인지를 설정한다. 
+
+일반적으로는 outside을 사용하는데 이는 기호가 목록 요소와 상관없는 바깥에 위치하며 목록 요소의 내용과 분리되어 있다는 뜻이다. 이렇게 list-style-position이 outside로 설정된 목록을 만들어 보면, 목록 기호가 목록 박스의 패딩 안에 들어가 있어서 목록과는 실제로 분리되어 있는 것을 볼 수 있다.
+
+inside를 사용하면 기호가 목록 요소의 내부에, 목록 요소 내용의 첫번째 글자로 등장한다는 뜻이다. 즉 목록 기호가 박스의 패딩에 들어가 있었던 outside와 달리 목록 기호가 목록 박스 안에 들어가 있게 된다.
+
+실제로 확인해 보자. 다음과 같이 css를 작성해서 마진과 패딩을 제외한 오로지 내용에만 색을 입혀 보자.
+
+```css
+ol{
+  background-clip: content-box;
+  background-color:#eebefa;
+}
+
+.bullet-outside{
+  list-style-position:outside;
+}
+
+.bullet-inside{
+  list-style-position:inside;
+}
+```
+
+그리고 다음과 같이 HTML을 작성하자.
+
+```html
+<ol class="bullet-outside">
+  <li>첫번째 요소</li>
+  <li>두번째 요소</li>
+  <li>세번째 요소</li>
+  <li>네번째 요소</li>
+</ol>
+
+<ol class="bullet-inside">
+  <li>첫번째 요소</li>
+  <li>두번째 요소</li>
+  <li>세번째 요소</li>
+  <li>네번째 요소</li>
+</ol>
+```
+
+그러면 다음과 같이 outside과 inside의 차이를 확인할 수 있다.
+
+![list-position-ex](./list-position-ex.png)
+
+## 3.3. list-style-image
+
+목록 기호를 이미지로 직접 설정할 수 있다.
+
+```css
+ol{
+  list-style-image: url(bullet.svg);
+}
+```
+
+그러나 이렇게 하면 기호의 크기 조절 등 제한되는 부분들이 있다. 따라서 기호를 이미지로 사용하고 싶다면 background 속성을 이용하는 것이 낫다. 과정은 다음과 같다.
+
+1. list-style-type을 none으로 설정하여 기호를 없앤다.
+2. li 태그에 padding을 삽입하여 기호가 들어갈 공간을 만든다.
+3. background-image로 기호 이미지를 삽입한다.
+4. background-position으로 기호 이미지의 위치를 조정한다. 보통 요소의 시작에 위치하므로 0 0 이 좋다.
+5. background-repeat:no-repeat로 기호 이미지가 한번만 나타나도록 한다.
+6. background-size로 기호 이미지 크기를 적절히 조정한다.
+
+## 3.4. shorthand
+
+list-style 키워드로 위 3가지를 모두 지정할 수도 있다.
+
+```css
+ol{
+  list-style: outside circle url(bullet.svg);
+}
+```
+
+## 3.5. 목록 요소 속성
+
+목록 요소에는 몇 가지 속성이 있다. 순서가 있는 목록에서 목록의 시작을 1 말고 다른 숫자로 하고 싶다든지 할 때 사용할 수 있다.
+
+start 속성은 목록을 셀 때 시작하는 숫자를 달리한다. 
+
+```html
+<ol start="3">
+  <li>첫번째 요소</li>
+  <li>두번째 요소</li>
+  <li>세번째 요소</li>
+  <li>네번째 요소</li>
+</ol>
+```
+
+reversed 속성을 지정하면 목록이 거꾸로 세어진다.
+
+li 태그에 value 속성을 지정하여 특정 순서를 갖도록 강제할 수도 있다. 그러면 그 다음 순서도 자동으로 증가한다. 다음과 같이 작성하면 순서가 `1,2,7,8`로 표시된다.
+
+```html
+<ol>
+  <li>첫번째 요소</li>
+  <li>두번째 요소</li>
+  <li value="7">세번째 요소</li>
+  <li>네번째 요소</li>
+</ol>
+```
 
 # 참고
 
