@@ -53,3 +53,158 @@ position 속성을 사용하면 요소를 기존의 배치 위치에서 벗어�
 ## 1.5. 다단 레이아웃
 
 다단 레이아웃은 신문 기사처럼, 여러 개의 컬럼으로 페이지를 구성하는 것이다. 한 블록을 다단 컨테이너로 만들려면 `column-count`로 몇 단으로 나눌지 지정하거나 `column-width`로 단의 너비를 지정하면 된다.
+
+# 2. normal flow
+
+normal flow는 요소의 레이아웃을 전혀 건드리지 않았을 때 요소의 배치 방식이다. 이때의 배치 방식은 부모 요소의 쓰기 모드(`writing-mode` 속성)에 따라 달라지지만 일단은 수평 배치라고 생각하자.
+
+블록 요소는 수직 방향으로 쌓이며 줄바꿈을 해서 나타난다. 그리고 각 요소의 margin에 의해 구분된다. 이때 인접한 요소 둘 다 margin이 있다면 둘 중 더 큰 값만 남는다.
+
+인라인 요소는 수평 방향으로 쌓이며 줄바꿈을 하지 않고 나타난다. 단 충분한 공간이 없을 경우 넘치는 텍스트나 요소는 새로운 줄에 나타난다. `span`요소의 배치를 생각해 보면 된다.
+
+# 3. flexbox
+
+flexbox는 1차원으로 요소들을 배치하는 방법이다. 이 이전에는 floats나 position 속성을 이용해서 페이지 레이아웃을 배치하였다.
+
+## 3.1. flexbox 구성
+
+![structure](./flex-structure.png)
+
+플렉스 모델은 위와 같은 구조를 하고 있다. 
+
+`display:flex`가 설정된 부모 요소가 flex container이고 그 내부의 자식 요소로 레이아웃되는 항목들을 flex item이라 한다.
+
+main axis는 컨테이너에서 main start에서 시작해서 main end 방향으로 진행하는 축이다. 이 축을 따라서 컨테이너 내부에 flex item들이 배치된다. cross axis는 main axis와 수직인 축이다.
+
+## 3.2. flexbox 속성
+
+`flex-direction`은 row, column, row-reverse, column-reverse 중 하나를 지정할 수 있다. 이 속성을 통해 main axis의 방향을 결정할 수 있다. reverse는 당연히 메인 축을 반대 방향으로 한다.
+
+`flex-wrap`은 nowrap, wrap, wrap-reverse 중 하나를 지정할 수 있다. nowrap은 기본값으로 한 줄에 모든 flex item을 배치한다. 공간이 부족하면 넘어간다. wrap은 한 줄에 모든 flex item을 배치할 수 없을 때 다음 줄로 넘어간다. wrap-reverse는 wrap과 비슷하지만 반대 방향으로 배치한다.
+
+`flex-flow`를 지정하면 flex-direction과 flex-wrap을 한 번에 지정할 수 있다. `flex-flow:row wrap;`와 같이 사용한다.
+
+## 3.3. flex 속성 탐구
+
+flex는 `flex-grow`, `flex-shrink`, `flex-basis`의 shorthand이다. 이 속성은 각 아이템에 지정되어서 해당 아이템이 컨테이너 공간에 맞추기 위해 어떻게 크기를 조절할지를 설정한다. 이 각각의 속성은 다음과 같은 것을 지정한다.
+
+### 3.3.1. flex-grow
+
+flex-grow는 아이템의 너비 합이 컨테이너 너비보다 작을 때 컨테이너 내부에서 남게 되는 여유 공간을 분배하는 방법을 설정한다.
+
+영역을 채우는 방식은 다음과 같다. 이후에 다룰 flex-basis에서 지정한 기본 너비를 모든 아이템에 배정한다. 그리고 여유 공간이 남을 경우 flex-grow 값에 따라서 남은 여유 공간을 분배한다.
+
+예를 들어서 HTML이 다음과 같이 작성되어 있다.
+
+```html
+<div class="container">
+  <div class="item">1번</div>
+  <div class="item">2번</div>
+  <div class="item">3번</div>
+  <div class="item">4번</div>
+</div>
+```
+
+그리고 CSS를 다음처럼 작성한다.
+
+```css
+.container{
+  display:flex;
+  flex-wrap:nowrap;
+  gap:0;
+  padding:10px;
+  background:aqua;
+  width:600px;
+}
+
+.item{
+  flex-basis:100px;
+}
+
+.item:nth-child(1){
+  flex-grow:1;
+}
+.item:nth-child(2){
+  flex-grow:2;
+}
+.item:nth-child(3){
+  flex-grow:3;
+}
+.item:nth-child(4){
+  flex-grow:4;
+}
+```
+
+그러면 컨테이너에서 내용에 할애되는 너비는 600px이다. 그리고 각 아이템에는 flex-basis에 따라 100px씩 할당된다. 그리고 남은 여유 공간은 200px이다. 
+
+이 200px의 여유 공간이 flex-grow의 비율에 따라 분배된다. 즉 1번 아이템은 1/10, 2번 아이템은 2/10, 3번 아이템은 3/10, 4번 아이템은 4/10의 여유 공간을 할당받아 각각 120px, 140px, 160px, 180px의 너비를 가진다.
+
+### 3.3.2. flex-shrink
+
+flex-shrink는 컨테이너에 `flex-wrap:wrap`이 지정되어 있을 경우 적용되지 않는다. 컨테이너보다 아이템의 너비가 더 클 때 축소시키는 방법을 지정하는 속성인데, wrap일 경우 아이템 너비가 더 크면 새 줄로 넘어가기 때문이다.
+
+아무튼 flex-shrink에 설정된 값에 따라서 초과된 요소들이 축소된다. 만약 flex-shrink가 0이면 전혀 축소되지 않는다. 반면 flex-shrink가 형제 요소들에서 모두 같으면 모두 같은 비율로 축소되어 형제 요소들의 크기가 다 같아진다.
+
+그럼 각 아이템의 flex-shrink 값을 다르게 지정하면 어떻게 되는가? grow에서와 같다. 컨테이너를 넘어간 아이템들의 너비의 합을 flex-shrink 값의 합으로 나눈 비율에 따라서 각 아이템의 너비가 축소된다.
+
+예를 들어 200px가 초과되었고 각 아이템이 1,2,3,4의 flex-shrink 값을 가지고 있다면 1번 아이템은 20px, 2번 아이템은 40px, 3번 아이템은 60px, 4번 아이템은 80px의 너비를 감소시킨다.
+
+### 3.3.3. flex-basis
+
+flex-basis는 flex-grow와 flex-shrink가 적용되기 전에 아이템의 기본 크기를 지정한다. 이 크기는 메인 축의 방향에 따라 다른데 메인 축이 row 방향이면 너비, column 방향이면 높이가 된다.
+
+만약 flex-basis가 auto이면 아이템에 지정된 width나 height에 따라 크기가 결정된다(내용에도 영향을 받는다). content이면 내용에 따라 크기가 결정된다. 단 content는 오래된 브라우저에서 지원되지 않을 수 있다.
+
+flex-basis가 0이면 아이템의 기본 크기가 0이 된다. 이 경우 flex-grow와 flex-shrink 값에 따라서 아이템 너비를 배분하게 된다. 컨테이너의 모든 부분이 여백으로 간주되기 때문이다.
+
+따라서 아이템의 내용에 상관없이 모든 아이템의 너비를 동일하게 하고 싶다면 flex-basis를 0으로 지정하고 flex-grow를 1로 지정하면 된다.
+
+### 3.3.4. flex
+
+그럼 shorthand인 flex는 어떨까? flex는 1~3개의 값을 사용해 지정 가능하다.
+
+- 값이 1개일 때
+숫자를 지정하면 `flex-grow`이다. 길이(100px등)나 비율을 지정하면 `flex-basis`이다.
+
+- 값이 2개일 때
+첫째 값은 숫자여야 하며 `flex-grow`가 된다. 두번째 값의 경우 숫자라면 `flex-shrink`가 되고, 길이나 비율이라면 `flex-basis`가 된다.
+
+- 값이 3개일 때
+첫째 값은 `flex-grow`가 된다. 두번째 값은 `flex-shrink`가 된다. 세번째 값은 `flex-basis`가 된다. 당연히 첫번째, 두번째 값은 숫자여야 하고 세번째 값은 길이나 비율이어야 한다.
+
+- 특수한 키워드
+initial은 아이템 크기가 컨테이너 크기를 넘을 경우 컨테이너 크기에 맞춰 줄어들지만 기본적으로는 각각의 width, height를 따른다. `flex:0 1 auto`와 같다. 이게 flex의 초기값이다.
+
+auto는 아이템의 기본 크기는 자동으로 정하고 컨테이너 크기에 맞춰 늘어나거나 줄어들도록 한다. `flex:1 1 auto`와 같다.
+
+none은 아이템의 크기를 자동으로 지정하고 고정시킨다. `flex:0 0 auto`와 같다.
+
+## 3.4. 아이템 배치
+
+`justify-content`는 아이템을 메인 축 방향으로 어떻게 배치할지 지정한다. `align-items`는 아이템을 교차 축 방향으로 어떻게 배치할지 지정한다.
+
+만약 `flex-direction`이 row라면 `justify-content`는 아이템들이 행의 어느 부분에 배치되는지를 지정한다. 그리고 `align-items`는 아이템들이 세로로 어느 부분에 놓이는지를 지정한다.
+
+`align-self`로 개별 아이템의 cross axis상의 배치를 지정할 수도 있다.
+
+### 3.4.1. justify-content 속성
+
+다른 건 일반적으로 생각할 수 있는 속성들이다. `space-around`는 모든 항목을 기본 축을 따라 고르게 분배한다. 또한 양쪽에 약간의 공간을 남긴다.
+
+반면 `space-between`은 양쪽에 공간을 남기지 않고 모든 항목을 기본 축을 따라 고르게 분배한다.
+
+## 3.5. order
+
+각 flex item에 order를 지정할 수 있다. 순위값이 낮은 항목들이 먼저 배치되며 기본값은 0이다. 즉 만약 어떤 아이템의 order를 1로 설정하면 뒤쪽에 배치될 것이다.
+
+음수 order를 지정하여 기본 order를 가진 아이템보다 앞쪽에 배치되게 할 수도 있다.
+
+
+
+# 참고
+
+flex 속성 https://developer.mozilla.org/ko/docs/Web/CSS/flex
+
+flex 2 https://blogpack.tistory.com/863
+
+https://velog.io/@garcon/Flexbox-flex-basis-auto%EC%99%80-0%EC%9D%98-%EC%B0%A8%EC%9D%B4%EC%A0%90
