@@ -293,3 +293,5 @@ flex 2 https://blogpack.tistory.com/863
 https://velog.io/@garcon/Flexbox-flex-basis-auto%EC%99%80-0%EC%9D%98-%EC%B0%A8%EC%9D%B4%EC%A0%90
 
 auto-fill과 auto-fit https://velog.io/@iandr0805/CSS-Grid-auto-fit%EA%B3%BC-auto-fill%EC%9D%98-%EC%B0%A8%EC%9D%B4%EC%A0%90
+
+grid의 좋은 정리자료 https://studiomeal.com/archives/533
