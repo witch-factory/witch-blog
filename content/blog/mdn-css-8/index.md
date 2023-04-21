@@ -199,7 +199,90 @@ none은 아이템의 크기를 자동으로 지정하고 고정시킨다. `flex:
 
 음수 order를 지정하여 기본 order를 가진 아이템보다 앞쪽에 배치되게 할 수도 있다.
 
+# 4. grid
 
+그리드 레이아웃은 페이지의 요소들을 2차원으로 배치할 수 있도록 한다. 페이지를 행과 열로 나눈 후 몇 행 몇 열에 어떤 요소를 배치할지를 지정하는 것이다. 다음과 같이 그리드 디스플레이 모드를 지정한다.
+
+```css
+display: grid;
+```
+
+## 4.1. 그리드 만들기 기본
+
+`grid-template-columns`와 `grid-template-rows`를 사용해 행과 열을 만들 수 있다. `fr`단위를 사용하면 그리드 컨테이너 내부의 사용 가능한 공간을 분할하여 각 행과 열의 크기를 지정할 수 있다.
+
+```css
+// 사용 가능한 너비를 1:2:1로 분할하여 열 3개 생성
+grid-template-columns: 1fr 2fr 1fr;
+// 사용 가능한 높이를 1:1:2로 분할하여 행 3개 생성
+grid-template-rows: 1fr 1fr 2fr;
+```
+
+행/열 사이 간격은 `grid-column-gap`과 `grid-row-gap`을 사용해 지정한다. `grid-gap`을 사용하면 한 번에 지정할 수도 있다.(row-gap, column-gap의 단축 속성) `grid-`접두사 없이도 갭을 지정 가능하다.
+
+`repeat()`함수를 사용하면 반복되는 행/열을 간단하게 지정할 수 있다. `repeat(5, 1fr)`을 지정하면 5개의 1fr 크기의 행 혹은 열을 생성한다. `minmax()`도 있는데, 이는 각 행 혹은 열의 최소 크기와 최대 크기를 지정할 수 있다.
+
+```css
+grid-template-columns: repeat(5, minmax(50px, auto));
+```
+
+## 4.2. 행과 열을 자동으로 설정
+
+지금까지 `grid-template-rows`를 쓸 땐 행의 수를 직접 지정해 주어야 했다. 그런데 설정된 크기가 허용하는 한 최대한 많이 행을 만들고 싶을 수 있다. 이럴 땐 auto-fill이나 auto-fit을 사용한다.
+
+```css
+.container{
+  // 100px 크기의 행을 최대한 많이 생성
+  // 만약 높이에서 나머지가 남으면 그냥 다음 줄로 넘어간다
+  grid-template-rows: repeat(auto-fill, 100px);
+}
+```
+
+이를 auto-fit으로 바꾸면, 컨테이너에 남은 공간이 있을 시 그 공간을 채우기 위해 존재하는 행의 크기를 늘리게 된다.
+
+`grid-auto-rows`, `grid-auto-columns`를 사용하면 `grid-template-`으로 통제되고 있는 행/열 외에 있는 행/열의 크기를 지정한다. 만약 `grid-template-`속성 없이 이 속성만 지정할 경우 모든 행/열을 이 속성이 지정한 크기로 만든다.
+
+```css
+// 100px 크기의 행과 열을 자동 생성
+grid-auto-rows: 100px;
+grid-auto-columns: 100px;
+```
+
+## 4.3. 그리드 아이템 배치
+
+grid-row와 grid-column 속성으로 각 그리드 아이템이 몇 행 몇 열에 배치될지 지정할 수 있다. `1/3`과 같이 시작 라인과 끝 라인을 지정할 수도 있다.
+
+혹은 grid-row-start, grid-row-end, grid-column-start, grid-column-end 속성을 사용해서 각각 아이템의 시작 라인과 끝 라인을 지정할 수도 있다.
+
+## 4.4. grid-template-areas
+
+처음 안 사실인데, `grid-template-areas`속성을 이용하면 각 그리드 요소에 이름을 지정하고 그 이름을 통해 아이템을 배치할 수 있다.
+
+```css
+.container{
+  display:grid;
+  grid-template-areas:
+    "header header header"
+    "main main aside"
+    "footer footer footer";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+}
+
+// header 태그는 header라고 이름붙은 그리드 area들을 차지한다
+header{
+  grid-area: header;
+}
+
+main{
+  grid-area: main;
+}
+...
+```
+
+위와 같이 나눠진 그리드에 각각 이름을 붙여서 아이템을 배치하는 데 활용할 수 있다. 이때 area에 지정하는 이름들은 그리드의 모든 셀을 채우도록 해야 한다. 만약 셀을 비우려면 `.`을 넣어야 한다.
+
+또한 이름을 통해 지정한 영역은 행/열 번호를 통해 지정한 것과 마찬가지로 반드시 직사각형이어야 하며 영역은 유일해야 한다.
 
 # 참고
 
@@ -208,3 +291,5 @@ flex 속성 https://developer.mozilla.org/ko/docs/Web/CSS/flex
 flex 2 https://blogpack.tistory.com/863
 
 https://velog.io/@garcon/Flexbox-flex-basis-auto%EC%99%80-0%EC%9D%98-%EC%B0%A8%EC%9D%B4%EC%A0%90
+
+auto-fill과 auto-fit https://velog.io/@iandr0805/CSS-Grid-auto-fit%EA%B3%BC-auto-fill%EC%9D%98-%EC%B0%A8%EC%9D%B4%EC%A0%90
