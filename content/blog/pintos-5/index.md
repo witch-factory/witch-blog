@@ -103,7 +103,46 @@ apt-get install libc6-dev g++ gcc
 
 이틀의 삽질을 했다. 그리고 그냥 우분투 pc를 준비하는 게 낫겠다는 결론을 내렸다. cspro가 그립다2.
 
-예전에 쓰던, 우분투 18.04가 깔린 노트북을 다시 꺼냈다. 여기에 ssh로 원격 작업 환경을 만들자.
+예전에 쓰던, 우분투 18.04가 깔린 노트북을 다시 꺼냈다. 여기서 한번 카이스트 핀토스를 돌려 봤더니 잘 돌아간다. 고로 여기에 ssh로 원격 작업 환경을 만들자.
+
+# 2. 원격 작업 환경 만들기
+
+일단 우분투 노트북에 ssh 서버를 설치하고 실행하자. [여기](https://wooono.tistory.com/312)를 참고하였다.
+
+```
+# 우분투 노트북에서
+sudo apt-get install openssh-server
+sudo systemctl enable ssh
+sudo systemctl start ssh
+sudo systemctl status ssh
+```
+
+그리고 sshd_config를 수정하자. 
+
+```bash
+sudo vim /etc/ssh/sshd_config
+```
+
+그리고 `#Port 22`의 주석을 제거한 뒤 접속할 포트번호로 바꾼다. `Port 2222`와 같이 말이다. 또한 `#PermitRootLogin prohibit-password`부분을 yes로 바꾼다. `PermitRootLogin yes`가 되는 것이다.
+
+ssh 재시작
+
+```bash
+sudo systemctl restart ssh
+```
+
+그리고 나는 원래 쓰던 노트북에서 ssh로 접속하고 싶기 때문에, 노트북의 ip를 알아야 한다. `ifconfig`를 입력하면 나오는 inet 주소가 그것이다. 이 주소는 ssh 원격 접속을 할 때 쓰인다.
+
+```bash
+ssh -p 포트번호 사용자명@ip주소
+ssh -p 2222 witch@142.168.192.44
+```
+
+위의 포트번호와 IP는 예시를 위해 아무거나 입력한 것이다. 이제 위처럼 원격으로 우분투에 접속이 잘 된다.
+
+노트북을 닫으면 서버가 닫히는 문제가 발생하였는데 이는 [여기](https://iamzombie.tistory.com/41)를 참고하여 노트북이 닫혀도 시스템이 종료되지 않도록 변경하였다.
+
+
 
 # 1. priority-donation
 
