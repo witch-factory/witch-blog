@@ -192,3 +192,10 @@ grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 
 또한 다단 레이아웃의 `column-width`등도 뷰포트 너비에 맞게 단을 생성하도록 하여 반응형 디자인에 쓸 수 있다.
 
+# 5. 브라우저 지원
+
+흔히 레이아웃을 위해 flex나 grid를 사용한다. 그러나 예전 브라우저의 경우 이러한 현대적인 레이아웃 메서드를 지원하지 않을 수 있다. [caniuse](https://caniuse.com/)에서 각 기능의 브라우저 지원을 확인할 수 있다.
+
+또한 [대체 메서드](https://developer.mozilla.org/ko/docs/Learn/CSS/CSS_layout/Supporting_Older_Browsers#%EB%8C%80%EC%B2%B4_%EB%A9%94%EC%84%9C%EB%93%9C)를 사용하여 지원되지 않는 레이아웃 메서드를 대체할 수 있다. 예를 들어 grid 레이아웃 대신 float나 `display:table`, 혹은 다단 레이아웃을 사용할 수 있다.
+
+또한 `@supports`로 사용하는 피쳐 쿼리를 사용해서 특정 기능을 지원하는 브라우저에 대해 다른 CSS를 적용하도록 할 수도 있다. 그러나 이 피쳐 쿼리도 꽤 최신 기능이기 때문에 grid를 적용할 수 없는 브라우저에서는 피쳐 쿼리도 사용할 수 없는 문제가 있다.
