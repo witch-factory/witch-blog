@@ -75,7 +75,7 @@ vercel로 배포된 블로그에도 원래 `witch.work` 도메인이 연결되�
 
 ![setup-custom-domain](./setup-custom-domain.png)
 
-내가 가진 도메인을 입력하라고 해서 witch.work를 입력하고 다음으로 넘어간다. 그러면 알아서 DNS 레코드 설정을 바꾸어 준다.
+내가 가진 도메인을 입력하라고 해서 `witch.work`를 입력하고 다음으로 넘어간다. 그러면 알아서 DNS 레코드 설정을 바꾸어 준다.
 
 ![dns-record-setup](./dns-record-setup.png)
 
@@ -93,7 +93,7 @@ cloudflare에서 내 사이트의 DNS 레코드를 관리할 수 있도록 하�
 
 도메인 네임서버 업데이트 전에 다음과 같은 준비가 필요하다.
 
-도메인을 보유하고 있어야 한다. 나는 witch.work를 godaddy에서 구입해서 가지고 있다.
+도메인을 보유하고 있어야 한다. 나는 `witch.work`를 godaddy에서 구입해서 가지고 있다.
 
 Cloudflare 계정이 필요한데 당연히 있다.
 
@@ -115,9 +115,9 @@ cloudflare 네임서버를 사용하기 시작하면 cloudflare가 내 사이트
 
 이전에 cloudflare에 내 사이트를 추가할 때 cloudflare가 자동으로 DNS 레코드를 추가해줬다. 그게 잘 되었는지 확인해 보자.
 
-cloudflare dashboard에서 내 사이트(witch.work)를 선택하고 좌측 메뉴에서 DNS 선택 -> DNS Records 선택
+cloudflare dashboard에서 내 사이트(`witch.work`)를 선택하고 좌측 메뉴에서 DNS 선택 -> DNS Records 선택
 
-나는 이전에 cloudflare를 처음 사용할 때 확인하긴 했기 때문에, 여전히 잘 추가되어 있었다. witch.work가 witch-work.pages.dev로 연결되는 것도 잘 확인할 수 있었다.
+나는 이전에 cloudflare를 처음 사용할 때 확인하긴 했기 때문에, 여전히 잘 추가되어 있었다. `witch.work`가 `witch-work.pages.dev`로 연결되는 것도 잘 확인할 수 있었다.
 
 그리고 원래는 apex domain에 CNAME 레코드는 쓸 수 없는데 cloudflare에서는 [CNAME flattening](https://developers.cloudflare.com/dns/cname-flattening/)을 사용하기 때문에 CNAME 레코드를 추가해도 잘 동작한다. 
 
@@ -125,9 +125,9 @@ DNS 쿼리가 도착하면 cloudflare에서 CNAME 레코드를 주는 대신 해
 
 # 4. www 서브도메인 추가
 
-www.witch.work로도 내 블로그에 접속할 수 있도록 해보자. vercel에서는 가능했는데 여기서는 아직 안된다.
+www.witch.work 로도 내 블로그에 접속할 수 있도록 해보자. vercel에서는 가능했는데 여기서는 아직 안된다.
 
-CNAME 레코드를 하나 더 추가하면 된다. Name은 내가 원하는 서브도메인으로, 그리고 Content는 cloudflare에서 배포한 내 페이지 주소, 즉 witch-work.pages.dev로 설정하면 된다.
+CNAME 레코드를 하나 더 추가하면 된다. Name은 내가 원하는 서브도메인으로, 그리고 Content는 cloudflare에서 배포한 내 페이지 주소, 즉 `witch-work.pages.dev`로 설정하면 된다.
 
 ![dns-manage](./dns-manage.png)
 
@@ -135,7 +135,7 @@ Name이 그냥 www로 표시되는 것을 볼 수 있는데 이는 내 사이트
 
 ## 4.1. 522 error 해결
 
-이렇게 하고 나니 www.witch.work로 접속하면 522 error가 뜬다. 참고로 이렇게 서브도메인을 추가해 주기 전에는 www.witch.work 접속시 404 error가 떴다. 
+이렇게 하고 나니 www.witch.work 로 접속하면 522 error가 뜬다. 참고로 이렇게 서브도메인을 추가해 주기 전에는 www.witch.work 접속시 404 error가 떴다. 
 
 ![522-error](./522-error.png)
 
@@ -154,6 +154,10 @@ To ensure a custom domain is added successfully, you must go through the Add a c
 ![added-subdomain](./added-subdomain.png)
 
 둘 다 Active가 되고 난 후 www.witch.work에 접속하면 정상적으로 내 블로그로 접속된다.
+
+# 5. 끝
+
+이제 vercel에서 기존 도메인을 삭제하면 된다.
 
 # 참고
 
