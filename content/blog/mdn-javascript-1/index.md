@@ -74,6 +74,6 @@ script에 `async`속성을 지정할 수도 있다. 이 경우 스크립트가 �
 
 <figure>
   <img src="./async-defer.jpg" alt="async-defer" width="100%" />
-  <figcaption>async와 defer의 차이. 출처 MDN 문서</figcaption>
+  <figcaption>async와 defer의 차이. 출처 [MDN 문서](https://developer.mozilla.org/ko/docs/Learn/JavaScript/First_steps/What_is_JavaScript#%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8_%EB%A1%9C%EB%94%A9_%EC%A0%84%EB%9E%B5)</figcaption>
 </figure>
 
