@@ -221,13 +221,101 @@ person의 프로토타입 객체는 Person 생성자 함수이다. 그것의 프
 
 프로토타입 객체는 내부 속성으로 정의되어 있지만 대부분 브라우저에서 `__proto__`를 통해 접근할 수 있게 되어 있다. 하지만 권장되는 방식은 아니고 지금은 `Object.getPrototypeOf(obj)`를 쓰는 게 좋다.
 
-
-
 ## 3.2. prototype 속성
 
-어떤 객체를 상속했을 때 상속받게 되는 멤버들은 prototype 속성에 정의되어 있다.
+어떤 객체를 상속했을 때 상속받게 되는 멤버들은 prototype 속성에 정의되어 있다. 예를 들어서 JS의 모든 객체는 Object를 상속받지만 그 모든 메서드를 가지고 있는 건 아니다. Object의 prototype에 정의된 메서드들만 상속받는다.
 
+prototype 속성도 하나의 객체이며, 프로토타입 체인으로 상속하려는 속성들을 담는 버킷으로 주로 사용한다. `Object.keys()`와 같이 prototype에 정의되지 않은 속성들은 상속되지 않고 Object 생성자에서만 사용 가능하다.
 
+모든 생성자 함수는 constructor 속성을 지닌 객체를 프로토타입으로 가진다. 그리고 그 constructor 속성은 생성자 함수 자신을 가리킨다. 따라서 `객체인스턴스.constructor()`와 같은 방식으로 생성자 함수를 호출하여 새 객체를 만들 수 있다.
+
+따라서 Person.prototype 속성에 정의된 속성들은 Person 생성자 함수의 모든 인스턴스에서 사용 가능하다. 또한 Person.prototype에 새로운 속성이나 메서드를 추가하면 프로토타입 체인을 통해, Person 생성자 함수로 만든 모든 인스턴스에서 즉시 사용 가능해진다. 
+
+물론 메서드가 아닌 속성을 굳이 프로토타입에 새로 정의하지는 일은 잘 없다. 프로토타입에 정의한 속성은 모든 인스턴스에서 공유되기 때문에 속성은 보통 생성자에서 정의한다.
+
+## 3.3. Object.create과 상속
+
+`Object.create`는 객체를 생성하는 메서드다. 이 메서드는 인자로 프로토타입이 될 객체를 받는다. 그리고 그 객체를 프로토타입으로 하는 새로운 객체를 반환한다.
+
+```js
+// parent를 프로토타입으로 하는 child 객체를 생성
+let child=Object.create(parent);
+```
+
+또한 두번째 인자로는 새로 생성해서 리턴할 객체에 추가할 프로퍼티를 객체 타입으로 받는다. 이때 `Object.defineProperties`를 쓸 때처럼 서술자를 지정해 줘야 한다.
+  
+```js
+let child=Object.create(parent, {
+  age: {value: 2, writable: true},
+  name: {value: 'John'}
+});
+```
+
+이를 이용하면 객체의 프로토타입 객체를 지정할 수 있다. 상속을 한번 구현해보자.
+
+```js
+function Parent(name){
+  this.name = name;
+}
+
+// parent를 상속받는다
+function Child(name){
+  // Child를 this로 해서 Parent 생성자를 호출
+  Parent.call(this, name);
+  // 만약 Child에서 새로 정의할 속성이 있다면 이 밑에서 정의
+}
+
+// Parent.prototype을 프로토타입으로 갖는 객체를 만들어서 Child의 prototype으로 한다. 이렇게 해야 Child 인스턴스가 Parent의 메서드를 상속 가능하다.
+Child.prototype = Object.create(Parent.prototype);
+// Child.prototype이 Parent.prototype을 그대로 참조하기 때문에 constructor는 Parent를 가리키게 된다. 이를 바로 잡아준다.
+Child.prototype.constructor = Child;
+// Child.prototype에 sayHello 메서드를 추가한다.
+Child.prototype.sayHello = function(){
+  console.log("Hello, I'm "+this.name);
+}
+
+let child=new Child('child');
+child.sayHello();
+```
+
+## 3.4. 프로토타입 관련 추가
+
+생성자 호출을 통해 생성된 객체는 생성자의 prototype 속성을 프로토타입으로 참조한다.
+
+![prototype_map](./prototype.png)
+
+이런 식이기 때문에 Person 생성자 함수를 통해 만들어진 객체들은 프로토타입 체인을 통해 생성자 함수에 정의된 메서드들을 그대로 사용할 수 있다. 이런 체인은 모든 객체의 조상인 `Object.prototype`까지 이어진다.
+
+# 4. 클래스 문법
+
+ECMA 2015에선 클래스 문법이 추가되었다. constructor 메서드를 통해 클래스 생성자를 정의하고 내부에 메서드나 속성을 정의 가능하다.
+
+```js
+class Person{
+  constructor(name, age){
+    this.name=name;
+    this.age=age;
+  }
+  sayHello(){
+    console.log("Hello, I'm "+this.name);
+  }
+}
+
+let person=new Person('John', 25);
+```
+
+extends 키워드로 상속할 수 있다.
+
+```js
+class Child extends Person{
+  constructor(name, age){
+    //super는 상위 클래스 생성자 호출
+    super(name, age);
+  }
+}
+```
+
+...프로토타입 상속 관해서는 더 글을 써야 함
 
 
 
@@ -236,3 +324,5 @@ person의 프로토타입 객체는 Person 생성자 함수이다. 그것의 프
 # 참고
 
 https://ko.javascript.info/bubbling-and-capturing
+
+https://evan-moon.github.io/2019/10/27/inheritance-with-prototype/
