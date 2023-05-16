@@ -22,3 +22,27 @@ tags: ["study"]
 # JS의 워커에 관하여
 
 # CSS 애니메이션
+
+# window, navigator 등 몇몇 전역 객체에 대해
+
+https://developer.mozilla.org/en-US/docs/Web/API/Window
+
+https://developer.mozilla.org/en-US/docs/Web/API/Navigator
+
+# fetch API에 쓰이는 Request, Response 객체
+
+# Promise를 받을 때 등에 쓰이는 blob이란 무엇인가?
+
+https://developer.mozilla.org/en-US/docs/Web/API/Response/blob
+
+# AJAX 에 대해 
+
+https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX/Getting_Started
+
+# WebGL
+
+https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL
+
+# HTTP
+
+https://developer.mozilla.org/ko/docs/Web/HTTP
