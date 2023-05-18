@@ -127,7 +127,7 @@ DNS조회가 한 번 더 이루어지므로 비효율적이기는 하겠지만.(
 
 ![create-redirect-rule](./create-redirect-rule.png)
 
-이를 저장하면 끝이다. 이렇게 하면 www.witch.work로 접속할 시 이는 A 레코드에 의해 cloudflare 서버에 연결되고, cloudflare 서버에서는 내가 설정한 리디렉션 규칙에 따라 witch.work로 리디렉션하라는 응답(코드 301)을 보내게 된다. 아예 다른 도메인으로 가는 것이다.
+이를 저장하면 끝이다. 이렇게 하면 www.witch.work 로 접속할 시 이는 A 레코드에 의해 cloudflare 서버에 연결되고, cloudflare 서버에서는 내가 설정한 리디렉션 규칙에 따라 witch.work로 리디렉션하라는 응답(코드 301)을 보내게 된다. 아예 다른 도메인으로 가는 것이다.
 
 ## 5.2. page rules
 
@@ -139,7 +139,7 @@ cloudflare dashboard에서 내 도메인 `witch.work`관련 페이지에 들어�
 
 ![create-page-rule](./create-page-rule.png)
 
-그리고 똑같은 일을 하면 된다. URL은 내가 접속했을 시 다른 곳으로 리디렉션시키고 싶은 URL을 입력하면 된다. 나는 `www.witch.work`를 apex 도메인으로 리디렉션시키고 싶었으므로 www.witch.work를 입력했다.
+그리고 똑같은 일을 하면 된다. URL은 내가 접속했을 시 다른 곳으로 리디렉션시키고 싶은 URL을 입력하면 된다. 나는 `www.witch.work`를 apex 도메인으로 리디렉션시키고 싶었으므로 www.witch.work 를 입력했다.
 
 이때 URL 전체 중 해당 도메인이 포함되어 있을 경우 모두 리디렉션시키고 싶었기 때문에 `*`을 사용했다. 또한 그때의 동작은 URL을 이동하고 싶은 것이므로 '전달 URL'을 선택하고 `https://witch.work/`을 설정했다.
 
@@ -161,7 +161,7 @@ cloudflare dashboard에서 내 도메인 `witch.work`관련 페이지에 들어�
 
 ![bulk-redirect-create](./www-to-apex-name.png)
 
-다음 화면에서 URL 리디렉션 수동 추가를 택한 후 원본 URL(나같은 경우 www.witch.work)과 대상 URL(나같은 경우 witch.work)를 입력한다. 대상 URL로 영구 리디렉션을 시킬 것이므로 상태는 301을 선택한다.
+다음 화면에서 URL 리디렉션 수동 추가를 택한 후 원본 URL(나같은 경우 www.witch.work )과 대상 URL(나같은 경우 witch.work)를 입력한다. 대상 URL로 영구 리디렉션을 시킬 것이므로 상태는 301을 선택한다.
 
 매개변수 편집에서는 쿼리 문자열 유지, 하위 경로 일치, 경로 접미사 유지 를 선택한다. 그리고 `리디렉션 추가`를 누른다. 그리고 다음 버튼을 누르다 보면 대량 리디렉션 목록이 생성된다.
 
