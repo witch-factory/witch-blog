@@ -463,6 +463,15 @@ webGL을 그대로 쓰는 건 매우 어렵기 때문에 많은 사람들이 Thr
 
 이는 이후에 [이곳](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Client-side_web_APIs/Drawing_graphics#using_a_library)을 참고해서 해보자.
 
+# 5. 비디오/오디오 API
+
+HTML은 미디어를 임베딩할 수 있는 요소인 `<video>`와 `<audio>`도 제공한다. 또한 이들을 조작할 수 있는 API도 제공한다. 이들은 `HTMLMediaElement`객체에 있으며 `HTMLMediaElement.play()`등의 메서드를 사용할 수 있다.
+
+우리는 이런 API들을 이용해서 비디오나 오디오 플레이어를 만들 수 있다. video 태그에 controls 속성을 주기만 해도 플레이어가 뜨긴 한다. 하지만 그렇게 만들어진 플레이어는 브라우저마다 사양이 다르며 대부분 브라우저에서 키보드를 통한 접근이 불가능하다.
+
+따라서 HTMLMediaElement API를 활용해서 직접 만들 수 있다. 구체적인 과정은 [여기](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Client-side_web_APIs/Video_and_audio_APIs)에서 해볼 수 있다. 혹은 [HTMLMediaElement API](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement)를 이용해서 설계해볼 수도 있겠다.
+
+
 
 # 참고
 
