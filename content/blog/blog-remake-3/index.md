@@ -188,17 +188,65 @@ export const getStaticProps: GetStaticProps= ({params})=>{
 };
 ```
 
-이제 마크다운의 몇 가지 정보들을 가져와서 동적 라우트가 잘 만들어졌는지 보자.
+이제 마크다운의 몇 가지 정보들을 가져와서 동적 라우트가 잘 만들어졌는지 보자. 다음 페이지에서 간단하게 글 상세 페이지를 설계할 것이다.
 
 ## 2.2. 글 상세 페이지 설계
 
-md, mdx를 구분해서 넣어 줘야 한다. 
+md, mdx를 구분해서 넣어 줘야 한다. 이를 무엇으로 구분할 수 있을까? `.contentlayer/generated`의 변환 파일을 보면, `post.body` 객체에 `code` 속성이 있는지로 구분할 수 있다. mdx 파일 변환 결과에는 `post.body.code`속성이 있다.
+
+md 파일의 경우 dangerouslySetInnerHTML을 이용하여 내용을 넣어주고, mdx 파일의 경우 contentlayer에서 제공하는 useMDXComponent를 사용하자.
+
+dangerouslySetInnerHTML은 XSS 공격을 당할 가능성이 있어서 보안 위험이 있지만 여기서 출처가 될 문자열은 내가 올린 마크다운 파일뿐이므로 큰 문제는 없을 것이다.
+
+일단 mdx 파일의 경우 `post.body.code`를 사용해야 하는데 md 파일의 경우 이게 없다. 따라서 이를 그냥 `PostPage` 내에서 사용할 시 undefined의 속성을 읽는다는 에러가 발생한다. 이게 있을 경우만 사용하는 MDXComponent 컴포넌트를 만들어 주자.
+
+```tsx
+import { useMDXComponent } from 'next-contentlayer/hooks';
+
+interface MDXProps{
+  code: string;
+}
+
+function MDXComponent(props: MDXProps) {
+  const MDX = useMDXComponent(props.code);
+  return <MDX />;
+}
+```
+
+그 다음 이를 사용하는 PostPage 컴포넌트를 간단한 HTML 구조만 써서 만들어 주자. 스타일링은 일단 생각하지 말고.
+
+```tsx
+function PostPage({
+  post
+}: InferGetStaticPropsType<typeof getStaticProps>) {
+
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <time>{post.date}</time>
+      <ul>
+        {post.tags.map((tag: string)=><li key={tag}>{tag}</li>)}
+      </ul>
+      {'code' in post.body?
+        <MDXComponent code={post.body.code}/>:
+        <div dangerouslySetInnerHTML={{ __html: post.body.html }} />
+      }
+    </article>
+  );
+}
+```
+
+이렇게 하면 현재 post에 있는 모든 속성을 표시하는 글 상세 페이지가 만들어진다.
 
 ## 2.3. 동적 라우트 개선
 
-현재 생각하기로는 `/posts`폴더의 하위 폴더를 통해서 글들을 분류하고 싶다. 예를 들어서 `/posts` 내에 A,B,C,D..폴더가 있고 각각의 내부에 글들이 있다면 `/posts/A`, `/posts/B`... 이런 동적 라우트가 자동으로 생기고 각 하위 폴더 내부의 글들에 대해서도 `posts/A/Apost1`, `posts/A/Apost2`... 이런 식으로 동적 라우트가 자동으로 생기도록 하고자 한다.
+그런데 현재 생각하기로는 `/posts`폴더의 하위 폴더를 통해서 글들을 분류하고 싶다. 예를 들어서 `/posts` 내에 A,B,C,D..폴더가 있고 각각의 내부에 글들이 있다면 `/posts/A`, `/posts/B`... 이런 동적 라우트가 자동으로 생기고 각 하위 폴더 내부의 글들에 대해서도 `posts/A/Apost1`, `posts/A/Apost2`... 이런 식으로 동적 라우트가 자동으로 생기도록 하고자 한다.
 
-따라서  프로젝트 루트 디렉토리에 `/posts/cs`, `/posts/front`, `/posts/misc` 폴더를 만들었다. 일단 `/posts/cs`에 들어간 글들에 대한 상세 페이지를 제작해 보자. 
+현재 만들고 싶은 글 분류는 cs, 프론트, 그 외 잡스러운 것들이 생각나는데, 그러니까 이런 식으로 분류하고 싶은 것이다.
+
+![post-url](./post-url-structure.png)
+
+먼저 프로젝트 루트 디렉토리에 `/posts/cs`, `/posts/front`, `/posts/misc` 폴더를 만들었다.
 
 
 
