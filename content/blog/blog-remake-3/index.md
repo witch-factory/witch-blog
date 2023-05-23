@@ -355,7 +355,7 @@ export const getStaticPaths: GetStaticPaths=()=>{
 };
 ```
 
-`getStaticProps`에서는 뭘 하면 될까? params를 통해서 category를 받으므로, 이 카테고리에 해당하는 글들을 모조리 가져온 다음 글 목록에 보여줘야 하는 정보만 골라서 페이지 컴포넌트에 props로 넘겨주면 된다.
+`getStaticProps`에서는 뭘 하면 될까? params를 통해서 category를 받으므로, 이 카테고리에 해당하는 글들을 모조리 가져온 다음 글 목록에 보여줘야 하는 정보만 골라서 페이지 컴포넌트에 props로 넘겨주면 된다. 또한 카테고리 제목도 페이지 props로 넘겨주자. 주제별 글 목록에선 당연히 보여줘야 할 테니까.
 
 ```tsx
 export const getStaticProps: GetStaticProps = ({params}) => {
@@ -371,7 +371,8 @@ export const getStaticProps: GetStaticProps = ({params}) => {
     tags: post.tags,
     url: post.url,
   }));
-  return { props: { postList } };
+  // params.category는 카테고리 제목이므로 페이지에서 표시하도록 넘겨주자
+  return { props: { category:params?.category, postList } };
 };
 ```
 
@@ -379,8 +380,91 @@ export const getStaticProps: GetStaticProps = ({params}) => {
 
 # 4. 글 목록 페이지 설계
 
+이제 각 카테고리별로 이 글들을 보여줄 목록 페이지를 간단히 구조만 잡아 보고 다음 글로 넘어가서 슬슬 색 같은 걸 좀 넣고 자잘한 개선들을(혹은 버그 수정) 해보자. 지금은 HTML뿐이기 때문에 블로그 페이지를 보면 눈이 썩을 것 같다. 물론 [motherfucking website](https://motherfuckingwebsite.com/)같은 디자인을 목표로 할 수도 있겠지만, 내 블로그인데 그렇게 하고 싶지는 않다.
 
+## 4.1. Card 컴포넌트 재사용
 
+생각해 보면 글 미리보기도 그냥 Card 컴포넌트를 쓸 수 있다. 제목, 설명, 이미지, 생성일, URL을 이미 Card에서 props로 받고 있으니까. 스타일링의 편의성을 생각하면 다른 컴포넌트를 쓰는 게 나을 수도 있겠지만 나는 의미상 비슷한 컴포넌트를 굳이 분리하고 싶지는 않다. 나중에 스타일링하다가 정 미칠 것 같으면 분리하겠지만 여기서는 재사용을 해보자.
+
+Card 컴포넌트가 태그를 받을 수 있도록 조금만 수정하자.
+
+```tsx
+// src/components/card/index.tsx
+interface Props{
+  title: string;
+  description: string;
+  image?: string;
+  date: string;
+  // 타입에 태그 추가. 일단 선택으로 남겨두었다.
+  tags?: string[];
+  url: string;
+}
+
+function Card(props: Props) {
+  // 여기서 tags도 구조 분해 할당해주는 것을 잊지 말자
+  const { title, description, image, date, tags, url } = props;
+  return (
+    <article>
+      <Link href={url}>
+        {
+          image ? <Image src={image} alt={`${title} 사진`} width={50} height={50} /> : null
+        }
+        <h3>{title}</h3>
+        <p>{description}</p>
+        <time>{date}</time>
+        {
+          // 태그 렌더링 부분이 추가됨
+          tags?<ul>{tags.map((tag: string)=><li key={tag}>{tag}</li>)}</ul>:null
+        }
+      </Link>
+    </article>
+  );
+}
+```
+
+## 4.2. 글 목록 페이지 구조
+
+글 목록 페이지에서는 category, postList를 props로 받는다. category는 h1태그를 통해 제목으로, postList는 ul 컴포넌트 내부에 Card 컴포넌트를 통해 보여주면 된다.
+
+```tsx
+// pages/posts/[category]/index.tsx
+interface PostMetaData{
+  title: string;
+  description: string;
+  date: string;
+  tags: string[];
+  url: string;
+}
+
+function PostListPage({
+  category, postList,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
+  return (
+    <main>
+      <h1>{category}</h1>
+      <ul>
+        {postList.map((post: PostMetaData) => 
+          <li key={post.url}>
+            <Card {...post} />
+          </li>
+        )}
+      </ul>
+    </main>
+  );
+}
+
+export default PostListPage;
+```
+
+이렇게 하고 나면 각 카테고리 페이지에서 글 목록을 보여줄 수 있다. 예를 들어 나는 cs라는 카테고리를 만들었으니 `/posts/cs`로 접속하면 글 목록이 보인다. 몇 개의 예시 글을 넣어 놓은 `/posts/cs` 화면은 다음과 같다.
+
+![category-route](./category-route.png)
+
+디자인은 끔찍하지만 글 목록 페이지에 그럭저럭 있을 건 있다. 카드 컴포넌트 덕분에 링크까지 걸려 있다. 이제 다음 글에서는 색도 입히고 몇몇 버그들도 해결하여 이걸 좀 더 사람이 사는 것 같은 블로그처럼 만들어보도록 하자.
+
+# 5. 이미지 불러오기 수정
+
+하지만 이 상태로 글을 열면 문제가 있다. 이미지를 불러오지 못하는 것이다. NextJS는 빌드타임에 사용할 수 있는 이미지(뿐 아니라 모든 정적 애셋이 다)를 만들기 위해서는 `/public`폴더에 이미지를 넣어 놓아야 한다. 또한 이미지를 불러올 때 `./`경로에서 불러올 수가 없다. 빌드타임에는 그런 거 없기 때문에...이를 열심히 수정해 보자..
 
 
 # 참고
