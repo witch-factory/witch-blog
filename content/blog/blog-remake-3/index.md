@@ -238,15 +238,146 @@ function PostPage({
 
 이렇게 하면 현재 post에 있는 모든 속성을 표시하는 글 상세 페이지가 만들어진다.
 
-## 2.3. 동적 라우트 개선
+# 3. 동적 라우트의 개선
 
-그런데 현재 생각하기로는 `/posts`폴더의 하위 폴더를 통해서 글들을 분류하고 싶다. 예를 들어서 `/posts` 내에 A,B,C,D..폴더가 있고 각각의 내부에 글들이 있다면 `/posts/A`, `/posts/B`... 이런 동적 라우트가 자동으로 생기고 각 하위 폴더 내부의 글들에 대해서도 `posts/A/Apost1`, `posts/A/Apost2`... 이런 식으로 동적 라우트가 자동으로 생기도록 하고자 한다.
+## 3.1. 동적 라우트 개선 - 글 상세 페이지
+
+사실 현재 생각하기로는 `/posts`폴더의 하위 폴더를 통해서 글들을 분류하고 싶다. 예를 들어서 `/posts` 내에 A,B,C,D..폴더가 있고 각각의 내부에 글들이 있다면 `/posts/A`, `/posts/B`... 이런 동적 라우트가 자동으로 생기고 각 하위 폴더 내부의 글들에 대해서도 `posts/A/Apost1`, `posts/A/Apost2`... 이런 식으로 동적 라우트가 자동으로 생기도록 하고자 한다.
 
 현재 만들고 싶은 글 분류는 cs, 프론트, 그 외 잡스러운 것들이 생각나는데, 그러니까 이런 식으로 분류하고 싶은 것이다.
 
 ![post-url](./post-url-structure.png)
 
 먼저 프로젝트 루트 디렉토리에 `/posts/cs`, `/posts/front`, `/posts/misc` 폴더를 만들었다.
+
+그리고 `posts/[category]`폴더를 생성. 그리고 위 그림과 같은 라우트를 어떻게 구현할지 한번 생각해 보자.
+
+우리가 생각하는 동적 라우트 구조에서 동적인 요소를 `[]`로 감싸서 나타내 본다면, 글 상세 페이지는 `/posts/[category]/[slug]`가 되겠다. 글 목록 페이지는 `/posts/[category]` 가 될 것이고.
+
+이때 `category`는 `cs`, `front`, `misc` 중 하나가 되고, `slug`는 각 폴더 내의 파일 이름이 된다. 이들을 어떻게 동적으로 가져올까? 글 상세 페이지에선 간단하다. 
+
+먼저 `pages/posts/[slug].tsx`에 있던 내용을 `pages/posts/[category]/[slug].tsx`로 옮기고 기존 `[slug].tsx]`는 삭제한다. 놔두면 `[category]`폴더와 역할이 겹치게 되기 때문이다.
+
+위에서 썼던 `allDocument`를 이용하여 각 문서의 변환 데이터에 접근하고, `_raw.flattenedPath`를 split해서 각 요소를 가져오는 등의 방법으로 동적으로 가져올 수 있을 것이다. 뭐 이런 것이다.
+
+```tsx
+export const getStaticPaths: GetStaticPaths = () => {
+  const paths = allDocuments.map(({_raw})=>{
+    const pathList=_raw.flattenedPath.split('/');
+    return {
+      params: {
+        category: pathList[0],
+        slug: pathList[1],
+      },
+    };
+  });
+  return {
+    paths,
+    fallback: false,
+  };
+};
+```
+
+그리고 `getStaticProps`의 경우에도 해당 페이지에 맞는 문서를 가져오기 위해 slug뿐 아니라 상위 경로인 category도 사용하도록 변경한다. 글을 렌더링하는 컴포넌트는 그대로 두면 된다.
+
+```tsx
+export const getStaticProps: GetStaticProps= ({params})=>{
+  const post = allDocuments.find(
+    (p) => {
+      const temp=p._raw.flattenedPath.split('/');
+      return temp[0] === params?.category && temp[1] === params?.slug;
+    }
+  )!;
+  return {
+    props: {
+      post,
+    },
+  };
+};
+```
+
+이때 만약 `[category]/index.tsx`가 아직 없으며 `posts` 폴더에 md가 폴더에 들어가 있는 게 아니라 직접 들어가 있다면 `_raw.flattenedPath`를 split한 결과가 하나밖에 없는 글 변환 데이터가 생기게 되므로 위의 `getStaticProps`에서 `temp[1]`이 없어서 에러가 뜬다. 따라서 완전해지기 위해선 다음 섹션의 글 목록 페이지를 만들어야 한다.
+
+하지만 위의 조건을 피해서 `posts`태그 안에 글(index.md)을 담은 하위 폴더들만 둔다면 동적 라우트가 잘 만들어질 것이다.
+
+## 3.2. 동적 라우트 개선 - 글 목록 페이지
+
+이제 글 목록 페이지다. `posts/[category]`에서는 `category`만 동적으로 가져와야 한다. 
+
+위에서 썼던 예의 `flattenedPath`를 split한 후 적절한 인덱스를 가져올 수도 있다. 아마 `post._raw.flattenedPath.split('/')[0]`을 하면 맞을 것이다.
+
+하지만 그렇게 하면 같은 category를 가진 글이 여러 개씩 있을 것이므로 같은 라우트에 대한 작업을 여러 번 하게 된다. 내부적으로 최적화를 하는 것 같아서 같은 페이지에 대한 생성을 여러 번 하는 것 같지는 않다. 하지만 중복 작업이 좋은 건 아니다. 따라서 각 category를 유일하게 만들고자 했다.
+
+(실험을 통해 추측컨대 아마 해당 라우트에 해당하는 뭔가가 여러 개 있으면 가장 최근의 것만 정적 페이지로 만들고 이후의 요청은 만들어진 페이지를 리턴해 주는 듯 하다)
+
+그 자체가 어렵진 않다. `post._raw.flattenedPath.split('/')[0]`들을 가져와서 `Map`따위를 이용해서 중복을 없애는 방식도 가능할 테고, fs 모듈을 사용해서 폴더명을 가져올 수도 있다. 지금 당장 내게 생각나지 않는 더 좋은 방법도 있을 것이다. 하지만 앞서 말한 방식들이 뭔가 깔끔해 보이진 않는다.
+
+그런데 지금 카테고리가 그렇게 많이 필요할까? 지금 생각한 카테고리는 3개 정도고, 이 카테고리들이 블로그 헤더에 들어갈 것을 고려할 때 현재 블로그 레이아웃에서 카테고리가 5개 이상으로 늘어날 것 같지는 않다. 따라서 그냥 `blog-category.ts`를 만들어서 여기에 내가 필요한 카테고리를 담아 놓자.
+
+다음과 같은 파일을 작성하였다. 타입에 들어갈 정보는 추후 늘어날 수도 있겠지만 일단 카테고리 제목과 링크 정도로 했다.
+
+```ts
+// blog-category.ts
+interface Category{
+  title: string;
+  link: string;
+}
+
+const categoryList: Category[] = [
+  {title:'CS', link:'/posts/cs'},
+  {title:'Front', link:'/posts/front'},
+  {title:'Misc', link:'/posts/misc'},
+];
+
+export default categoryList;
+```
+
+자. 이제 `pages/posts/[category]/index.tsx`를 만들어 보자. 일단 `getStaticPaths`는 `blog-category.ts`를 import하고 다음과 같이 작성하면 된다.
+
+```tsx
+import categoryList from 'blog-category';
+
+/* 중간 내용들 */
+
+export const getStaticPaths: GetStaticPaths=()=>{
+  const paths=categoryList.map((category)=>{
+    return {
+      params: {
+        // blog-category에는 대소문자가 섞여서 써있으므로 소문자 변환
+        category:category.title.toLowerCase(),
+      },
+    };
+  });
+  return {
+    paths,
+    fallback: false,
+  };
+};
+```
+
+`getStaticProps`에서는 뭘 하면 될까? params를 통해서 category를 받으므로, 이 카테고리에 해당하는 글들을 모조리 가져온 다음 글 목록에 보여줘야 하는 정보만 골라서 페이지 컴포넌트에 props로 넘겨주면 된다.
+
+```tsx
+export const getStaticProps: GetStaticProps = ({params}) => {
+  const allDocumentsInCategory = allDocuments.filter((post)=>
+  // 여기서 category 타입은 string | string[] | undefined 이므로 string으로 강제해 줘야 함
+    post._raw.flattenedPath.startsWith(params?.category as string
+    ));
+
+  const postList = allDocumentsInCategory.map((post) => ({
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    tags: post.tags,
+    url: post.url,
+  }));
+  return { props: { postList } };
+};
+```
+
+이제 `blog-category.ts`에서 가져온 카테고리들에 대해서 각각의 페이지가 만들어지고, 페이지 컴포넌트에는 해당 카테고리에 속한 글들의 정보 중 일부(제목, 설명, 생성일 etc.)가 props로 넘어가게 된다. 이제 이 정보를 이용해서 글 목록 페이지를 만들어 보자.
+
+# 4. 글 목록 페이지 설계
 
 
 
