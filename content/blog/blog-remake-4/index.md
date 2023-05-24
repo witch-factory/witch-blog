@@ -201,7 +201,7 @@ async function copyPostDirImages() {
 }
 ```
 
-반복되는 부분을 적당히 함수로 빼보면 이렇게 된다.
+반복되는 부분을 적당히 함수로 빼서 정리해 보면 이렇게 된다.
 
 ```js
 const imageFileExtensions=['.png', '.jpg', '.jpeg', '.gif'];
@@ -265,17 +265,100 @@ contentlayer에서는 markdown을 다루는 데에 remark 플러그인을 사용
 
 ## 3.2. remark 플러그인 만들기
 
-`/src/plugins/change-image-src.ts`파일 생성. ES 모듈을 쓰기 위해 mjs혹은 ts 파일을 써야 한다.
+`/src/plugins/change-image-src.mjs`파일 생성. ES 모듈을 쓰기 위해 mjs혹은 ts 파일을 써야 한다. 그러나 ts를 쓰려면 우리는 마크다운 AST의 type을 사용해야 하는데 이런 작업에 그렇게까지 하는 건 낭비라고 생각했다. 따라서 mjs를 쓰기로 했다.
 
-그럼 이 파일에선 뭘 해야 할까? 글에 들어간 이미지들을 찾아서 src 프로퍼티에 있는 상대 경로들을 몽땅 절대 경로로 바꿔 주면 될 것이다.
+이 파일에선, 최종적으로 글에 들어간 이미지들을 찾아서 src 프로퍼티에 있는 상대 경로들을 몽땅 절대 경로로 바꿔 주는 플러그인을 짜면 된다. 그럼 뭐부터 해야 할까? 플러그인 꼴부터 갖춰야 한다.
 
-remark에서 사용하는 신택스 트리는 [mdast](https://github.com/syntax-tree/mdast)에 정의되어 있다. 이 트리를 통해서 우리는 노드들을 순회할 수 있다.
+그러니 먼저 remark 플러그인의 포맷부터 잡아 보자. remark 플러그인 함수는 tree, file을 인수로 받는 함수를 리턴해야 한다. tree는 mdast이고 file은 contentlayer에서 제공하는 파일 정보를 담고 있는 객체다. 이 file인수를 통해서 우리는 파일의 경로를 알 수 있게 된다.
 
-노드들을 순회하면서 이미지들을 어떻게 찾을까? contentlayer에서 HTML로 변환한 md 글들에 들어간 사진을 보면 전부 `p` 태그 내의 `img`태그로 들어가 있다. 이를 감지하면 된다.
+```js
+// src/plugins/change-image-src.mjs
+export default function changeImageSrc() {
+  return function(tree, file) {
+    // tree, file을 가지고 뭔가 해보는 코드
+  };
+}
+```
 
-또한 이런 신택스 트리 포맷은 [Unist(Universal Syntax Tree)](https://github.com/syntax-tree/unist)를 통해서 정의되는데, 이들을 순회하기 위한 유틸리티 라이브러리로 [unist-util-visit](https://github.com/syntax-tree/unist-util-visit)이 나와 있다. 따라서 이를 설치하자.
+우리가 md파일을 변환한 AST는 여기서 리턴한 함수를 거칠 것이다. 그럼 이 함수에선 뭘 해야 할까? 트리를 순회하면서 이미지를 찾고 src 프로퍼티를 모두 절대 경로로 바꿔주면 된다.
 
-...곧 계속...
+먼저 순회 같은 경우, remark에서 사용하는 신택스 트리는 [mdast](https://github.com/syntax-tree/mdast)에 정의되어 있다. 이 트리를 통해서 우리는 노드들을 순회할 수 있다. 또한 이런 신택스 트리 포맷은 [Unist(Universal Syntax Tree)](https://github.com/syntax-tree/unist)를 통해서 정의되는데, 이들을 순회하기 위한 유틸리티 라이브러리로 [unist-util-visit](https://github.com/syntax-tree/unist-util-visit)이 나와 있다. 따라서 이를 설치하자.
+
+```
+npm install unist-util-visit
+```
+
+이 라이브러리의 `visit(tree[, test], visitor[, reverse])`을 이용하면 preorder의 depth-first-search를 하면서 각 노드에 대해 visitor 함수를 실행하여 HTML AST의 각 노드를 편집할 수 있다.
+
+```js
+export default function changeImageSrc() {
+  return function(tree, file) {
+    const filePath=file.data.rawDocumentData.flattenedPath;
+    visit(tree, function() {});
+  };
+}
+```
+
+노드들을 순회하면서 이미지들을 어떻게 찾을까? contentlayer에서 HTML로 변환한 md 글들에 들어간 사진을 보면 전부 `p` 태그 내의 `img`태그로 들어가 있다. 이를 감지하면 된다. 먼저 visit 함수의 2번째 인수로 특정 노드의 type을 나타내는 문자열을 넣어 주면 해당 노드에 대해서만 visitor 함수를 실행하게 된다. [mdast](https://github.com/syntax-tree/mdast#paragraph)에 따르면 `p` 태그는 `paragraph`라는 type을 가지고 있다. 따라서 이를 넣어주자.
+
+이렇게 찾은 `p`태그는 visitor 함수의 인수로 들어가게 되는데 거기서 해당 노드의 children 중 img태그를 찾아 url을 바꿔주자.
+
+```js
+const imageDirInPublic = 'images/posts';
+
+export default function changeImageSrc() {
+  return function(tree, file) {
+    const filePath=file.data.rawDocumentData.flattenedPath;
+    visit(tree, 'paragraph', function(node) {
+      const image=node.children.find(child=>child.type==='image');
+
+      if (image) {
+        const fileName=image.url.replace('./', '');
+        image.url=`/${imageDirInPublic}/${filePath}/${fileName}`;
+      }
+    });
+  };
+}
+```
+
+md파일이 변환된 트리가 들어오면->트리를 순회하면서 p태그 내에 있는 img 태그를 찾고->그런 게 있다면 해당 img 태그의 url을 바꿔주는 플러그인이 완성되었다.
+
+### 3.2.1. 이미지 경로 새로 만들기에 대한 설명
+
+```js
+if (image) {
+  const fileName=image.url.replace('./', '');
+  image.url=`/${imageDirInPublic}/${filePath}/${fileName}`;
+}
+```
+
+이 부분 얘기다.
+
+이미지 경로를 만드는 부분에 대한 설명을 약간 들이면, 우리는 블로그에 있는 사진들을 `./A.png` 같은 상대 경로로 불러올 것이다.(단 모든 상대 경로를 포괄하는 것은 아니고, `../`같은 건 안된다. 그냥 블로그 글과 같은 경로에 있는 사진만 사용한다고 가정하자)
+
+따라서 fileName은 기존 경로에서 `./`만 떼면 된다.
+
+그리고 리턴하는 함수에서 받는 file인수는 contentlayer에서 변환한 것이기 때문에 file.data에는 `.contentlayer/generated`에 있는 변환 파일에 있던 정보들이 비슷하게 들어 있다. 따라서 `/posts`이하의 글 경로들을 받아오기 위해서는 `file.data.rawDocumentData.flattenedPath`를 사용하면 된다. 이게 바로 위에서 사용한 `filePath`이다.
+
+또한 우리가 사용할 이미지들은 빌드 시점에 `/public/images/posts`에 들어 있으며, 변환된 글들은 `/posts`에 있지만 contentlayer에서 md 문서 변환 결과를 만들 때 `/posts`경로 내에 있는 것만 했으므로 `flattenedPath`에는 `/posts`가 없다.
+
+따라서 우리가 file의 `flattenedPath`를 이용해서 이미지를 불러오기 위해서는 `/public`내의 이미지 경로를 알려주는 `imageDirInPublic`도 사용해야 한다. 그렇게 만들어진 게 위의 새로운 이미지 URL이다.
+
+```js
+image.url=`/${imageDirInPublic}/${filePath}/${fileName}`;
+```
+
+# 4. 실제 적용
+
+이렇게 하고 나서 내 기존 블로그의 글들을 모두 옮긴 후 한번 빌드해 보았다. 문서들을 생성하는 데에 약 15초 정도가 걸린다. 세부적인 벤치마크를 해볼 수도 있겠지만, 지금 내 블로그 글이 140개 정도 있고 이미지를 다 합쳐 70메가쯤 있는데 그걸 빌드하는 데 15초 걸리는 게 그렇게 나쁘지는 않아 보인다. 언젠가 최적화할 일이 있을지도 모르지만.
+
+그리고 빌드한 이후로는 public/images/posts에는 글들의 이미지들이 잘 들어가 있었다. 하지만 이 이미지들은 어차피 `/posts`에 들어 있을 텐데 이것까지 굳이 github에 올릴 이유는 없다. 그러니 해당 폴더를 `.gitignore`에 추가해 주자.
+
+```
+# .gitignore
+/public/images/posts
+/public/images/posts/*
+```
 
 # 참고
 
