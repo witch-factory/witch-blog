@@ -360,6 +360,8 @@ image.url=`/${imageDirInPublic}/${filePath}/${fileName}`;
 /public/images/posts/*
 ```
 
+그리고 다음 글에서는 대충하고 넘어갔던 작업들을 해보자. 가령 메인 페이지에서 지금은 그냥 임시로 만든 배열의 내용을 렌더링하고 있는데, 이를 제대로 글 목록을 불러와서 표시하게 하는 것과 전체 글 목록 페이지를 만드는 등의 작업들이다.
+
 # 참고
 
 나와 같은 고민을 한 사람이 이미 있었다. 그래서 그 사람이 만든 글을 참고했다. https://www.codeconcisely.com/posts/nextjs-storing-images-next-to-markdown/
@@ -367,5 +369,7 @@ image.url=`/${imageDirInPublic}/${filePath}/${fileName}`;
 remark 플러그인을 만들기 위해 remark github의 설명을 참고했다. https://github.com/remarkjs/remark
 
 https://github.com/syntax-tree/mdast
+
+https://github.com/syntax-tree/unist
 
 https://swizec.com/blog/how-to-build-a-remark-plugin-to-supercharge-your-static-site/
