@@ -314,19 +314,19 @@ export const getStaticProps: GetStaticProps= ({params})=>{
 
 그런데 지금 카테고리가 그렇게 많이 필요할까? 지금 생각한 카테고리는 3개 정도고, 이 카테고리들이 블로그 헤더에 들어갈 것을 고려할 때 현재 블로그 레이아웃에서 카테고리가 5개 이상으로 늘어날 것 같지는 않다. 따라서 그냥 `blog-category.ts`를 만들어서 여기에 내가 필요한 카테고리를 담아 놓자.
 
-다음과 같은 파일을 작성하였다. 타입에 들어갈 정보는 추후 늘어날 수도 있겠지만 일단 카테고리 제목과 링크 정도로 했다.
+다음과 같은 파일을 작성하였다. 타입에 들어갈 정보는 추후 늘어날 수도 있겠지만 일단 카테고리 제목과 링크 URL 정도로 했다.
 
 ```ts
 // blog-category.ts
 interface Category{
   title: string;
-  link: string;
+  url: string;
 }
 
 const categoryList: Category[] = [
-  {title:'CS', link:'/posts/cs'},
-  {title:'Front', link:'/posts/front'},
-  {title:'Misc', link:'/posts/misc'},
+  {title:'CS', url:'/posts/cs'},
+  {title:'Front', url:'/posts/front'},
+  {title:'Misc', url:'/posts/misc'},
 ];
 
 export default categoryList;
