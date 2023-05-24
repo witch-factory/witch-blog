@@ -234,3 +234,55 @@ BUILD_UTILS_SPAWN_1: Command "npm run build" exited with 1
 ./src/pages/index.tsx:7:30
 Type error: Cannot find module '@/contentlayer/generated' or its corresponding type declarations.
 ```
+
+그럼 이걸 어떻게 고칠 수 있을까? 일단 저건 `tsconfig.json`에 정의되어 있는 별명인데, 골뱅이가 문제를 일으키는 걸지도 모르니 이걸 바꿔보자.
+
+```json
+{
+  // ...
+  "compilerOptions":{
+    // ...
+    "paths": {
+      "@/*": ["./src/*"],
+      "contentlayer/generated": ["./.contentlayer/generated"],
+      "contentlayer/generated/*": ["./.contentlayer/generated/*"]
+    },
+    // ...
+  }
+  // ...
+}
+```
+
+그리고 이걸 import하는 측에서도 `@/contentlayer/generated`를 `contentlayer/generated`로 모두 바꿔주었다.
+
+하지만 별명만 바뀌었을 뿐 똑같은 에러가 발생하였다. 아마 `contentlayer/generated`를 사용하는 시점에 아직 해당 폴더가 생성되지 않는 것 같다.
+
+```
+Type error: Cannot find module 'contentlayer/generated' or its corresponding type declarations.
+```
+
+뭔가 순서가 좀 꼬인 것 같은데, 그럼 contentlayer와의 빌드가 잘 실행되는 사람들과 같은 contentlayer 버전으로 다운그레이드하면 어떨까? package.json에서 `contentlayer`와 `next-contentlayer` 버전을 ^0.3.2에서 ^0.3.0으로 바꿔봤다. 큰 의미가 없다. 다시 버전 롤백.
+
+찾아보니 pnpm 환경에서 나와 비슷한 문제에 대한 [이슈가 이미 올라와 있었다.](https://github.com/contentlayerdev/contentlayer/issues/415) 여기서 제시한 해법대로 해보자.
+
+`package.json`의 `build` 스크립트를 `"contentlayer build && next build"`로 바꾸는 것이다.
+
+```json
+"scripts": {
+  "copyimages": "node ./src/bin/pre-build.mjs",
+  "prebuild": "npm run copyimages",
+  "predev": "npm run copyimages",
+  "dev": "next dev",
+  "build": "contentlayer build && next build",
+  "start": "next start",
+  "lint": "next lint"
+},
+```
+
+아, 이거였다. 이게 문제였다. 이렇게 하니까 드디어 배포가 되었다.
+
+![deploy-success](./deploy-success.png)
+
+# 참고
+
+배포 이슈 해결에 쓴 이슈 https://github.com/contentlayerdev/contentlayer/issues/415
