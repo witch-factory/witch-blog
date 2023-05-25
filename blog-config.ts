@@ -1,6 +1,6 @@
 const config = {
   title: 'Witch-Work', // Blog name
-  author: '마녀', // Your name
+  author: 'witch', // Your name
   description:
     '대학교에서 기계공학과 컴퓨터공학을 복수전공하였습니다. ' +
     '흔히 `마녀`라는 닉네임을 씁니다. ' +
