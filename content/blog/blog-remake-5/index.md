@@ -263,9 +263,9 @@ Type error: Cannot find module 'contentlayer/generated' or its corresponding typ
 
 뭔가 순서가 좀 꼬인 것 같은데, 그럼 contentlayer와의 빌드가 잘 실행되는 사람들과 같은 contentlayer 버전으로 다운그레이드하면 어떨까? package.json에서 `contentlayer`와 `next-contentlayer` 버전을 ^0.3.2에서 ^0.3.0으로 바꿔봤다. 큰 의미가 없다. 다시 버전 롤백.
 
-찾아보니 pnpm 환경에서 나와 비슷한 문제에 대한 [이슈가 이미 올라와 있었다.](https://github.com/contentlayerdev/contentlayer/issues/415) 여기서 제시한 해법대로 해보자.
+찾아보니 pnpm 환경에서 나와 비슷한 문제에 대한 [이슈가 이미 올라와 있었다.](https://github.com/contentlayerdev/contentlayer/issues/415) 나는 pnpm을 사용하지는 않지만, 이럴 때는 뭐든 해봐야 한다. 여기서 제시한 해법대로 해보자.
 
-`package.json`의 `build` 스크립트를 `"contentlayer build && next build"`로 바꾸는 것이다.
+`package.json`의 `build` 스크립트를 `"contentlayer build && next build"`로 바꾸는 것이 위에 제시된 해법이다. contentlayer 빌드와 함께 빌드를 진행하는 커맨드인 듯 하다.
 
 ```json
 "scripts": {
