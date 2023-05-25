@@ -283,6 +283,8 @@ Type error: Cannot find module 'contentlayer/generated' or its corresponding typ
 
 ![deploy-success](./deploy-success.png)
 
+이때 배포한 페이지는 [여기](https://witch-next-blog-kgb1t697z-witch-factory.vercel.app/)에서 볼 수 있다. 조악하긴 하지만 나름 블로그에 필요한 것들은 갖추고 있다.
+
 # 참고
 
 배포 이슈 해결에 쓴 이슈 https://github.com/contentlayerdev/contentlayer/issues/415
