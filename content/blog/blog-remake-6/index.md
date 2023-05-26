@@ -23,7 +23,191 @@ tags: ["blog", "web"]
 
 또한 css 라이브러리를 딱히 사용하지 않는 것이 처음이라 가장 고전적인 BEM 클래스 작명법을 적당히 사용하였다.
 
-# 2. 메인 페이지 구조 분석
+# 2. 페이지 헤더와 푸터 공통화
+
+현재 페이지 헤더에는 내비게이션이 있고, 푸터에는 간단한 내 이름이 있다. 현재 이 요소들은 메인 페이지에만 들어 있다. 그런데 각 헤더와 푸터에 들어 있는 정보를 생각해 볼 때 모든 페이지에 공통으로 들어가 있는 게 합리적이다.
+
+따라서 이를 모든 페이지에 공통으로 넣어주도록 하자. `/src/pages/_app.tsx`를 수정해주면 된다.
+
+```tsx
+// src/pages/_app.tsx
+import '@/styles/globals.css';
+import type { AppProps } from 'next/app';
+
+import Footer from '@/components/footer';
+import Header from '@/components/header';
+import blogCategoryList from 'blog-category';
+
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <Header navList={blogCategoryList} />
+      <Component {...pageProps} />
+      <Footer />
+    </>
+  );
+}
+```
+
+그리고 `/src/pages/index.tsx`에 있던 헤더와 푸터는 지워준다.
+
+# 3. 콘텐츠 영역 너비
+
+현재 블로그 페이지의 컨텐츠는 width가 100%라 페이지를 꽉 채우고 있다. 화면이 좁은 모바일 환경에서라면 텍스트가 답답하게 배치된 것처럼 보이지 않도록 컨텐츠를 최대한 넓은 너비에 배치해야 하겠다. 그리고 그게 거의 정답이라 생각한다. 안 그래도 768px 미만의 화면 너비일 때는 양쪽에 약간의 패딩을 주겠지만 콘텐츠를 화면에 거의 꽉 채우도록 할 것이다.
+
+하지만 1920px 너비가 많은 데스크톱 환경에서는 이게 너무 넓어 보이고 한 줄에 있는 글자도 너무 많아서 읽기 힘들 것이다. 따라서 콘텐츠의 최대 넓이를 제한해야 한다고 본다. max-width 속성을 이용할 것이다.
+
+## 3.1. 최대 콘텐츠 너비에 관한 고찰
+
+그런데 어느 정도의 너비까지 컨텐츠를 채우도록 해야 할까?
+
+[웹 접근성 가이드](https://www.w3.org/WAI/tutorials/page-structure/styling/#line-length)에서는 텍스트 컨테이너가 80자 너비를 넘으면 안 된다고 한다. `max-width: 70rem`으로 설정하는 방식으로 해보라고 조언도 해주고 있다. 
+
+기본 폰트 사이즈가 16px이므로 약 1120px 정도의 최대 너비를 갖게 하라고 말하는 것이다. 그래서 max-width를 60rem으로도 해보고 70rem으로도 해봤다. 1920px에서 봐도 여백이 생각만큼 엄청 넓어 보이지 않고 괜찮아 보였다.
+
+그 정도로 설정하자 여백은 충분해 보였으나 해당 너비에 텍스트뿐일 때 한 줄당 텍스트가 너무 많아 보였다. 그럼 한 줄에 얼만큼의 글자 수가 적절할까? 
+
+타이포그래피 연구에 의하면 사람들은 온라인 컨텐츠를 읽을 때 더 짧은 줄 길이를 쓰는 것이 더 조직화되고 이해하기 쉽다고 느끼기 때문에 짧은 줄을 더 선호한다고 한다. 그리고 40~55자 정도의 줄 길이가 가장 이상적이라고 한다.
+
+그럼 우리가 추구해야 할 건 다음과 같다.
+
+- 콘텐츠 컨테이너의 너비는 60~70rem으로
+- 텍스트는 한 줄당 40~55자(즉 40~55rem)이 되도록 설정
+
+우리가 지금 생각해야 할 건 메인 페이지, 글 목록 페이지, 글 상세보기 페이지이다. 이때 메인 페이지와 글 목록 페이지는 최대 너비가 60~70rem이 되도록 설정할 수 있다. 텍스트는 한 줄에 40~55자만 들어가도록 설정하도록 할 수 있는 장치들이 있기 때문이다.
+
+메인 페이지 같은 경우 다음과 같은 레이아웃을 생각할 수 있겠다.
+
+![article-list](./article-list-layout.png)
+
+소개 영역은 내 프로필 사진을 올리는 걸로 텍스트 영역의 너비를 40~55자로 만들 수 있을 것이고 글 프리뷰에 있는 텍스트는 당연히 한참 적은 줄당 글자수를 가질 것이다.
+
+또한 글 목록 페이지는 다음과 같이, 글 프리뷰 카드(?)에 글의 썸네일을 넣어주는 방식으로 카드에 들어가는 텍스트를 한정할 수 있겠다. [토스 기술블로그](https://toss.tech/tech)의 레이아웃을 참고하였다.
+
+![article-list-page](./article-list-page-layout.png)
+
+하지만 글 상세보기 페이지의 경우 딱히 글 콘텐츠 영역 너비를 줄여줄 어떤 장치가 없기 때문에(물론 TOC를 옆쪽에 넣거나 하는 방식도 가능하겠지만 그건 나중에 생각해보자) 그냥 전체 영역을 50rem으로 하는 것으로 생각했다.
+
+## 3.2. 콘텐츠 영역 컨테이너 설정
+
+일단 메인 페이지에 들어갈 래퍼 클래스는 다음과 같이 `/src/pages/styles.module.css`에 만들면 된다. `max-width`만 제외하고 나머지 래퍼들도 이를 따르면 된다.
+
+```css
+// /src/pages/styles.module.css
+.pagewrapper{
+  margin:0 auto;
+  width:100%;
+  min-height:100vh;
+}
+
+@media (min-width: 768px) {
+  .pagewrapper{
+    max-width:60rem;
+  }
+}
+```
+
+그리고 `/src/pages/index.tsx`의 main 태그 className으로 `styles.pagewrapper`를 추가한다.(import style은 당연히 선행되어야 한다)
+
+`/src/pages/posts/[category]/styles.module.css`에도 다음과 같이 같은 래퍼 클래스를 만들어준다.
+
+```css
+.pagewrapper{
+  margin:0 auto;
+  width:100%;
+  min-height:100vh;
+}
+
+@media (min-width: 768px) {
+  .pagewrapper{
+    max-width:60rem;
+  }
+}
+```
+
+`/src/pages/[category]/index.tsx`의 페이지 컴포넌트의 main 태그에도 해당 래퍼를 추가.
+
+```tsx
+function PostListPage({
+  category, postList,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
+  return (
+    // 페이지 래퍼 추가
+    <main className={styles.pagewrapper}>
+      <h1>{category}</h1>
+      <ul>
+        {postList.map((post: PostMetaData) => 
+          <li key={post.url}>
+            <Card {...post} />
+          </li>
+        )}
+      </ul>
+    </main>
+  );
+}
+```
+
+그리고 글 상세 페이지의 컨테이너를 위한 클래스도 `/src/pages/posts/[category]/styles.module.css`에 추가적으로 정의
+
+```css
+.pagewrapper{
+  margin:0 auto;
+  width:100%;
+  min-height:100vh;
+}
+
+.articlewrapper{
+  margin:0 auto;
+  width:100%;
+  min-height:100vh;
+}
+
+@media (min-width: 768px) {
+  .pagewrapper{
+    max-width:60rem;
+  }
+
+  .articlewrapper{
+    max-width:50rem;
+  }
+}
+```
+
+그리고 `/src/pages/posts/[category]/[slug].tsx`의 페이지 컴포넌트의 main 태그에도 해당 래퍼를 추가.
+
+```tsx
+function PostPage({
+  post
+}: InferGetStaticPropsType<typeof getStaticProps>) {
+
+  return (
+    // 여기에 추가
+    <main className={styles.articlewrapper}>
+      <article>
+        <h1>{post.title}</h1>
+        <time>{post.date}</time>
+        <ul>
+          {post.tags.map((tag: string)=><li key={tag}>{tag}</li>)}
+        </ul>
+        {'code' in post.body?
+          <MDXComponent code={post.body.code}/>:
+          <div dangerouslySetInnerHTML={{ __html: post.body.html }} />
+        }
+      </article>
+    </main>
+  );
+}
+```
+
+이렇게 설정한 후 여러 기업의 기술 블로그들의 페이지 컨테이너 너비를 조사하였다. 대부분이 내가 쓴 것과 같이 max-width를 제한하는 방식을 사용했다. 
+
+토스는 980px(단 width 92%인 내부 컨테이너가 하나 더 있어서 실제 콘텐츠 너비는 더 작았다), 배민은 900px, 구글 978px, 토스트UI 1060px, 라인 790px등 대충 나와 비슷한 수준이었다. 내가 설정한 60rem(960px)가 정답은 아닐지언정 그렇게까지 틀려먹은 수치는 아닌 것으로 보인다.
+
+이제 페이지의 몇몇 컴포넌트 레이아웃을 수정해 보자. 메인 페이지와 글 목록 페이지 등..
+
+참고로, 위에서 간간이 사용한 `min-height:100vh`등의 속성은 예전에는 wrapper div를 넣어서 기본적으로 넣어 주던 속성이다. 하지만 이는 [오래된 버전의 IE에서는 몇몇 태그에 대해 적용되지 않는 CSS가 있었기 때문에 하던 관행이며 지금 시점에 꼭 따를 필요는 없다.](https://stackoverflow.com/questions/27582691/why-is-web-content-wrapped-in-a-wrapper-div)
+
+# 4. 메인 페이지 간략 레이아웃
 
 현재 메인 페이지는 의미적으로 4개의 영역으로 나눠져 있다고 할 수 있다. 다음과 같이 헤더, 내 소개, 글 목록, 푸터가 그 4개의 영역이다.
 
@@ -31,7 +215,7 @@ tags: ["blog", "web"]
 
 여기서 헤더와 푸터는 지금 당장 레이아웃이 문제가 되지는 않으므로 내 소개와 글 목록에 대해서만 생각해 보자.
 
-## 2.1. 내 소개 영역
+## 4.1. 메인 페이지 내 소개 영역
 
 메인 페이지는 사용자가 내 블로그에 접속했을 때 처음으로 보게 되는 페이지다. 따라서 내 소개가 최상단에 있어야 하는 건 맞지만, 내 블로그 컨텐츠도 적절히 노출되도록 하면 좋겠다. 이는 모바일 환경에서도 마찬가지이므로 공간을 최대한 덜 차지하면서 적절해 보이는 레이아웃이 되도록 하고자 한다.
 
@@ -106,9 +290,9 @@ function Profile() {
 
 이렇게 하고 적용해 보면 내 소개 컴포넌트의 사진이 소개글 왼쪽에 보이고, 화면 너비가 작아지면 없어지는 걸 확인할 수 있다. 또 링크도 가로로 잘 배열되어 있다.
 
-## 2.2. 글 목록 영역
+## 4.2. 메인 페이지 글 목록 영역
 
-글 목록의 배치에 대해 생각나는 요구 사항은 다음과 같다.
+메인 페이지상의 글 목록의 배치에 대해 생각나는 요구 사항은 다음과 같다.
 
 1. 모바일에서 텍스트가 답답하게 보이지 않아야 한다. PC 환경에서도 마찬가지.
 2. 처음 페이지가 떴을 때 메인 페이지에서 최대한 많은 글을 보여줄 수 있어야 한다.
@@ -117,14 +301,17 @@ function Profile() {
 
 ![article-list](./article-list-layout.png)
 
-이번에도 `src/components/category/styles.module.css` 생성. 그냥 화면이 일정 너비 이상이 되면 가로로 배열되도록 하기만 하면 된다. 그 외엔 bullet point를 없애주고 간격을 주는 정도만 해주자.
+이번에도 `src/components/category/styles.module.css` 생성. 그냥 화면이 일정 너비 이상이 되면 가로로 배열되도록 하기만 하면 된다. 그 외엔 bullet point를 없애주고 가로 배열시 간격을 주는 정도만 해주자.
 
 ```css
+.category__cardlist{
+  list-style:none;
+}
+
 @media (min-width:768px){
   .category__cardlist{
     display: flex;
     flex-direction:row;
-    list-style:none;
     gap:20px;
   }
 }
@@ -136,61 +323,12 @@ function Profile() {
 
 ![temp-layout](./temp-layout.png)
 
-# 3. 페이지 헤더와 푸터
-
-## 3.1. 전 페이지 공통으로
-
-현재 페이지 헤더에는 내비게이션이 있고, 푸터에는 간단한 내 이름이 있다. 현재 이 요소들은 메인 페이지에만 들어 있다. 그런데 각 헤더와 푸터에 들어 있는 정보를 생각해 볼 때 모든 페이지에 공통으로 들어가 있는 게 합리적이다.
-
-따라서 이를 모든 페이지에 공통으로 넣어주도록 하자. `/src/pages/_app.tsx`를 수정해주면 된다.
-
-```tsx
-// src/pages/_app.tsx
-import '@/styles/globals.css';
-import type { AppProps } from 'next/app';
-
-import Footer from '@/components/footer';
-import Header from '@/components/header';
-import blogCategoryList from 'blog-category';
-
-export default function App({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <Header navList={blogCategoryList} />
-      <Component {...pageProps} />
-      <Footer />
-    </>
-  );
-}
-```
-
-그리고 `/src/pages/index.tsx`에 있던 헤더와 푸터는 지워준다.
-
-# 4. 페이지 공통 너비
-
-현재 블로그 페이지의 컨텐츠는 페이지를 꽉 채우고 있다. 화면이 좁은 모바일 환경에서라면 텍스트가 답답하게 보이지 않도록 하려면 컨텐츠를 최대한 넓은 너비에 배치해야 하므로 이게 괜찮을 수도 있다.
-
-하지만 1920px 너비가 많은 데스크톱 환경에서는 이게 너무 넓어 보일 수 있다. 따라서 컨텐츠가 적당한 너비만 채우도록 하자.
-
-**이 최대너비 고치는 중**
 
 
 
-그럼 어느 정도의 너비까지 채우도록 해야 할까? [웹 접근성 가이드](https://www.w3.org/WAI/tutorials/page-structure/styling/#line-length)에서는 텍스트 한 줄이 80자를 넘으면 안 된다고 한다. 그럼 `max-width`를 한 70rem 정도로 설정하자. 이정도면 기본 폰트 사이즈가 16px이므로 약 1120px 정도의 최대 너비를 갖는 것이다.
 
-이는 `/src/styles/globals.css`에서 body 태그에 max-width를 설정해 주는 방식으로 할 수 있다.
 
-```css
-// src/styles/globals.css
-body{
-  margin:0 auto;
-  width:100%;
-  max-width:70rem;
-  min-height:100vh;
-}
-```
 
-`_app.tsx`에 wrapper div를 넣어서 해결할 수도 있다. 또한 이런 방식이 많이 쓰이기도 했다. 하지만 이는 [오래된 버전의 IE에서는 body 태그에 대해 적용되지 않는 CSS가 있었기 때문에 하던 관행이며 지금 시점에 꼭 따를 필요는 없다.](https://stackoverflow.com/questions/27582691/why-is-web-content-wrapped-in-a-wrapper-div)
 
 
 
@@ -200,3 +338,5 @@ body{
 https://brunch.co.kr/@sarayun/22
 
 https://merrily-code.tistory.com/154
+
+https://socialtriggers.com/perfect-content-width/
