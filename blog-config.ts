@@ -1,8 +1,8 @@
 const config = {
   title: 'Witch-Work', // Blog name
-  author: 'witch', // Your name
+  author: '김성현(Kim Sung Hyun)', // Your name
   description:
-    '대학교에서 기계공학과 컴퓨터공학을 복수전공하였습니다. ' +
+    '서강대학교에서 기계공학과 컴퓨터공학을 복수전공하였습니다. ' +
     '흔히 `마녀`라는 닉네임을 씁니다. ' +
     '어떤 대단한 뜻을 품고 사는 사람은 아닙니다. ' +
     '그저 멋진 사람들이 내는 빛을 따라가다 보니 여기까지 왔고, ' +

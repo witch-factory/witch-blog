@@ -155,16 +155,44 @@ import blogCategoryList from 'blog-category';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <div>
+    <>
       <Header navList={blogCategoryList} />
       <Component {...pageProps} />
       <Footer />
-    </div>
+    </>
   );
 }
 ```
 
 그리고 `/src/pages/index.tsx`에 있던 헤더와 푸터는 지워준다.
+
+# 4. 페이지 공통 너비
+
+현재 블로그 페이지의 컨텐츠는 페이지를 꽉 채우고 있다. 화면이 좁은 모바일 환경에서라면 텍스트가 답답하게 보이지 않도록 하려면 컨텐츠를 최대한 넓은 너비에 배치해야 하므로 이게 괜찮을 수도 있다.
+
+하지만 1920px 너비가 많은 데스크톱 환경에서는 이게 너무 넓어 보일 수 있다. 따라서 컨텐츠가 적당한 너비만 채우도록 하자.
+
+**이 최대너비 고치는 중**
+
+
+
+그럼 어느 정도의 너비까지 채우도록 해야 할까? [웹 접근성 가이드](https://www.w3.org/WAI/tutorials/page-structure/styling/#line-length)에서는 텍스트 한 줄이 80자를 넘으면 안 된다고 한다. 그럼 `max-width`를 한 70rem 정도로 설정하자. 이정도면 기본 폰트 사이즈가 16px이므로 약 1120px 정도의 최대 너비를 갖는 것이다.
+
+이는 `/src/styles/globals.css`에서 body 태그에 max-width를 설정해 주는 방식으로 할 수 있다.
+
+```css
+// src/styles/globals.css
+body{
+  margin:0 auto;
+  width:100%;
+  max-width:70rem;
+  min-height:100vh;
+}
+```
+
+`_app.tsx`에 wrapper div를 넣어서 해결할 수도 있다. 또한 이런 방식이 많이 쓰이기도 했다. 하지만 이는 [오래된 버전의 IE에서는 body 태그에 대해 적용되지 않는 CSS가 있었기 때문에 하던 관행이며 지금 시점에 꼭 따를 필요는 없다.](https://stackoverflow.com/questions/27582691/why-is-web-content-wrapped-in-a-wrapper-div)
+
+
 
 
 # 참고
