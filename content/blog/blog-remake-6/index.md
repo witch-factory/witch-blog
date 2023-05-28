@@ -323,16 +323,6 @@ function Profile() {
 
 ![temp-layout](./temp-layout.png)
 
-
-
-
-
-
-
-
-
-
-
 # 참고
 
 https://brunch.co.kr/@sarayun/22
