@@ -15,6 +15,8 @@ tags: ["blog", "web"]
 
 # 기능 추가
 
+## 글 시간순 정렬
+
 ## 조회수 달기
 
 ga 혹은 firebase DB 이용

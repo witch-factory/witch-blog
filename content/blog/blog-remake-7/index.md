@@ -445,7 +445,99 @@ export const getStaticPaths: GetStaticPaths=()=>{
 
 # 2. 푸터 컴포넌트
 
-사실 푸터는 정말 할 게 없는 컴포넌트..라고 생각한다.
+푸터에는 이전에 넣었던 내 이름과 github 링크 정도를 넣어 주자. 이를 위해서 [github 로고 페이지](https://github.com/logos)에서 로고를 다운받아서 사용했다.
+
+```tsx
+import Image from 'next/image';
+import Link from 'next/link';
+
+import blogConfig from 'blog-config';
+
+import styles from './styles.module.css';
+
+function Footer() {
+  return (
+    <footer className={styles.footer}>
+      <p className={styles.copyright}>
+      © {blogConfig.name}, Built with NextJS, 2023
+      </p>
+      <Link href='https://github.com/witch-factory' className={styles.github}>
+        <Image src='/github-mark.png' alt='Github' width={32} height={32} />
+      </Link>
+    </footer>
+  );
+}
+
+export default Footer;
+```
+
+스타일은 약간의 간격과 배경 정도만 조절해 주었다.
+
+```css
+.footer{
+  height:100px;
+  color:var(--gray6);
+  background-color:var(--gray2);
+  margin-top:50px;
+  padding:20px;
+}
+
+.copyright{
+  margin:10px 0;
+}
+
+.github{
+  display:block;
+  width:32px;
+  height:32px;
+}
+```
+
+# 3. 자기소개 컴포넌트
+
+## 3.1. 페이지 너비조정
+
+아까 우리는 블로그 컨텐츠가 들어갈 컨테이너 너비를 `max-width`로 제한했었다. 그런데 이렇게 하면 내부 컨텐츠들은 해당 컨테이너를 꽉 채우게 된다. 그럼 만약 창 너비가 `max-width`보다 작으면? 컨텐츠가 페이지 너비를 여백없이 꽉 채울 것이다. 이는 좋지 않다.
+
+따라서 컨테이너를 하나 더 만들어서 `width:92%`와 `margin:0 auto;`를 주자.
+
+```css
+// pages/styles.module.css
+.container{
+  width:92%;
+  margin:0 auto;
+}
+```
+
+그리고 메인 페이지에 컨테이너 추가.
+
+```tsx
+// pages/index.tsx
+<main className={styles.pagewrapper}>
+  // 여기 div 컨테이너를 추가하였다.
+  <div className={styles.container}>
+    <Profile />
+    {/* 프로젝트 목록을 만들기 */}
+    {/* 글 목록은 독립적인 영역으로 존재 */}
+    <article>
+      {blogCategoryList.map((category) => {
+        const categoryPostList=allDocuments.filter((post)=>{
+          return post._raw.flattenedPath.split('/')[0]===category.url.split('/').pop();
+        }).slice(0, 3);
+        if (categoryPostList.length===0) {
+          return null;
+        }
+        return <Category key={category.title} title={category.title} items={categoryPostList} />;
+      })
+      }
+    </article>
+  </div>
+</main>
+```
+
+이제 이 페이지의 맨 위(헤더 제외)에 보일 자기소개 컴포넌트를 한번 만들어 보자. 구조는 이전에 다 만들어 놓았으므로 디자인만..하면 된다... 그것도 오래 걸리겠지만.
+
+
 
 # 참고
 
