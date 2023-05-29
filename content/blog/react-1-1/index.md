@@ -35,7 +35,7 @@ const [number, dispatch] = useReducer(reducer, 0);
 
 number는 똑같이 상태를 저장하고 있고, dispatch는 reducer 함수를 통해 상태를 바꿔주는 방법을 제공하는 함수이다. 그러면 reducer는 어떤 함수일까?
 
-## 3. reducer 함수에 대하여
+# 3. reducer 함수에 대하여
 
 reducer는 상태를 받아서 새로운 상태를 리턴하는 함수이다. 즉 상태의 업데이트를 담당한다. 그런데 단순히 하나의 상태만 돌려준다면 useState에 비해 할 수 있는 게 현저히 적을 것이다. 유명한 Counter 예제만 봐도 증가와 감소 두 가지의 상태 업데이트가 필요하지 않은가? 이런 다양한 종류의 상태 업데이트를 위해 reducer는 상태 외에 2번째 인수인 액션(action)을 받아서 새로운 상태를 리턴해 준다.
 
@@ -53,7 +53,7 @@ function reducer(state, action) {
 }
 ```
 
-## 4. dispatch 함수의 사용
+# 4. dispatch 함수의 사용
 
 앞서 본 useReducer의 기본형은 다음과 같다.
 
@@ -71,7 +71,7 @@ dispatch({ type: "reset" });
 
 그러면 reducer는 `reducer(현재 상태, {type:"reset"})`형태로 호출되고 여기서 리턴된 값이 새로운 state가 된다. 이때 이 dispatch 함수는 컴포넌트가 새로 렌더링된다고 새로 생성되지 않는다. 이는 useState의 setState도 마찬가지다.
 
-## 5. useReducer의 사용법 - Counter 예제
+# 5. useReducer의 사용법 - Counter 예제
 
 그럼 이제 useReducer를 사용하는 형태도 알았고 리듀서도 dispatch도 어떻게 쓰이는지 알았다. 그럼 어떻게 사용할까? 리액트를 처음 시작할 때 한번씩은 다들 만드는 카운터 예제를 만들어보자. 먼저 useState를 이용하는 형태로 만들어보자.
 
