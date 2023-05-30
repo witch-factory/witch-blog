@@ -793,9 +793,109 @@ function PostPage({
 }
 ```
 
-# 3. favicon 바꾸기(+SEO)
+# 4. 다시, 글 목록 페이지
 
-# 4. TOC 만들어주기
+global CSS를 만들어 주고 나서 글 목록 페이지는 거들떠보지도 않았었는데 여기에서도 약간 이상해진 간격들이 있으니 간단히 고치고 넘어가자.
+
+## 4.1. 주제 따오는 방식 바꾸기
+
+그런데 현재 글 목록 페이지에 들어가 보면 글 주제의 표기가 `dev`, `misc` 따위가 아니라 `개발`, `기타`로 바뀐지가 언젠데 아직 적용이 안되어 있다.
+
+이는 `src/pages/posts/[category]/index.tsx`에서 `getStaticProps`를 수정하면 된다. 다음과 같이 넘겨주는 `category`가 진짜 게시판의 제목이 되도록 바꿔준다.
+
+```tsx
+/*
+src/pages/posts/[category]/index.tsx
+의 getStaticProps를 이렇게 수정한다.
+*/
+export const getStaticProps: GetStaticProps = ({params}) => {
+  const allDocumentsInCategory = getSortedPosts().filter((post)=>
+    post._raw.flattenedPath.startsWith(params?.category as string
+    ));
+  // category를 얻어오는 방식을 바꿨다.
+  const category=blogCategoryList.find((c)=>
+    c.url.split('/').pop()===params?.category)?.title;
+
+  const postList = allDocumentsInCategory.map((post) => ({
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    tags: post.tags,
+    url: post.url,
+  }));
+  return { props: { category, postList } };
+};
+```
+
+## 4.2. 스타일 조정
+
+그리고 `src/pages/posts/[category]/styles.module.css`를 다음과 같이 수정한다. title 클래스를 새로 만들고, container에 간격을 준 게 전부다. 
+
+```css
+.page{
+  margin:0 auto;
+  width:100%;
+  min-height:100vh;
+}
+
+.container{
+  width:92%;
+  max-width:calc(100% - 48px);
+  margin:0 auto;
+  margin-top:2rem;
+}
+
+.title{
+  font-size:1.5rem;
+  margin-bottom:0.5rem;
+}
+
+.list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+
+@media (min-width: 768px) {
+  .page{
+    max-width:60rem;
+  }
+
+  .title{
+    font-size:1.75rem;
+    margin-bottom:1rem;
+  }
+}
+```
+
+하려면 더 할 게 수도 없겠지만 다른 할 게 많으니 글 목록 페이지 수정은 이쯤 마치자.
+
+# 5. favicon 바꾸기(+SEO)
+
+오래전, 메인 페이지의 `Head`태그에 각종 메타데이터를 채워넣은 것을 기억하는가? 대강 제목과 여러 가지를 채웠었다.
+
+```tsx
+// src/pages/index.tsx
+<Head>
+  <title>{blogConfig.title}</title>
+  <meta name='description' content={blogConfig.description} />
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <meta name='og:image' content={blogConfig.thumbnail} />
+  <meta name='twitter:image' content={blogConfig.thumbnail} />
+  <link rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png' />
+  <link rel='icon' href='/witch-hat.svg' />
+  <link rel='manifest' href='/site.webmanifest' />
+  <link rel='canonical' href='https://witch.work/' />
+</Head>
+```
+
+이제 favicon을 이전에 찾은 svg 마녀 모자로 바꿔주고, SEO도 해보자.
+
+
+# 6. TOC 만들어주기
 
 # 참고
 
