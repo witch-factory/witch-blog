@@ -1294,14 +1294,79 @@ function Intro(props: Props) {
 }
 ```
 
-## 5.5. 글 썸네일을 넣기
+# 6. 약간의 개선
+
+그런데 꼭 프로젝트 소개와 글 프리뷰(`Card`)컴포넌트에 굳이 테두리가 있어야 할까? 없앨 수 있는 건 없애 버리자.
+
+`src/components/projectList/project/styles.module.css`의 container를 편집하여 다음과 같이 테두리를 없애고 간격을 약간 넓혀준다.
+
+이미지도 원래 `border-radius:50%`로 동그랗게 보이도록 했는데 그냥 약간의 모깎기만 하자.
+
+```css
+// src/components/projectList/project/styles.module.css
+.container{
+  display: flex;
+  flex-direction: row;
+  gap:1rem;
+  /*border: 1px solid var(--gray5);
+  border-radius: 1rem;*/
+  box-sizing: border-box;
+  padding:15px;
+  margin-bottom: 1rem;
+  min-height:150px;
+}
+
+.image{
+  border-radius:1rem;
+}
+
+@media (min-width: 768px) {
+  .container{
+    padding: 10px;
+  }
+
+  .image{
+    display: block;
+  }
+}
+```
+
+그리고 `src/components/card/styles.module.css`의 container도 다음과 같이 테두리를 없애고 hover 시에 background-color를 추가해준다.
+
+```css
+.container{
+  /*border: 1px solid var(--gray5);*/
+  border-radius: 1rem;
+  box-sizing: border-box;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.link{
+  display:block;
+  height:100%;
+  padding:1rem;
+  text-decoration:none;
+  color:var(--black);
+}
+
+.link:hover{
+  border-radius: 1rem;
+  color:var(--indigo6);
+  background-color:var(--gray1);
+}
+```
+
+내 착각일 수도 있지만 테두리를 이루는 선들이 없어지니 화면이 좀더 깔끔해진 것 같다.
+
+## 7. 다음 이야기
 
 `Card` 컴포넌트는 메인 페이지 뿐 아니라 각 카테고리별로 글 목록을 보여주는 페이지에서도 사용된다. 그리고 이때의 카드는 한 줄에 하나씩만 보여지므로, 상당히 넓은 너비를 차지한다. 
 
-따라서 썸네일을 넣음으로써 글의 이해에도 도움을 주고 글 한 줄의 너비도 줄여서 사용자의 집중도를 높이자.
+따라서 썸네일을 넣음으로써 글의 이해에도 도움을 주고 글 한 줄의 너비도 줄여서 사용자의 집중도를 높이려고 한다.
 
-그런데 이거 생각보다 여러가지 작업이 필요할 것 같아서, 여기부터는 다음 글에 넘기도록 하겠다.
-
+그런데 그걸 하기 위해선 꽤나 여러가지 작업이 필요할 것 같아서 먼저 다른 페이지들을 좀 손보고 나서 그 작업을 하도록 하겠다. 글 목록 페이지와 글 상세보기 페이지뿐이지만.
 
 # 참고
 
