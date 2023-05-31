@@ -1379,9 +1379,6 @@ nextJS 페이지 이동 감지를 위한 useRouter https://nextjs.org/docs/pages
 프로젝트를 보여주는 컴포넌트를 만들기 위해 참고하였다.
 https://portfolio-kagrin97.vercel.app/portfolio
 
-favicon을 바꾸기 위해 참고하였다.
-https://brunch.co.kr/@ultra0034/129
-
 프로젝트를 하다가 vscode 폴더의 구조에 따른 들여쓰기 간격을 넓히기 위해 사용했다. https://thenicesj.tistory.com/35
 
 grid css를 이용한 접힘 구현에 참고 https://stackoverflow.com/questions/63184642/display-only-one-row-and-hide-others-in-css-grid
