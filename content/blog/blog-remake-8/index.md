@@ -1568,6 +1568,90 @@ export default function App({ Component, pageProps }: AppProps) {
 }
 ```
 
+## 6.4. 카톡 미리보기가 안 뜨는 문제
+
+그런데 문제가 생겼다. 특정 글 링크를 카톡으로 보낼 땐 미리보기가 잘만 뜨더니 메인 페이지나 글 목록 페이지를 보내면 미리보기가 안 뜬다.
+
+![kakao-problem](./kakao-preview-prob.jpeg)
+
+카카오톡은 페이지 미리보기 이미지 파싱에 `og:image`를 쓰는 걸로 알고 있는데 개발자 도구에서 head 요소 내부를 까보면 이 요소가 잘 들어가 있다. 그러면 해당 이미지를 불러오지 못하고 있다는 뜻인 것 같다.
+
+그러면 이미지는 잘 들어가 있는 걸까? 현재 내가 모든 페이지의 미리보기로 사용하고 있는 이미지는 `/witch.jpeg`다. 이건 잘 들어가 있을까? [해당 링크](https://witch-next-blog.vercel.app/witch.jpeg)에 들어가 보니 이미지는 배포와 함께 잘 들어가 있는 걸 볼 수 있었다.
+
+따라서 `NextSeo`와 `DefaultSeo`컴포넌트에서 불러오는 이미지 URL을 수정해주자. 일단 `blog-config.ts`의 SEOconfig를 수정.
+
+```ts
+// blog-config.ts
+export const SEOConfig: NextSeoProps = {
+  /* 생략 */
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    title: blogConfig.title,
+    description: blogConfig.description,
+    url: blogConfig.url,
+    siteName: blogConfig.title,
+    images: [
+      {
+        // 이미지 URL을 블로그 URL + 이미지경로 로 수정
+        url :`${blogConfig.url}${blogConfig.thumbnail}`,
+        alt: `${blogConfig.name} 프로필 사진`,
+      },
+    ],
+  },
+  /* 생략 */
+}
+```
+
+이제 글 목록 페이지와 글 상세 페이지에서도 `og:image` URL을 수정해주자. 글 목록 페이지의 경우 `og:url`도 새로 넣어준다. `getStaticProps`에서 게시글 URL도 받아오게 수정하면 된다.
+
+```tsx
+export const getStaticProps: GetStaticProps = ({params}) => {
+  const allDocumentsInCategory = getSortedPosts().filter((post)=>
+    post._raw.flattenedPath.startsWith(params?.category as string
+    ));
+  
+  const {title:category, url:categoryURL}=blogCategoryList.find((c)=>
+    c.url.split('/').pop()===params?.category) as {title: string, url: string};
+
+  const postList = allDocumentsInCategory.map((post) => ({
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    tags: post.tags,
+    url: post.url,
+  }));
+  return { props: { category, categoryURL,postList } };
+};
+```
+
+또한 여기서 canonical도 새로 넣어줄 수 있다. 만약 canonical이 없거나 메인페이지가 같으면 미리보기가 안 뜨는 것 같다.
+
+```tsx
+/* src/pages/posts/[category]/index.tsx 등
+에서 NextSeo 컴포넌트 Props로 들어가는 객체 */
+  const SEOInfo: NextSeoProps={
+    title: `${category} 주제의 글`,
+    description: `${category} 주제의 글들을 모아서 보여주는 페이지`,
+    canonical:`${blogConfig.url}${categoryURL}`,
+    openGraph:{
+      title: `${category} 주제의 글`,
+      description: `${category} 주제의 글들을 모아서 보여주는 페이지`,
+      images: [
+        {
+          url:`${blogConfig.url}${blogConfig.thumbnail}`,
+          alt: `${blogConfig.name} 프로필 사진`,
+        },
+      ],
+      url:`${blogConfig.url}${categoryURL}`,
+    },
+  };
+```
+
+이제 카카오톡에서도 미리보기가 잘 뜨는 것을 확인할 수 있었다.
+
+![kakao-solved](./kakao-preview-solved.jpeg)
+
 # 참고
 
 https://gamguma.dev/post/2022/01/nextjs-blog-development-review
