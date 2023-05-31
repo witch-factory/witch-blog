@@ -1188,6 +1188,126 @@ function TableOfContents({nodes}: {nodes: ContentType[]}) {
 }
 ```
 
+## 5.7. 글 진도 표기
+
+지금은 글 내용 전부의 위에 TOC가 위치하고 있지만 만약 화면 너비가 넓어질 시, TOC가 글 내용의 오른쪽에 언제나 표시되어서 글의 진도를 표시해 준다면 좋을 것이다. 이를 구현해보자.
+
+이는 `Intersection Observer API`를 이용하여 구현될 것이다. 비동기적으로 처리되므로 스크롤 이벤트와 달리 부하가 적다.
+
+당연히 `src/components/toc/index.tsx`를 편집해야 한다. 먼저 TOC에 쓰이는 링크 컴포넌트를 분리하여 TOCLink 컴포넌트를 만들자.
+
+`src/components/toc/tocLink` 폴더 생성후 내부에 index.tsx와 styles.module.css 생성.
+
+index.tsx는 그냥 TOC 내에서 쓰이는 링크 컴포넌트를 따와서 기본 구조를 잡는다.
+
+```tsx
+// src/components/toc/tocLink/index.tsx
+function TOCLink({node}: {node: ContentType}) {
+  return (
+    <a
+      className={styles.link}
+      href={`#${node.data.hProperties.id}`}
+    >
+      {node.data.hProperties.title}
+    </a>
+  );
+}
+```
+
+그리고 다음과 같이 스크롤에 따라서 어떤 ID의 헤딩이 활성화 상태인지를 리턴하는 `useHighlight` 훅을 만든다. useEffect를 이용해 해당 훅이 렌더링될 때 `IntersectionObserver`를 만들고, 이를 통해 헤딩 요소들의 변화를 감지한다. 그리고 훅에서는 활성화된 헤딩 요소의 ID와 활성화 요소ID를 변경하는 함수를 반환한다.
+
+```tsx
+// src/components/toc/tocLink/index.tsx
+function useHighLight(): [string, Dispatch<SetStateAction<string>>] {
+  const observer=useRef<IntersectionObserver>();
+  const [activeID, setActiveID]=useState<string>('');
+
+  useEffect(()=>{
+    // 변화가 나타나면 실행되는 콜백 함수
+    const handleObserver=(entries: IntersectionObserverEntry[])=>{
+      entries.forEach((entry)=>{
+        if (entry.isIntersecting) {
+          setActiveID(entry.target.id);
+        }
+      });
+    };
+
+    observer.current=new IntersectionObserver(handleObserver, {
+      rootMargin: '0px 0px -40% 0px',
+    });
+
+    const elements=document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
+    elements.forEach((element)=>observer.current?.observe(element));
+    return ()=>observer.current?.disconnect();
+  }, []);
+
+  return [activeID, setActiveID];
+}
+```
+
+또한 TOCLink 컴포넌트에서는 이 훅을 이용해서 활성화된 헤딩 요소의 ID를 받아와서 현재 링크의 ID와 같은지 검사하여 활성화 상태인지를 판단하고, 이에 따라서 스타일을 적용해 준다.
+
+```tsx
+// src/components/toc/tocLink/index.tsx
+function TOCLink({node}: {node: ContentType}) {
+  const id=node.data.hProperties.id;
+  const [activeID, setActiveID]=useHighLight();
+  return (
+    <a
+      className={`${styles.link} ${activeID===id?styles.link__active:''}`}
+      href={`#${node.data.hProperties.id}`}
+      onClick={()=>setActiveID(id)}
+    >
+      {node.data.hProperties.title}
+    </a>
+  );
+}
+```
+
+TOCLink 스타일시트는 다음과 같다.
+
+```css
+// src/components/toc/tocLink/styles.module.css
+.link{
+  color:var(--gray7);
+  line-height:1.75;
+  text-decoration:underline;
+}
+
+.link:hover{
+  color:var(--indigo6);
+}
+
+.link__active{
+  background-color:var(--indigo1);
+  color:var(--indigo8);
+  padding:3px;
+  border-radius:5px;
+}
+
+.link__active:hover{
+  background-color:var(--indigo2);
+}
+```
+
+이렇게 하고 나면 TOC가 스크롤에 따라서 이동한다. 하지만 문제는...TOC는 현재 글 최상단에 있기 때문에 스크롤이 이동하면 사라져 버리기 때문에, 스크롤에 따라 TOC가 이동하는 것을 볼 수 없다. 이러면 사실 TOC가 스크롤에 따라 변하는 것을 구현한 이유가 없다. 따라서 화면 너비가 충분히 넓을 경우, 글의 오른쪽에 TOC가 고정되어 있도록 해보자.
+
+이는 TOC를 담은 컨테이너 클래스에 fixed position과 적당한 간격을 주는 것으로 구현 가능하다.
+
+```css
+// src/components/toc/styles.module.css
+@media(min-width: 1280px){
+  .container{
+    position:fixed;
+    top:50px;
+    left:calc(50% + 25rem);
+    margin-top:2rem;
+  }
+}
+```
+
+left 간격은 `calc`함수를 사용하였는데, 화면 너비가 1280px 이상이 되면 컨텐츠 영역은 max-width인 50rem에 도달하므로 이를 기준으로 TOC가 고정되도록 하였다.
+
 # 6. favicon 바꾸기(+SEO)
 
 오래전, 메인 페이지의 `Head`태그에 각종 메타데이터를 채워넣은 것을 기억하는가? 대강 제목과 여러 가지를 채웠었다. 다음과 같이.
@@ -1478,3 +1598,6 @@ SEO 등 메타데이터에 참고한 사이트들
 - next-seo 공식문서 https://www.npmjs.com/package/next-seo
 
 next-sitemap npm 페이지 https://www.npmjs.com/package/next-sitemap
+
+intersection observer 
+https://developer.mozilla.org/ko/docs/Web/API/Intersection_Observer_API
