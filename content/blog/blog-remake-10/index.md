@@ -177,7 +177,7 @@ function ProjectIntro({project}: {project: projectType}) {
 }
 ```
 
-그냥 카드 자체가 링크가 되면서 쓰이지 않게 된 `link` 클래스를 삭제해 주고, 화면너비가 좁을 땐 설명 영역과 기술스택 영역이 `space-between`으로 배치되게 하고 넓을 땐 붙어서 배치되도록 한다.
+그냥 카드 자체가 링크가 되면서 쓰이지 않게 된 `link` 클래스를 삭제해 주고, 화면너비가 좁을 땐 설명 영역과 기술스택 영역이 `space-between`으로 배치되게 하고 넓을 땐 붙어서 배치되도록 한다. 기술 스택 블록 디자인은 눈길을 좀 덜 끌도록 연한 색으로 바꿔주었다.
 
 ```css
 // src/components/projectCard/intro/styles.module.css
@@ -185,11 +185,37 @@ function ProjectIntro({project}: {project: projectType}) {
   display:flex;
   flex-direction: column;
   justify-content: space-between;
+  height:100%;
+}
+
+.description{
+  margin: 0;
+  margin-top:5px;
+  width:100%;
+}
+
+.list{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin-top:5px;
+}
+
+.tech{
+  padding: 1.5px 3px;
+  border-radius: 5px;
+  background-color: var(--indigo0);
+  color:var(--indigo6);
+  font-size: 0.8rem;
 }
 
 @media (min-width:768px){
   .intro{
     justify-content: flex-start;
+    height:100%;
   }
 }
 ```
@@ -255,7 +281,7 @@ export default ProjectImage;
 }
 ```
 
-그리고 `projectCard`를 작성하자. 아까 계획했던 레이아웃을 그대로 따라서(사실 생각만큼 유연하게 그대로 따라하지는 못했지만 개선 예정) 작성하면 된다.
+그리고 `projectCard`를 작성하자. 아까 계획했던 레이아웃을 그대로 따라서 작성하면 된다.
 
 ```tsx
 // src/components/projectCard/index.tsx
@@ -346,9 +372,83 @@ grid display를 이용해서 딱딱 행, 열을 정해주면 된다.
 }
 ```
 
-이제 hover시에 패딩이 좀 이상해지는데 이것도 적당히 고치자.
+그리고 hover시에 회색 배경이 되는 걸 없애주고, 그림자가 생기면서 이미지가 약간 떠오르는 듯한 효과를 주자. `box-shadow`속성과 margin, padding, transition을 적절히 이용하면 된다.
 
+```css
+// src/components/projectCard/styles.module.css
+.wrapper{
+  display:block;
+  width:100%;
+  height:100%;
+}
 
+.container{
+  display: grid;
+  grid-template-columns: min-content;
+  grid-template-rows: 25px;
+  column-gap:1rem;
+  /*padding:15px 15px 15px 0;  */
+  height:100%;
+}
+
+.container:hover{
+  color:var(--indigo6);
+}
+
+/* 컨테이너 호버 시 이미지 박스 그림자 표현 */
+.container:hover .imagebox{
+  margin-top: -3px;
+  padding-bottom:3px;
+  box-shadow: 3px 3px 5px var(--gray6);
+  transition: all 0.3s ease-out
+}
+
+.titlebox{
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  height:100%;
+}
+
+.imagebox{
+  grid-column: 1 / 2;
+  grid-row: 1 / 3;
+  border-radius: 0.5rem;
+  height:100%;
+}
+
+.introbox{
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+@media (min-width: 768px) {
+  .container{
+    flex-direction: column;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content min-content;
+  }
+
+  .titlebox{
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    height:100%;
+  }
+
+  .imagebox{
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+  }
+
+  .introbox{
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+  }
+}
+```
+
+그리고 모바일 환경에서 맨 위에 위치한 프로젝트 소개의 사진이 `margin-top:-3px`로 떠오를 때 프로젝트 소개가 접힌 상태에서는 `overflow:hidden` 옵션이 적용되어 사진이 잘리는 문제가 있었다.
+
+이는 container 호버 시 imagebox에 padding도 추가해 주는 것으로 해결.
 
 # 3. 태그 색상
 
@@ -364,6 +464,26 @@ grid display를 이용해서 딱딱 행, 열을 정해주면 된다.
   margin:0;
   margin-bottom:5px;
   padding:3px 8px;
+}
+```
+
+# 4. h3 태그 높이 문제
+
+프로젝트 제목에 h3 태그를 사용하고 있었는데, 한글을 썼을 때와 영어를 썼을 때 h3 태그의 높이가 달라졌다. 1.25rem으로 h3 태그를 썼을 때 한글의 경우 높이가 25.5px였으나 영어로만 썼을 경우 23.5px가 되었다.
+
+따라서 projectCard/title에 쓰이는 h3 태그의 폰트를 Pretendard대신 Roboto를 쓰도록 바꿨다. 이렇게 하니 높이가 24px로 고정되었다.
+
+```css
+// src/components/projectCard/title/styles.module.css
+.title{
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+@media (min-width: 768px) {
+  .title {
+    margin-bottom:10px;
+  }
 }
 ```
 
